@@ -6,10 +6,14 @@
 ### Arrays, vectorisation & special functions ###
 import numpy as np
 from numpy import linalg as LA
+from numpy.random import default_rng
+rng = default_rng(seed=1)
 
+from scipy import interpolate
 import scipy.constants as const
 from scipy.integrate import quad
 from scipy.stats import gaussian_kde
+
 
 
 ### Astropy package
