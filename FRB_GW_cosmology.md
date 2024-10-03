@@ -23,7 +23,7 @@ $DM_{MW}$ can be derived from model. $DM_{halo} \sim (30-80)pc \; cm^{-3}$
 Most important is the IGM component:
 $$ <DM_{IGM}>=\frac{3cH_0 \Omega_b }{8\pi G m_p}\int_0^z \frac{f_{IGM}\Chi(z')(1+z')dz'}{E(z')}$$
 Here,
-$$\Chi=Y_H X_{e,H}+\frac{1}{2}Y_{He} X_{e,He}$$
+$$\chi=Y_H X_{e,H}+\frac{1}{2}Y_{He} X_{e,He}$$
 Recall $Y_H=1/4$ and $Y_{He}=3/4$.
 
 According to [[Bei Zhou 2014](https://journals.aps.org/prd/abstract/10.1103/PhysRevD.89.107303)], $z\lesssim 3$, $X_{e,H}=X_{e,He}=1$; at $z\gtrsim 1.5$ $f_{IGM}\approx 90\%$; as $z\leq 0.4$ $f_{IGM}\approx (82\pm 4)\%$
