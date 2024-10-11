@@ -139,7 +139,7 @@ def sigma_dL(z, H0, Om, w=-1, method='Wei'):
     
     Output
     ---------
-    s_dL : distance erro in Mpc
+    s_dL : distance error in Mpc
     """      
     
     dL = luminosity_distance(z, H0, Om, w)
