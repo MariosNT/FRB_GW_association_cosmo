@@ -20,7 +20,7 @@ from scipy.stats import gaussian_kde
 import astropy.units as u
 from astropy.cosmology import FlatLambdaCDM
 from astropy.cosmology import z_at_value
-import astropy.constant as astc
+import astropy.constants as astc
 from astropy.cosmology import Planck18
 
 ### Plotting
