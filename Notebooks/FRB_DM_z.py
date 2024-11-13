@@ -361,4 +361,4 @@ parameter_pairs = [
 # Plot all parameter combinations
 for param1_grid, param2_grid, param1_name, param2_name, param_indices in parameter_pairs:
     plot_contours(D_4D, param1_grid, param2_grid, param1_name, param2_name, param_indices)
-    plt.show()
+    plt.savefig(f"{param1_name}_{param2_name}.png")
