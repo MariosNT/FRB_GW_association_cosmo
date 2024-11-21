@@ -1,10 +1,13 @@
 import sys
-import numpy as np
-import pandas as pd
+sys.path.append('../Python_scripts')
+from config import *
+from support import *
+from cosmo_support import *
+
 from scipy.integrate import quad_vec
 from scipy.optimize import fsolve
 from scipy import stats
-import matplotlib.pyplot as plt
+
 from multiprocessing import Pool, cpu_count
 from functools import partial
 from typing import Tuple, List, Optional
@@ -81,6 +84,21 @@ class FRBAnalysis:
         except Exception as e:
             print(f"A calculation failed for C_0={c_0}, F={f}, z={z}: {e}")
             return None
+    
+    @staticmethod
+    def dm_igm_o_bh_70(z: float, O_bh_70: float, Om: float = OMEGA_MATTER, w: float = -1) -> float:
+        """Calculate DM IGM contribution"""  
+    
+        O_bH_0=O_bh_70*70
+
+        factor = 3*C_LIGHT*KM_2_MPC*O_bH_0*f_IGM/(8*PI*G_NEWTON*M_PROTON)*(7/8)
+        integral = quad(dDM_integrand_w, 0, z, args=(Om, w))[0]
+    
+        unit_transform = DM_2_PCCM3
+    
+        DM = unit_transform*factor*integral
+    
+        return DM
 
     def calculate_single_probability(self, params: Tuple[int, int, int, int, pd.DataFrame]) -> Tuple[int, int, int, int, float]:
         """Calculate probability for a single parameter combination."""
@@ -103,7 +121,8 @@ class FRBAnalysis:
                 a = self.find_a(c_0, f, z)
                 if a is None:
                     return 0
-                delta = (dm_frb - dm_host/(1+z)) / self.dm_igm_o_bh_70(z, o_bh70)
+                delta = (dm_frb - dm_host/(1+z)) / FRBAnalysis.dm_igm_o_bh_70(z, o_bh70)
+                #delta = (dm_frb - dm_host/(1+z)) / self.dm_igm_o_bh_70(z, o_bh70)
                 p_cosmic = self.pdf_dm_cosmo(delta, c_0, a, f, z)
                 return p_host * p_cosmic
             
@@ -145,7 +164,7 @@ class FRBAnalysis:
         # Plot each parameter combination
         for (param1_name, param2_name), (grid1, grid2) in grids.items():
             self.plot_single_contour(d_4d, grid1, grid2, param1_name, param2_name, thresholds)
-            plt.savefig(f"{param1_name}_{param2_name}.png")
+            plt.savefig(f"./fig/{param1_name}_{param2_name}.png")
             plt.close()
 
     @staticmethod
