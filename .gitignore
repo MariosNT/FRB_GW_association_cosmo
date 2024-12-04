@@ -162,3 +162,4 @@ cython_debug/
 # temporary files
 .DS_store
 Notebooks/C_0_z.csv
+/.vscode

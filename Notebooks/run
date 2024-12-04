@@ -1,0 +1,2 @@
+g++ FRB_DM_z.cpp -o FRB_pdf.out
+./FRB_pdf.out

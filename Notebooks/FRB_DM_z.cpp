@@ -1,9 +1,12 @@
 #include <iostream>
+#include <string>
 #include <fstream>
 #include <vector>
 #include <cmath>
 #include <numeric>
 #include <algorithm>
+#include <memory>
+#include <limits>
 #include <functional>
 
 class FRBProbabilityCalculator {
@@ -13,10 +16,20 @@ private:
     const double PI = 3.14159265358979323846;
 
     // Utility functions to mimic numpy/scipy functionality
-    double pdf_DM_host(double DM, double e_mu, double sigma_host) {
+    long double PDF_DM_host(double DM, double e_mu, double sigma_host) {
         double mu = std::log(e_mu);
-        return std::exp(-std::pow(std::log(DM) - mu, 2) / (2 * sigma_host * sigma_host)) 
-               / (sigma_host * std::sqrt(2 * PI) * DM);
+
+        long double result = std::exp(-std::pow(std::log(DM) - mu, 2) / (2.0 * sigma_host * sigma_host)) 
+               / (sigma_host * std::sqrt(2.0 * PI) * DM);
+
+        // std::cout << "Private Variable: "<< DM;
+        // std::cout << std::endl;
+
+        if (std::isnan(result)) {
+            throw std::runtime_error("PDF_DM_host in NaN");
+        }
+        
+        return result;
     }
 
     // double f_sigma_DM(double F, double z){
@@ -24,50 +37,100 @@ private:
     // }
 
     // pdf_DM_IGM
-    double pdf_DM_cosmo(double DM, double C_0, double A, double F, double z) const {
+    long double pdf_DM_cosmo(double DM, long double C_0, long double A, double F, double z) const {
         // consider alpha==beta==3
-        return z* A * std::exp(-std::pow(DM , -3)) * std::exp(-std::pow(std::pow(DM, -3) - C_0 , 2))
-            / (2 * 9 * F * F); 
+
+        long double result = A * std::pow(DM , -3) * std::exp(-std::pow(std::pow(DM, -3) - C_0 , 2) * z
+            / (2 * 9 * F * F));
+
+        
+        if (std::isnan(result)) {
+            std::cout << "Private Variable A: "<< A;
+            std::cout << "Private Variable exp: "<< std::exp(-std::pow(std::pow(DM, -3) - C_0 , 2)/ (2 * 9 * F * F));
+            std::cout << "Private Variable in exp: "<< -std::pow(std::pow(DM, -3) - C_0 , 2)/ (2 * 9 * F * F);
+            std::cout << std::endl;
+            throw std::runtime_error("pdf_DM_cosmo in NaN");
+        }
+
+        return result; 
+
     }
 
-    double findC0(double f, double z, double alpha) const {
-    // Simplified C0 finding using numerical method
-    auto momentRatio = [&](double c_0) {
-        auto integrand = [&](double x) { 
-            return x * pdf_DM_cosmo(x, c_0, 1.0, f, z); 
-        };
-        double x_pdf = simpsonsRule(integrand, 0, std::numeric_limits<double>::infinity(), 3);
-        double pdf = simpsonsRule([&](double x) { 
-            return pdf_DM_cosmo(x, c_0, 1.0, f, z); 
-        }, 0, std::numeric_limits<double>::infinity(), 3);
-        return x_pdf / pdf - 1.0;
+    long double findC0(double f, double z) const {
+    // // Simplified C0 finding using numerical method
+    // auto average_ratio = [&](double c_0) {
+    //     // auto x_pdf = [&](double x) { 
+    //     //     return x * pdf_DM_cosmo(x, c_0, 1.0, f, z);
+    //     // };
+    //     double average = simpsonsRule([&](double x){
+    //         return x * pdf_DM_cosmo(x, c_0, 1.0, f, z);
+    //     }, 0, std::numeric_limits<double>::infinity(), 3);
+    //     double normal = simpsonsRule([&](double x) { 
+    //         return pdf_DM_cosmo(x, c_0, 1.0, f, z); 
+    //     }, 0, std::numeric_limits<double>::infinity(), 3);
+
+    //     double result = average / normal - 1.0;
+
+    auto function = [&](double c_0) {
+        // double result = simpsonsRule([&](double x){
+        double result = rombergIntegration([&](double x){
+            return (x - 1.0) * pdf_DM_cosmo(x, c_0, 1.0, f, z);
+        //}, 0, std::numeric_limits<double>::infinity(), 3);
+        }, 0, std::numeric_limits<double>::infinity());
+
+        //std::cout << "Private Variable normal: "<< result;
+        //std::cout << std::endl;
+        if (std::isnan(result)) {
+            throw std::runtime_error("Finding C0 in NaN");
+        }
+
+        return result;
     };
 
     // Simplified root-finding (replace with more robust method in practice)
-    return brentMethod(momentRatio, 0.1, 10.0);
+    // return brentMethod(function, 0.1, 10.0);
+    return bisection(function, 0.1, 10.0);
 }
 
-    double DM_IGM_O_bh_70(double z, double O_bh_70) const {
+    long double findA(long double C_0, double F, double z){
+        //double integral = simpsonsRule([&](double x) { 
+        double integral = rombergIntegration([&](double x){
+            return pdf_DM_cosmo(x, C_0, 1.0, F, z); 
+        //}, 0, std::numeric_limits<double>::infinity(), 3);
+        }, 0, std::numeric_limits<double>::infinity());
+
+        long double result = 1.0/integral;
+        if (std::isnan(result)) {
+            throw std::runtime_error("Finding A in NaN");
+        }
+
+        return result;
+    };
+
+    long double dDM_integrand_w(double z, double Om, double w) const {
+            return (1.0+z)/std::sqrt(std::pow(Om*(1.0+z),3)+(1-Om)*std::pow((1+z),(3*(1+w))));
+        };
+    
+    long double DM_IGM_O_bh_70(double z, double O_bh_70) const {
         // Constants (you may need to adjust these to match the original implementation)
-        const double C_LIGHT = 299792.458;  // km/s
-        const double KM_2_MPC = 3.24078e-6;  // km to Mpc conversion
-        const double PI = 3.14159265358979323846;
+        const double C_LIGHT = 299792458;  // m/s
+        const double KM_2_MPC = 3.24078e-20;  // km to Mpc conversion
         const double G_NEWTON = 6.67430e-11;  // m^3 kg^-1 s^-2
         const double M_PROTON = 1.672621898e-27;  // kg
-        const double DM_2_PCCM3 = 1.0;  // conversion factor
-        const double f_IGM = 1.0;  // default value, adjust as needed
-        const double OMEGA_MATTER = 0.3;
+        const double DM_2_PCCM3 = 3.24e-23;  // conversion factor
+        const double f_IGM = 0.83;  // default value, adjust as needed
+        const double OMEGA_MATTER = 0.2865;
         const double w = -1.0;
 
         // Compute O_bH_0 
         double O_bH_0 = O_bh_70 * 70;
 
         // Compute integral (simplified - you may need to replace with a more accurate integration method)
-        double integral = 0.0;
-        for (double i = 0; i < z; i += 0.1) {
-            // Simple trapezoidal approximation
-            integral += 0.1 * (1 + i);
-        }
+        //long double integral = simpsonsRule([&](double x) { 
+        long double integral = rombergIntegration([&](double x) { 
+            return dDM_integrand_w(x, OMEGA_MATTER, w); 
+        //}, 0, z, 3);
+        }, 0, z);
 
         // Compute factor
         double factor = 3 * C_LIGHT * KM_2_MPC * O_bH_0 * f_IGM / 
@@ -77,144 +140,246 @@ private:
         double unit_transform = DM_2_PCCM3;
 
         // Compute DM
-        double DM = unit_transform * factor * integral;
+        long double DM = unit_transform * factor * integral;
+
+        if (std::isnan(DM)) {
+            throw std::runtime_error("Finding DM_IGM_O_bh_70 in NaN");
+        }
 
     return DM;
 }
 
-    double calculate_dm_probability(
-        double DM_frb, double z, double F, double O_bh_70, 
-        double sigma_host, double e_mu
-    ) {
-        auto integrand = [&](double DM_host) {
-            double p_host_val = pdf_DM_host(DM_host, e_mu, sigma_host);
-            // Implement the rest of the probability calculation logic
-            // This includes finding C_0 and A, calculating delta, etc.
-            return p_host_val; // Placeholder
-        };
-
-        // Implement numerical integration
-        // This would use a method like Simpson's rule or adaptive quadrature
-        return 0.0; // Placeholder
-    }
+    long double PDF_DM_cosmo(double DM, double O_bh_70, double F, double z){
+        long double C_0 = findC0(F, z);
+        long double A = findA(C_0, F, z);
+        long double delta = DM/DM_IGM_O_bh_70(z, O_bh_70);
+        //std::cout << "Private Variable delta: "<< delta;
+        //std::cout << std::endl;
+        return pdf_DM_cosmo(delta, C_0, A, F, z);
+    };
 
 public:
 
-    double brentMethod(const std::function<double(double)>& f, double a, double b, 
-                   double tolerance = 1e-6, int max_iter = 100) {
-    double fa = f(a);
-    double fb = f(b);
+    long double calculate_dm_probability(
+        double DM_ext, double z, double F, double O_bh_70, double sigma_host, double e_mu
+    ) {
+        //double integrand = simpsonsRule([&](double DM_host) {
+        double integrand = rombergIntegration([&](double DM_host) {
+            double p_host_val = PDF_DM_host(DM_host, e_mu, sigma_host);
+            double p_cosmo_val = PDF_DM_cosmo(DM_ext - DM_host/(1.0+z), O_bh_70, F, z);
+            return p_host_val * p_cosmo_val;
+        //}, 0, DM_ext, 3);
+        }, 0, DM_ext);
 
-    if (std::abs(fa) < std::abs(fb)) {
-        std::swap(a, b);
-        std::swap(fa, fb);
+        // Implement numerical integration
+        // This would use a method like Simpson's rule or adaptive quadrature
+        return integrand;
     }
 
-    double c = a;
-    double fc = fa;
-    bool mflag = true;
-    double d = b - a;
-    double e = d;
+    double bisection(const std::function<double(double)>& f, double a, double b, double tolerance = 1e-6) const{
+        double fa = f(a);
+        double fb = f(b);
 
-    for (int iter = 0; iter < max_iter; ++iter) {
-        if (std::abs(fc) < std::abs(fb)) {
-            std::swap(a, c);
-            std::swap(fa, fc);
-            std::swap(b, c);
-            std::swap(fb, fc);
+        if (fa * fb >=0) {
+            throw std::runtime_error("Choose larger scale for bisection method");
         }
 
-        double s;
-        if (std::abs(fa - fc) > tolerance && std::abs(fb - fc) > tolerance) {
-            // Inverse quadratic interpolation
-            s = a * fb * fc / ((fa - fb) * (fa - fc)) +
-                b * fa * fc / ((fb - fa) * (fb - fc)) +
-                c * fa * fb / ((fc - fa) * (fc - fb));
-        } else {
-            // Secant method
-            s = b - fb * (b - a) / (fb - fa);
+        double c = (a + b) / 2.0;
+        double fc = f(c);
+
+        while (std::abs(b-a)>=tolerance){
+            if (fc==0){
+                return c;
+            }
+            else if(fc * fa <= 0){
+                b=c;
+            }
+            else{
+                a=c;
+            }
+            c=(a + b) / 2.0;
+            fc = f(c);
+        }
+        return c;
+
+//     double brentMethod(const std::function<double(double)>& f, double a, double b, 
+//                    double tolerance = 1e-6, int max_iter = 100) const{
+//     double fa = f(a);
+//     double fb = f(b);
+
+//     if (std::abs(fa) < std::abs(fb)) {
+//         std::swap(a, b);
+//         std::swap(fa, fb);
+//     }
+
+//     double c = a;
+//     double fc = fa;
+//     bool mflag = true;
+//     double d = b - a;
+//     double e = d;
+
+//     for (int iter = 0; iter < max_iter; ++iter) {
+//         if (std::abs(fc) < std::abs(fb)) {
+//             std::swap(a, c);
+//             std::swap(fa, fc);
+//             std::swap(b, c);
+//             std::swap(fb, fc);
+//         }
+
+//         double s;
+//         if (std::abs(fa - fc) > tolerance && std::abs(fb - fc) > tolerance) {
+//             // Inverse quadratic interpolation
+//             s = a * fb * fc / ((fa - fb) * (fa - fc)) +
+//                 b * fa * fc / ((fb - fa) * (fb - fc)) +
+//                 c * fa * fb / ((fc - fa) * (fc - fb));
+//         } else {
+//             // Secant method
+//             s = b - fb * (b - a) / (fb - fa);
+//         }
+
+//         bool condition1 = !(s >= (3 * a + b) / 4 && s <= b);
+//         bool condition2 = mflag && std::abs(s - b) >= std::abs(b - c) / 2;
+//         bool condition3 = !mflag && std::abs(s - b) >= std::abs(c - d) / 2;
+//         bool condition4 = mflag && std::abs(b - c) < tolerance;
+//         bool condition5 = !mflag && std::abs(c - d) < tolerance;
+
+//         if (condition1 || condition2 || condition3 || condition4 || condition5) {
+//             s = (a + b) / 2;
+//             mflag = true;
+//         } else {
+//             mflag = false;
+//         }
+
+//         double fs = f(s);
+//         d = c;
+//         c = b;
+//         fc = fb;
+
+//         if (fa * fs < 0) {
+//             b = s;
+//             fb = fs;
+//         } else {
+//             a = s;
+//             fa = fs;
+//         }
+
+//         if (std::abs(fa) < std::abs(fb)) {
+//             std::swap(a, b);
+//             std::swap(fa, fb);
+//         }
+
+//         if (std::abs(b - a) < tolerance) {
+//             return b;
+//         }
+//     }
+
+//     return b;
+
+    }
+
+
+//     double simpsonsRule(const std::function<double(double)>& func, double a, double b, int n) const {
+//     // Handle improper integrals with large upper limit
+
+//     if (a==0){
+//             a=1e-6;
+//         }
+
+//     if (std::isinf(b)) {
+//         // Adaptive technique for infinite upper limit
+//         double result = 0.0;
+//         double x = a;
+//         double step = 1.0;
+
+//         while (x < 1000) {  // Truncate at a large finite value
+//             double x_next = x + step;
+//             result += (step / 6.0) * (
+//                 func(x) + 
+//                 4.0 * func((x + x_next) / 2.0) + 
+//                 func(x_next)
+//             );
+//             x = x_next;
+//             step *= 1.5;  // Exponential step increase
+//         }
+        
+//         return result;
+//     }
+    
+//     // Standard Simpson's rule for finite limits
+//     if (n % 2 != 0) n += 1;  // Ensure even number of subintervals
+    
+//     double h = (b - a) / n;
+//     double result = func(a) + func(b);
+    
+//     for (int i = 1; i < n; i += 2) {
+//         double x = a + i * h;
+//         result += 4.0 * func(x);
+//     }
+    
+//     for (int i = 2; i < n - 1; i += 2) {
+//         double x = a + i * h;
+//         result += 2.0 * func(x);
+//     }
+    
+//     return result * h / 3.0;
+// }
+
+double rombergIntegration(const std::function<double(double)>& f, 
+                          double a, 
+                          double b, 
+                          double tolerance = 1e-8, 
+                          int max_iterations = 20) const {
+    // Handle infinite upper limit by using a change of variable
+    auto transformedF = [f, a, b](double t) {
+        if (b == std::numeric_limits<double>::infinity()) {
+            // variable replace：x = a + t / (1 - t)
+            // Jacobian: dx/dt = 1 / (1-t)²
+            double x = a + t / (1 - t);
+            return f(x) / ((1 - t) * (1 - t));
+        }
+        return f(t);
+    };
+
+
+    // Boundary for infinite limit integration
+    auto transformedIntegrationBounds = [&](double t) {
+        return b == std::numeric_limits<double>::infinity() ? 1.0 : b;
+    };
+
+    std::vector<std::vector<double>> R(max_iterations, std::vector<double>(max_iterations, 0.0));
+    
+    // Trapezoidal rule for first iteration
+    R[0][0] = (transformedIntegrationBounds(1.0) - 0.0) * 
+              (transformedF(0.0) + transformedF(1.0)) / 2.0;
+
+    for (int i = 1; i < max_iterations; ++i) {
+        // Composite trapezoidal rule
+        double h = std::pow(0.5, i);
+        double sum = 0.0;
+        int steps = 1 << i;
+        
+        for (int j = 1; j < steps; j += 2) {
+            double t = j * h;
+            sum += transformedF(t);
+        }
+        
+        R[i][0] = 0.5 * R[i-1][0] + h * sum;
+
+        // Richardson extrapolation
+        for (int j = 1; j <= i; ++j) {
+            R[i][j] = (std::pow(4.0, j) * R[i][j-1] - R[i-1][j-1]) / 
+                      (std::pow(4.0, j) - 1);
         }
 
-        bool condition1 = !(s >= (3 * a + b) / 4 && s <= b);
-        bool condition2 = mflag && std::abs(s - b) >= std::abs(b - c) / 2;
-        bool condition3 = !mflag && std::abs(s - b) >= std::abs(c - d) / 2;
-        bool condition4 = mflag && std::abs(b - c) < tolerance;
-        bool condition5 = !mflag && std::abs(c - d) < tolerance;
-
-        if (condition1 || condition2 || condition3 || condition4 || condition5) {
-            s = (a + b) / 2;
-            mflag = true;
-        } else {
-            mflag = false;
-        }
-
-        double fs = f(s);
-        d = c;
-        c = b;
-        fc = fb;
-
-        if (fa * fs < 0) {
-            b = s;
-            fb = fs;
-        } else {
-            a = s;
-            fa = fs;
-        }
-
-        if (std::abs(fa) < std::abs(fb)) {
-            std::swap(a, b);
-            std::swap(fa, fb);
-        }
-
-        if (std::abs(b - a) < tolerance) {
-            return b;
+        // Check for convergence
+        if (std::abs(R[i][i] - R[i][i-1]) < tolerance) {
+            return R[i][i];
         }
     }
 
-    return b;
+    return R[max_iterations-1][max_iterations-1];
 }
 
-
-    double simpsonsRule(const std::function<double(double)>& func, double a, double b, int n) const {
-    // Handle improper integrals with large upper limit
-    if (std::isinf(b)) {
-        // Adaptive technique for infinite upper limit
-        double result = 0.0;
-        double x = a;
-        double step = 1.0;
-        
-        while (x < 100) {  // Truncate at a large finite value
-            double x_next = x + step;
-            result += (step / 6.0) * (
-                func(x) + 
-                4.0 * func((x + x_next) / 2.0) + 
-                func(x_next)
-            );
-            x = x_next;
-            step *= 1.5;  // Exponential step increase
-        }
-        
-        return result;
-    }
-    
-    // Standard Simpson's rule for finite limits
-    if (n % 2 != 0) n += 1;  // Ensure even number of subintervals
-    
-    double h = (b - a) / n;
-    double result = func(a) + func(b);
-    
-    for (int i = 1; i < n; i += 2) {
-        double x = a + i * h;
-        result += 4.0 * func(x);
-    }
-    
-    for (int i = 2; i < n - 1; i += 2) {
-        double x = a + i * h;
-        result += 2.0 * func(x);
-    }
-    
-    return result * h / 3.0;
-}
 
     std::vector<std::vector<std::vector<std::vector<double>>>> 
     calculate_posterior_4D(
@@ -304,11 +469,27 @@ public:
 int main() {
     FRBProbabilityCalculator calculator;
 
+    // test
+    // double simpsons_result = calculator.simpsonsRule(
+    //     [&](double x){ return 1.0/std::pow(x,2); }, 0.5, std::numeric_limits<double>::infinity(), 5
+    // );
+
+    // std::cout << "Simpson's result: " << simpsons_result << std::endl;
+    // double p;
+    // try{
+    //     p = calculator.calculate_dm_probability(100,0.2,0.1,0.05,0.25,50);
+    // }
+    // catch (const std::exception& e) {
+    //     std::cout << "Error: " << e.what() << std::endl;
+    // }
+    // printf("%f\n", p);
+
     // Define parameter ranges (same as in Python script)
     std::vector<double> F_array = {0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5};
     std::vector<double> O_bh_70_array = {0.015, 0.035, 0.055, 0.075, 0.095};
     std::vector<double> sigma_host_array = {0.2, 0.6, 1.0, 1.4, 1.8};
     std::vector<double> e_mu_array = {20, 60, 100, 140, 180};
+    std::vector<std::vector<std::vector<std::vector<double>>>> posterior_4D;
 
     // Prepare data (you'll need to load actual data similar to the Python script)
     std::vector<std::pair<double, double>> data = {
@@ -317,9 +498,14 @@ int main() {
     };
 
     // Calculate posterior
-    auto posterior_4D = calculator.calculate_posterior_4D(
-        F_array, O_bh_70_array, sigma_host_array, e_mu_array, data
-    );
+    try{
+        posterior_4D = calculator.calculate_posterior_4D(
+            F_array, O_bh_70_array, sigma_host_array, e_mu_array, data
+        );
+    }
+    catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+    }
 
     // Save to CSV
     calculator.save_posterior_to_csv(
