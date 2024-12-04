@@ -65,12 +65,12 @@ class FRBAnalysis:
         """Find C_0 parameter using numerical solver."""
         def x_moment_ratio(c_0: float) -> float:
             """Calculate ratio of first moment to zeroth moment."""
-            x_pdf, _ = quad_vec(lambda x: x * self.pdf_dm_cosmo(x, c_0, 1, f, z, alpha), 0, np.inf)
-            pdf, _ = quad_vec(lambda x: self.pdf_dm_cosmo(x, c_0, 1, f, z, alpha), 0, np.inf)
-            return x_pdf/pdf - 1
+            x_pdf, _ = quad(lambda x: x * self.pdf_dm_cosmo(x, c_0, 1, f, z, alpha), 0, np.inf)
+            pdf, _ = quad(lambda x: self.pdf_dm_cosmo(x, c_0, 1, f, z, alpha), 0, np.inf)
+            return x_pdf-pdf
         
         try:
-            solution = fsolve(x_moment_ratio, [1.0], full_output=True)
+            solution = fsolve(x_moment_ratio, 1.0, full_output=True)
             return solution[0][0] if solution[2] == 1 else None
         except Exception as e:
             print(f"C_0 calculation failed for F={f}, z={z}: {e}")
@@ -79,7 +79,7 @@ class FRBAnalysis:
     def find_a(self, c_0: float, f: float, z: float, alpha: float = 3) -> Optional[float]:
         """Find normalization factor A."""
         try:
-            pdf, _ = quad_vec(lambda x: self.pdf_dm_cosmo(x, c_0, 1, f, z, alpha), 0, np.inf)
+            pdf, _ = quad(lambda x: self.pdf_dm_cosmo(x, c_0, 1, f, z, alpha), 0, np.inf)
             return 1/pdf
         except Exception as e:
             print(f"A calculation failed for C_0={c_0}, F={f}, z={z}: {e}")
