@@ -188,33 +188,3 @@ def sigma_dLDM(dL, DM, error_dL):
     s_dLDM = np.sqrt(first_term+second_term)
     
     return s_dLDM
-
-
-
-
-
-
-
-######################################
-
-# def dDM_integrand(z, Om):
-#     """
-#     Function that it inside the integral of the DM formula.
-    
-#     Input
-#     ----------
-#     z : redshift
-#     Om: Omega matter
-#     """
-#     return (1+z)/np.sqrt(Om*(1+z)**3+1-Om)
-
-# def dispersion_measure(z, Om, H0):
-
-#     factor = 3*C_LIGHT*(H0*KM_2_MPC)*OMEGA_BARYONS*f_IGM/(8*PI*G_NEWTON*M_PROTON)*(7/8)
-#     integral = quad(dDM_integrand, 0, z, args=(Om))[0]
-    
-#     unit_transform = 3.24e-23
-    
-#     DM = unit_transform*factor*integral
-    
-#     return DM
