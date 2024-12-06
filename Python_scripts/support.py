@@ -31,6 +31,8 @@ def Gaussian(x, x0, s0):
     """
     return 1/(s0*np.sqrt(2*np.pi))*np.exp(-0.5*(x-x0)**2/s0**2)
 
+
+
 def posterior_contour_2D(posterior_2D_norm, n=1000):
     """
     Function that generates a contour plot of the 2D posterior distribution.
