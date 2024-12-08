@@ -334,29 +334,28 @@ double rombergIntegration(const std::function<double(double)>& f,
         if (b == std::numeric_limits<double>::infinity()) {
             // variable replace：x = a + t / (1 - t)
             // Jacobian: dx/dt = 1 / (1-t)²
+            // Integration x [a, +∞] to t [0,1]
             double x = a + t / (1 - t);
             return f(x) / ((1 - t) * (1 - t));
         }
-        return f(t);
+        else{
+            // Integration x [a, b] to t [0,1]
+            double x = a + t * (b - a);
+            return f(t) * (b-a);
+        }
     };
 
-
-    // Boundary for infinite limit integration
-    auto transformedIntegrationBounds = [&](double t) {
-        return b == std::numeric_limits<double>::infinity() ? 1.0 : b;
-    };
 
     std::vector<std::vector<double>> R(max_iterations, std::vector<double>(max_iterations, 0.0));
     
     // Trapezoidal rule for first iteration
-    R[0][0] = (transformedIntegrationBounds(1.0) - 0.0) * 
-              (transformedF(0.0) + transformedF(1.0)) / 2.0;
+    R[0][0] = (transformedF(0.0) + transformedF(1.0)) / 2.0;
 
     for (int i = 1; i < max_iterations; ++i) {
         // Composite trapezoidal rule
         double h = std::pow(0.5, i);
         double sum = 0.0;
-        int steps = 1 << i;
+        int steps = 1 << i;  // 2^i
         
         for (int j = 1; j < steps; j += 2) {
             double t = j * h;
@@ -365,6 +364,8 @@ double rombergIntegration(const std::function<double(double)>& f,
         
         R[i][0] = 0.5 * R[i-1][0] + h * sum;
 
+
+        // from here
         // Richardson extrapolation
         for (int j = 1; j <= i; ++j) {
             R[i][j] = (std::pow(4.0, j) * R[i][j-1] - R[i-1][j-1]) / 
@@ -378,7 +379,47 @@ double rombergIntegration(const std::function<double(double)>& f,
     }
 
     return R[max_iterations-1][max_iterations-1];
+
+
+    // // Boundary for infinite limit integration
+    // auto transformedIntegrationBounds = [&](double t) {
+    //     return b == std::numeric_limits<double>::infinity() ? 1.0 : b;
+    // };
+
+    // std::vector<std::vector<double>> R(max_iterations, std::vector<double>(max_iterations, 0.0));
+    
+    // // Trapezoidal rule for first iteration
+    // R[0][0] = (transformedIntegrationBounds(1.0) - 0.0) * 
+    //           (transformedF(0.0) + transformedF(1.0)) / 2.0;
+
+    // for (int i = 1; i < max_iterations; ++i) {
+    //     // Composite trapezoidal rule
+    //     double h = std::pow(0.5, i);
+    //     double sum = 0.0;
+    //     int steps = 1 << i;
+        
+    //     for (int j = 1; j < steps; j += 2) {
+    //         double t = j * h;
+    //         sum += transformedF(t);
+    //     }
+        
+    //     R[i][0] = 0.5 * R[i-1][0] + h * sum;
+
+    //     // Richardson extrapolation
+    //     for (int j = 1; j <= i; ++j) {
+    //         R[i][j] = (std::pow(4.0, j) * R[i][j-1] - R[i-1][j-1]) / 
+    //                   (std::pow(4.0, j) - 1);
+    //     }
+
+    //     // Check for convergence
+    //     if (std::abs(R[i][i] - R[i][i-1]) < tolerance) {
+    //         return R[i][i];
+    //     }
+    // }
+
+    // return R[max_iterations-1][max_iterations-1];
 }
+
 
 
     std::vector<std::vector<std::vector<std::vector<double>>>> 

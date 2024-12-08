@@ -4,13 +4,16 @@ from config import *
 from support import *
 from cosmo_support import *
 
-from scipy.integrate import quad_vec
+# from scipy.integrate import quad_vec
+import os
 from scipy.optimize import fsolve
+from scipy.integrate import romberg
 from scipy import stats
 
 from multiprocessing import Pool, cpu_count
 from functools import partial
 from typing import Tuple, List, Optional
+from tqdm import tqdm
 
 class FRBAnalysis:
     def __init__(self, dm_halo: float = 30):
@@ -65,12 +68,20 @@ class FRBAnalysis:
         """Find C_0 parameter using numerical solver."""
         def x_moment_ratio(c_0: float) -> float:
             """Calculate ratio of first moment to zeroth moment."""
-            x_pdf, _ = quad(lambda x: x * self.pdf_dm_cosmo(x, c_0, 1, f, z, alpha), 0, np.inf)
-            pdf, _ = quad(lambda x: self.pdf_dm_cosmo(x, c_0, 1, f, z, alpha), 0, np.inf)
+            #x_pdf, _ = quad(lambda x: x * self.pdf_dm_cosmo(x, c_0, 1, f, z, alpha), 0, np.inf,limit=1000,epsabs=1e-6,epsrel=1e-6)
+            x_pdf, _ = quad(lambda x: x * self.pdf_dm_cosmo(x, c_0, 1, f, z, alpha), 0, 1000)
+            pdf, _ = quad(lambda x: self.pdf_dm_cosmo(x, c_0, 1, f, z, alpha), 0, 1000)
             return x_pdf-pdf
         
         try:
             solution = fsolve(x_moment_ratio, 1.0, full_output=True)
+            
+            # Breakdown of solution tuple:
+            # solution[0] - array of solutions
+            # solution[1] - additional info dictionary
+            # solution[2] - convergence flag (1 = success, else failure)
+
+            # Return the solution if successful, otherwise None
             return solution[0][0] if solution[2] == 1 else None
         except Exception as e:
             print(f"C_0 calculation failed for F={f}, z={z}: {e}")
@@ -126,7 +137,7 @@ class FRBAnalysis:
                 p_cosmic = self.pdf_dm_cosmo(delta, c_0, a, f, z)
                 return p_host * p_cosmic
             
-            prob, _ = quad_vec(integrand, 0, dm_frb)
+            prob, _ = quad(integrand, 0, dm_frb)
             prob_total *= prob
             
         return i, j, k, l, prob_total
@@ -144,8 +155,13 @@ class FRBAnalysis:
                  for l in range(len(self.e_mu_array))]
         
         # Use multiprocessing
+        # with Pool(processes=cpu_count()) as pool:
+        #     results = pool.map(self.calculate_single_probability, params)
         with Pool(processes=cpu_count()) as pool:
-            results = pool.map(self.calculate_single_probability, params)
+        # Wrap pool.imap with tqdm for progress tracking
+            results = list(tqdm(pool.imap(self.calculate_single_probability, params), 
+                            total=len(params), 
+                            desc="Calculating Posterior Probabilities"))
         
         # Fill posterior array with results
         for i, j, k, l, prob in results:
@@ -162,6 +178,7 @@ class FRBAnalysis:
         grids = self.create_parameter_grids()
         
         # Plot each parameter combination
+        os.makedirs("./fig/",exist_ok=True)
         for (param1_name, param2_name), (grid1, grid2) in grids.items():
             self.plot_single_contour(d_4d, grid1, grid2, param1_name, param2_name, thresholds)
             plt.savefig(f"./fig/{param1_name}_{param2_name}.png")
