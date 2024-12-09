@@ -19,6 +19,9 @@ private:
     long double PDF_DM_host(double DM, double e_mu, double sigma_host) {
         double mu = std::log(e_mu);
 
+        if (DM == 0){
+            DM=1e-6;
+        }
         long double result = std::exp(-std::pow(std::log(DM) - mu, 2) / (2.0 * sigma_host * sigma_host)) 
                / (sigma_host * std::sqrt(2.0 * PI) * DM);
 
@@ -40,11 +43,20 @@ private:
     long double pdf_DM_cosmo(double DM, long double C_0, long double A, double F, double z) const {
         // consider alpha==beta==3
 
+        if (DM == 0){
+            DM=1e-6;
+        }
+
+        if (std::isinf(C_0) || std::isnan(C_0) || std::isinf(A) || std::isnan(A)) {
+        std::cerr << "Invalid C_0 or A values" << std::endl;
+        return 0.0;
+    }
+
         long double result = A * std::pow(DM , -3) * std::exp(-std::pow(std::pow(DM, -3) - C_0 , 2) * z
             / (2 * 9 * F * F));
 
         
-        if (std::isnan(result)) {
+        if (std::isnan(result) || std::isnan(result)) {
             std::cout << "Private Variable A: "<< A;
             std::cout << "Private Variable exp: "<< std::exp(-std::pow(std::pow(DM, -3) - C_0 , 2)/ (2 * 9 * F * F));
             std::cout << "Private Variable in exp: "<< -std::pow(std::pow(DM, -3) - C_0 , 2)/ (2 * 9 * F * F);
@@ -57,21 +69,43 @@ private:
     }
 
     long double findC0(double f, double z) const {
-    // // Simplified C0 finding using numerical method
-    // auto average_ratio = [&](double c_0) {
-    //     // auto x_pdf = [&](double x) { 
-    //     //     return x * pdf_DM_cosmo(x, c_0, 1.0, f, z);
-    //     // };
-    //     double average = simpsonsRule([&](double x){
-    //         return x * pdf_DM_cosmo(x, c_0, 1.0, f, z);
-    //     }, 0, std::numeric_limits<double>::infinity(), 3);
-    //     double normal = simpsonsRule([&](double x) { 
-    //         return pdf_DM_cosmo(x, c_0, 1.0, f, z); 
-    //     }, 0, std::numeric_limits<double>::infinity(), 3);
+    // auto function = [&](double c_0) {
+    //     // Add safety checks
+    //     if (c_0 <= 0 || std::isinf(c_0) || std::isnan(c_0)) {
+    //         return std::numeric_limits<double>::max();
+    //     }
 
-    //     double result = average / normal - 1.0;
+    //     try {
+    //         double result = rombergIntegration([&](double x){
+    //             // Prevent extremely small or zero values
+    //             if (x <= 0) x = 1e-10;
 
-    auto function = [&](double c_0) {
+    //             // Additional safety in pdf calculation
+    //             double pdf_val = pdf_DM_cosmo(x, c_0, 1.0, f, z);
+                
+    //             // Handle potential numerical issues
+    //             if (std::isnan(pdf_val) || std::isinf(pdf_val)) {
+    //                 std::cout << "pdf_val"<< pdf_val;
+    //                 return 0.0;
+    //             }
+
+    //             return (x - 1.0) * pdf_val;
+    //         }, 0, 10.0);  // Limit upper bound instead of infinity
+
+    //         // Check for reasonable result
+    //         if (std::isnan(result) || std::isinf(result)) {
+    //             return std::numeric_limits<double>::max();
+    //         }
+
+    //         return result;
+    //     }
+    //     catch (const std::exception& e) {
+    //         std::cerr << "Error in C0 integration: " << e.what() << std::endl;
+    //         return std::numeric_limits<double>::max();
+    //     }
+    // };
+
+        auto function = [&](double c_0) {
         // double result = simpsonsRule([&](double x){
         double result = rombergIntegration([&](double x){
             return (x - 1.0) * pdf_DM_cosmo(x, c_0, 1.0, f, z);
@@ -87,10 +121,53 @@ private:
         return result;
     };
 
-    // Simplified root-finding (replace with more robust method in practice)
-    // return brentMethod(function, 0.1, 10.0);
-    return bisection(function, 0.1, 10.0);
+    std::cout << "function:"<< function(2.0);
+    std::cout << std::endl;
+    // Wider search range and more robust root-finding
+    try {
+        return bisection(function, 0.01, 20.0);
+    }
+    catch (const std::exception& e) {
+        std::cerr << "Bisection method failed: " << e.what() << std::endl;
+        throw std::runtime_error("Unable to find C0");
+    }
 }
+
+//     long double findC0(double f, double z) const {
+//     // // Simplified C0 finding using numerical method
+//     // auto average_ratio = [&](double c_0) {
+//     //     // auto x_pdf = [&](double x) { 
+//     //     //     return x * pdf_DM_cosmo(x, c_0, 1.0, f, z);
+//     //     // };
+//     //     double average = simpsonsRule([&](double x){
+//     //         return x * pdf_DM_cosmo(x, c_0, 1.0, f, z);
+//     //     }, 0, std::numeric_limits<double>::infinity(), 3);
+//     //     double normal = simpsonsRule([&](double x) { 
+//     //         return pdf_DM_cosmo(x, c_0, 1.0, f, z); 
+//     //     }, 0, std::numeric_limits<double>::infinity(), 3);
+
+//     //     double result = average / normal - 1.0;
+
+//     auto function = [&](double c_0) {
+//         // double result = simpsonsRule([&](double x){
+//         double result = rombergIntegration([&](double x){
+//             return (x - 1.0) * pdf_DM_cosmo(x, c_0, 1.0, f, z);
+//         //}, 0, std::numeric_limits<double>::infinity(), 3);
+//         }, 0, std::numeric_limits<double>::infinity());
+
+//         //std::cout << "Private Variable normal: "<< result;
+//         //std::cout << std::endl;
+//         if (std::isnan(result)) {
+//             throw std::runtime_error("Finding C0 in NaN");
+//         }
+
+//         return result;
+//     };
+
+//     // Simplified root-finding (replace with more robust method in practice)
+//     // return brentMethod(function, 0.1, 10.0);
+//     return bisection(function, 0.1, 10.0);
+// }
 
     long double findA(long double C_0, double F, double z){
         //double integral = simpsonsRule([&](double x) { 
@@ -181,6 +258,8 @@ public:
         double fb = f(b);
 
         if (fa * fb >=0) {
+            std::cout << "fa: "<< fa;
+            std::cout << "fb: "<< fb;
             throw std::runtime_error("Choose larger scale for bisection method");
         }
 
@@ -364,8 +443,6 @@ double rombergIntegration(const std::function<double(double)>& f,
         
         R[i][0] = 0.5 * R[i-1][0] + h * sum;
 
-
-        // from here
         // Richardson extrapolation
         for (int j = 1; j <= i; ++j) {
             R[i][j] = (std::pow(4.0, j) * R[i][j-1] - R[i-1][j-1]) / 

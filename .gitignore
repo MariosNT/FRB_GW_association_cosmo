@@ -163,3 +163,5 @@ cython_debug/
 .DS_store
 Notebooks/C_0_z.csv
 /.vscode
+Notebooks/FRB_pdf.out
+Notebooks/posterior_results.csv
