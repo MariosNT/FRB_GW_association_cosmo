@@ -11,12 +11,14 @@
 
 class FRBProbabilityCalculator {
 
-private:
+//private:
+
+public:
     // Constants (you might want to define more from the original Python script)
     const double PI = 3.14159265358979323846;
 
     // Utility functions to mimic numpy/scipy functionality
-    long double PDF_DM_host(double DM, double e_mu, double sigma_host) {
+    double PDF_DM_host(double DM, double e_mu, double sigma_host) {
         double mu = std::log(e_mu);
 
         if (DM == 0){
@@ -40,11 +42,11 @@ private:
     // }
 
     // pdf_DM_IGM
-    long double pdf_DM_cosmo(double DM, long double C_0, long double A, double F, double z) const {
+    double pdf_DM_cosmo(double DM, double C_0, double A, double F, double z) const {
         // consider alpha==beta==3
 
         if (DM == 0){
-            DM=1e-6;
+            DM=1e-100;
         }
 
         if (std::isinf(C_0) || std::isnan(C_0) || std::isinf(A) || std::isnan(A)) {
@@ -52,7 +54,7 @@ private:
         return 0.0;
     }
 
-        long double result = A * std::pow(DM , -3) * std::exp(-std::pow(std::pow(DM, -3) - C_0 , 2) * z
+        double result = A * std::pow(DM , -3) * std::exp(-std::pow(std::pow(DM, -3) - C_0 , 2) * z
             / (2 * 9 * F * F));
 
         
@@ -68,61 +70,27 @@ private:
 
     }
 
-    long double findC0(double f, double z) const {
-    // auto function = [&](double c_0) {
-    //     // Add safety checks
-    //     if (c_0 <= 0 || std::isinf(c_0) || std::isnan(c_0)) {
-    //         return std::numeric_limits<double>::max();
-    //     }
+    double find_pdf_DM_cosmo(double F, double z, double c_0=1.0, double tolerance = 1e-10) const{
+        int i=1;
+        while(pdf_DM_cosmo(std::pow(10,i), 1.0 ,1.0 ,F,z)>=tolerance){
+            i++;
+        }
+        return std::pow(10,i);
+    }
 
-    //     try {
-    //         double result = rombergIntegration([&](double x){
-    //             // Prevent extremely small or zero values
-    //             if (x <= 0) x = 1e-10;
-
-    //             // Additional safety in pdf calculation
-    //             double pdf_val = pdf_DM_cosmo(x, c_0, 1.0, f, z);
-                
-    //             // Handle potential numerical issues
-    //             if (std::isnan(pdf_val) || std::isinf(pdf_val)) {
-    //                 std::cout << "pdf_val"<< pdf_val;
-    //                 return 0.0;
-    //             }
-
-    //             return (x - 1.0) * pdf_val;
-    //         }, 0, 10.0);  // Limit upper bound instead of infinity
-
-    //         // Check for reasonable result
-    //         if (std::isnan(result) || std::isinf(result)) {
-    //             return std::numeric_limits<double>::max();
-    //         }
-
-    //         return result;
-    //     }
-    //     catch (const std::exception& e) {
-    //         std::cerr << "Error in C0 integration: " << e.what() << std::endl;
-    //         return std::numeric_limits<double>::max();
-    //     }
-    // };
+    double findC0(double f, double z) const {
 
         auto function = [&](double c_0) {
         // double result = simpsonsRule([&](double x){
         double result = rombergIntegration([&](double x){
             return (x - 1.0) * pdf_DM_cosmo(x, c_0, 1.0, f, z);
-        //}, 0, std::numeric_limits<double>::infinity(), 3);
-        }, 0, std::numeric_limits<double>::infinity());
-
-        //std::cout << "Private Variable normal: "<< result;
-        //std::cout << std::endl;
-        if (std::isnan(result)) {
-            throw std::runtime_error("Finding C0 in NaN");
-        }
+        }, 0, find_pdf_DM_cosmo(f,z,c_0));
+        //std::numeric_limits<double>::infinity());
 
         return result;
     };
 
-    std::cout << "function:"<< function(2.0);
-    std::cout << std::endl;
+    // std::cout << "function:"<< function(1.0)<< std::endl;
     // Wider search range and more robust root-finding
     try {
         return bisection(function, 0.01, 20.0);
@@ -133,7 +101,7 @@ private:
     }
 }
 
-//     long double findC0(double f, double z) const {
+//     double findC0(double f, double z) const {
 //     // // Simplified C0 finding using numerical method
 //     // auto average_ratio = [&](double c_0) {
 //     //     // auto x_pdf = [&](double x) { 
@@ -169,14 +137,14 @@ private:
 //     return bisection(function, 0.1, 10.0);
 // }
 
-    long double findA(long double C_0, double F, double z){
-        //double integral = simpsonsRule([&](double x) { 
+    double findA(double C_0, double F, double z){
+        //double integral = simpsonsRule([&](double x) {
         double integral = rombergIntegration([&](double x){
             return pdf_DM_cosmo(x, C_0, 1.0, F, z); 
-        //}, 0, std::numeric_limits<double>::infinity(), 3);
-        }, 0, std::numeric_limits<double>::infinity());
+        //}, 0, std::numeric_limits<double>::infinity());
+        }, 0, find_pdf_DM_cosmo(F,z,C_0));
 
-        long double result = 1.0/integral;
+        double result = 1.0/integral;
         if (std::isnan(result)) {
             throw std::runtime_error("Finding A in NaN");
         }
@@ -184,16 +152,16 @@ private:
         return result;
     };
 
-    long double dDM_integrand_w(double z, double Om, double w) const {
-            return (1.0+z)/std::sqrt(std::pow(Om*(1.0+z),3)+(1-Om)*std::pow((1+z),(3*(1+w))));
+    double dDM_integrand_w(double z, double Om, double w) const {
+            return (1.0+z)/std::sqrt(Om*std::pow(1.0+z,3)+(1-Om)*std::pow((1+z),(3*(1+w))));
         };
     
-    long double DM_IGM_O_bh_70(double z, double O_bh_70) const {
+    double DM_IGM_O_bh_70(double z, double O_bh_70) const {
         // Constants (you may need to adjust these to match the original implementation)
-        const double C_LIGHT = 299792458;  // m/s
-        const double KM_2_MPC = 3.24078e-20;  // km to Mpc conversion
+        const double C_LIGHT = 299792458.0;  // m/s
+        const double KM_2_MPC = 3.24e-20; //3.24078e-20;  // km to Mpc conversion
         const double G_NEWTON = 6.67430e-11;  // m^3 kg^-1 s^-2
-        const double M_PROTON = 1.672621898e-27;  // kg
+        const double M_PROTON = 1.67262192369e-27; //1.672621898e-27;  // kg
         const double DM_2_PCCM3 = 3.24e-23;  // conversion factor
         const double f_IGM = 0.83;  // default value, adjust as needed
         const double OMEGA_MATTER = 0.2865;
@@ -204,7 +172,7 @@ private:
 
         // Compute integral (simplified - you may need to replace with a more accurate integration method)
         //long double integral = simpsonsRule([&](double x) { 
-        long double integral = rombergIntegration([&](double x) { 
+        double integral = rombergIntegration([&](double x) { 
             return dDM_integrand_w(x, OMEGA_MATTER, w); 
         //}, 0, z, 3);
         }, 0, z);
@@ -217,7 +185,7 @@ private:
         double unit_transform = DM_2_PCCM3;
 
         // Compute DM
-        long double DM = unit_transform * factor * integral;
+        double DM = unit_transform * factor * integral;
 
         if (std::isnan(DM)) {
             throw std::runtime_error("Finding DM_IGM_O_bh_70 in NaN");
@@ -226,24 +194,32 @@ private:
     return DM;
 }
 
-    long double PDF_DM_cosmo(double DM, double O_bh_70, double F, double z){
-        long double C_0 = findC0(F, z);
-        long double A = findA(C_0, F, z);
-        long double delta = DM/DM_IGM_O_bh_70(z, O_bh_70);
-        //std::cout << "Private Variable delta: "<< delta;
-        //std::cout << std::endl;
-        return pdf_DM_cosmo(delta, C_0, A, F, z);
-    };
+    // double PDF_DM_cosmo(double DM, double O_bh_70, double F, double z){
+    //     double C_0 = findC0(F, z);
+    //     double A = findA(C_0, F, z);
+    //     double delta = DM/DM_IGM_O_bh_70(z, O_bh_70);
+    //     //std::cout << "Private Variable delta: "<< delta;
+    //     //std::cout << std::endl;
+    //     return pdf_DM_cosmo(delta, C_0, A, F, z);
+    // };
 
-public:
+//public:
 
-    long double calculate_dm_probability(
+    double calculate_dm_probability(
         double DM_ext, double z, double F, double O_bh_70, double sigma_host, double e_mu
     ) {
+
+        double C_0 = findC0(F, z);
+        double A = findA(C_0, F, z);
+        double DM_std = DM_IGM_O_bh_70(z,O_bh_70);
+        double delta;
+
         //double integrand = simpsonsRule([&](double DM_host) {
         double integrand = rombergIntegration([&](double DM_host) {
             double p_host_val = PDF_DM_host(DM_host, e_mu, sigma_host);
-            double p_cosmo_val = PDF_DM_cosmo(DM_ext - DM_host/(1.0+z), O_bh_70, F, z);
+            delta = (DM_ext - DM_host/(1+z))/DM_std;
+            //double p_cosmo_val = PDF_DM_cosmo(DM_ext - DM_host/(1.0+z), O_bh_70, F, z);
+            double p_cosmo_val = pdf_DM_cosmo(delta, C_0, A, F, z);
             return p_host_val * p_cosmo_val;
         //}, 0, DM_ext, 3);
         }, 0, DM_ext);
@@ -408,7 +384,8 @@ double rombergIntegration(const std::function<double(double)>& f,
                           double b, 
                           double tolerance = 1e-8, 
                           int max_iterations = 20) const {
-    // Handle infinite upper limit by using a change of variable
+    //Handle infinite upper limit by using a change of variable
+
     auto transformedF = [f, a, b](double t) {
         if (b == std::numeric_limits<double>::infinity()) {
             // variable replace：x = a + t / (1 - t)
@@ -420,41 +397,45 @@ double rombergIntegration(const std::function<double(double)>& f,
         else{
             // Integration x [a, b] to t [0,1]
             double x = a + t * (b - a);
-            return f(t) * (b-a);
+            return f(x) * (b-a);
         }
     };
 
-
-    std::vector<std::vector<double>> R(max_iterations, std::vector<double>(max_iterations, 0.0));
+    //max_iterations × max_iterations all zero matrix
+    std::vector<std::vector<double>> R(max_iterations, std::vector<double>(max_iterations, 0.0)); 
     
     // Trapezoidal rule for first iteration
     R[0][0] = (transformedF(0.0) + transformedF(1.0)) / 2.0;
+    //R[0][0] = (b-a) * (f(a) + f(b)) / 2.0;
 
-    for (int i = 1; i < max_iterations; ++i) {
+
+    for (int i = 1; i < max_iterations; i++) {
         // Composite trapezoidal rule
+        //double h = (b-a) * std::pow(0.5, i);
         double h = std::pow(0.5, i);
         double sum = 0.0;
-        int steps = 1 << i;  // 2^i
+        int k_max = std::pow(2, i-1);
         
-        for (int j = 1; j < steps; j += 2) {
-            double t = j * h;
-            sum += transformedF(t);
+        for (int j = 1; j <= k_max; j++) {
+            double c = (2.0*j-1.0) * h;//+ a;
+            sum += transformedF(c); // f(c);
         }
         
         R[i][0] = 0.5 * R[i-1][0] + h * sum;
 
         // Richardson extrapolation
-        for (int j = 1; j <= i; ++j) {
+        for (int j = 1; j <= i; j++) {
             R[i][j] = (std::pow(4.0, j) * R[i][j-1] - R[i-1][j-1]) / 
                       (std::pow(4.0, j) - 1);
         }
 
-        // Check for convergence
-        if (std::abs(R[i][i] - R[i][i-1]) < tolerance) {
-            return R[i][i];
-        }
+        // // Check for convergence
+        // if (std::abs(R[i][i] - R[i][i-1]) < tolerance) {
+        //     return R[i][i];
+        // }
     }
 
+    //std::cout << "max_iterations may not enough for tolerance setting"<<std::endl;
     return R[max_iterations-1][max_iterations-1];
 
 
@@ -582,54 +563,82 @@ double rombergIntegration(const std::function<double(double)>& f,
 
         outfile.close();
     }
+
+
+double test_f(double f, double z) {
+
+    double result = rombergIntegration([&](double x){
+            return (x - 1.0) * pdf_DM_cosmo(x, 3.0, 1.0, f, z);
+        }, 0, 10000, 1e-8, 20);
+        //std::numeric_limits<double>::infinity());
+
+        return result;
+}
+
 };
 
-int main() {
+int main(){
+
     FRBProbabilityCalculator calculator;
+    double integration;
+    double p1;
 
-    // test
-    // double simpsons_result = calculator.simpsonsRule(
-    //     [&](double x){ return 1.0/std::pow(x,2); }, 0.5, std::numeric_limits<double>::infinity(), 5
-    // );
+    p1=calculator.calculate_dm_probability(300,0.2,0.1,0.05,0.25,50);
+    std::cout << "p1="<<p1<<std::endl;
 
-    // std::cout << "Simpson's result: " << simpsons_result << std::endl;
-    // double p;
-    // try{
-    //     p = calculator.calculate_dm_probability(100,0.2,0.1,0.05,0.25,50);
-    // }
-    // catch (const std::exception& e) {
-    //     std::cout << "Error: " << e.what() << std::endl;
-    // }
-    // printf("%f\n", p);
-
-    // Define parameter ranges (same as in Python script)
-    std::vector<double> F_array = {0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5};
-    std::vector<double> O_bh_70_array = {0.015, 0.035, 0.055, 0.075, 0.095};
-    std::vector<double> sigma_host_array = {0.2, 0.6, 1.0, 1.4, 1.8};
-    std::vector<double> e_mu_array = {20, 60, 100, 140, 180};
-    std::vector<std::vector<std::vector<std::vector<double>>>> posterior_4D;
-
-    // Prepare data (you'll need to load actual data similar to the Python script)
-    std::vector<std::pair<double, double>> data = {
-        {50.5, 0.3}, // example entry: {DM_frb, z}
-        {75.2, 0.5}  // Add more real data entries
-    };
-
-    // Calculate posterior
-    try{
-        posterior_4D = calculator.calculate_posterior_4D(
-            F_array, O_bh_70_array, sigma_host_array, e_mu_array, data
-        );
-    }
-    catch (const std::exception& e) {
-        std::cerr << "Error: " << e.what() << std::endl;
-    }
-
-    // Save to CSV
-    calculator.save_posterior_to_csv(
-        posterior_4D, F_array, O_bh_70_array, 
-        sigma_host_array, e_mu_array, "posterior_results.csv"
-    );
+    integration=calculator.test_f(0.1,0.2);
+    //integration=calculator.findC0(0.1,0.2);
+    std::cout << "integration="<<integration<<std::endl;
 
     return 0;
 }
+
+// int main() {
+//     FRBProbabilityCalculator calculator;
+
+//     // test
+//     // double simpsons_result = calculator.simpsonsRule(
+//     //     [&](double x){ return 1.0/std::pow(x,2); }, 0.5, std::numeric_limits<double>::infinity(), 5
+//     // );
+
+//     // std::cout << "Simpson's result: " << simpsons_result << std::endl;
+//     // double p;
+//     // try{
+//     //     p = calculator.calculate_dm_probability(100,0.2,0.1,0.05,0.25,50);
+//     // }
+//     // catch (const std::exception& e) {
+//     //     std::cout << "Error: " << e.what() << std::endl;
+//     // }
+//     // printf("%f\n", p);
+
+//     // Define parameter ranges (same as in Python script)
+//     std::vector<double> F_array = {0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5};
+//     std::vector<double> O_bh_70_array = {0.015, 0.035, 0.055, 0.075, 0.095};
+//     std::vector<double> sigma_host_array = {0.2, 0.6, 1.0, 1.4, 1.8};
+//     std::vector<double> e_mu_array = {20, 60, 100, 140, 180};
+//     std::vector<std::vector<std::vector<std::vector<double>>>> posterior_4D;
+
+//     // Prepare data (you'll need to load actual data similar to the Python script)
+//     std::vector<std::pair<double, double>> data = {
+//         {50.5, 0.3}, // example entry: {DM_frb, z}
+//         {75.2, 0.5}  // Add more real data entries
+//     };
+
+//     // Calculate posterior
+//     try{
+//         posterior_4D = calculator.calculate_posterior_4D(
+//             F_array, O_bh_70_array, sigma_host_array, e_mu_array, data
+//         );
+//     }
+//     catch (const std::exception& e) {
+//         std::cerr << "Error: " << e.what() << std::endl;
+//     }
+
+//     // Save to CSV
+//     calculator.save_posterior_to_csv(
+//         posterior_4D, F_array, O_bh_70_array, 
+//         sigma_host_array, e_mu_array, "posterior_results.csv"
+//     );
+
+//     return 0;
+// }
