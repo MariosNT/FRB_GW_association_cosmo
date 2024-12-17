@@ -194,6 +194,7 @@ public:
     return DM;
 }
 
+    // // too slow if get C_0 and A inside function
     // double PDF_DM_cosmo(double DM, double O_bh_70, double F, double z){
     //     double C_0 = findC0(F, z);
     //     double A = findA(C_0, F, z);
@@ -332,53 +333,6 @@ public:
 
     }
 
-
-//     double simpsonsRule(const std::function<double(double)>& func, double a, double b, int n) const {
-//     // Handle improper integrals with large upper limit
-
-//     if (a==0){
-//             a=1e-6;
-//         }
-
-//     if (std::isinf(b)) {
-//         // Adaptive technique for infinite upper limit
-//         double result = 0.0;
-//         double x = a;
-//         double step = 1.0;
-
-//         while (x < 1000) {  // Truncate at a large finite value
-//             double x_next = x + step;
-//             result += (step / 6.0) * (
-//                 func(x) + 
-//                 4.0 * func((x + x_next) / 2.0) + 
-//                 func(x_next)
-//             );
-//             x = x_next;
-//             step *= 1.5;  // Exponential step increase
-//         }
-        
-//         return result;
-//     }
-    
-//     // Standard Simpson's rule for finite limits
-//     if (n % 2 != 0) n += 1;  // Ensure even number of subintervals
-    
-//     double h = (b - a) / n;
-//     double result = func(a) + func(b);
-    
-//     for (int i = 1; i < n; i += 2) {
-//         double x = a + i * h;
-//         result += 4.0 * func(x);
-//     }
-    
-//     for (int i = 2; i < n - 1; i += 2) {
-//         double x = a + i * h;
-//         result += 2.0 * func(x);
-//     }
-    
-//     return result * h / 3.0;
-// }
-
 double rombergIntegration(const std::function<double(double)>& f, 
                           double a, 
                           double b, 
@@ -437,45 +391,6 @@ double rombergIntegration(const std::function<double(double)>& f,
 
     //std::cout << "max_iterations may not enough for tolerance setting"<<std::endl;
     return R[max_iterations-1][max_iterations-1];
-
-
-    // // Boundary for infinite limit integration
-    // auto transformedIntegrationBounds = [&](double t) {
-    //     return b == std::numeric_limits<double>::infinity() ? 1.0 : b;
-    // };
-
-    // std::vector<std::vector<double>> R(max_iterations, std::vector<double>(max_iterations, 0.0));
-    
-    // // Trapezoidal rule for first iteration
-    // R[0][0] = (transformedIntegrationBounds(1.0) - 0.0) * 
-    //           (transformedF(0.0) + transformedF(1.0)) / 2.0;
-
-    // for (int i = 1; i < max_iterations; ++i) {
-    //     // Composite trapezoidal rule
-    //     double h = std::pow(0.5, i);
-    //     double sum = 0.0;
-    //     int steps = 1 << i;
-        
-    //     for (int j = 1; j < steps; j += 2) {
-    //         double t = j * h;
-    //         sum += transformedF(t);
-    //     }
-        
-    //     R[i][0] = 0.5 * R[i-1][0] + h * sum;
-
-    //     // Richardson extrapolation
-    //     for (int j = 1; j <= i; ++j) {
-    //         R[i][j] = (std::pow(4.0, j) * R[i][j-1] - R[i-1][j-1]) / 
-    //                   (std::pow(4.0, j) - 1);
-    //     }
-
-    //     // Check for convergence
-    //     if (std::abs(R[i][i] - R[i][i-1]) < tolerance) {
-    //         return R[i][i];
-    //     }
-    // }
-
-    // return R[max_iterations-1][max_iterations-1];
 }
 
 
