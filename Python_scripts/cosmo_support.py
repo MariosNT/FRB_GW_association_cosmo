@@ -8,6 +8,25 @@ from config import *
 
 ###############################################
 
+def Hubble_function(z, H0, Omega_m):
+    """
+    Hubble function
+    """
+    return np.sqrt(H0**2*(Omega_m*(1+z)**3+(1-Omega_m)))
+
+
+def rate_function(z):
+    rate = (1+2*z)*(z<=1)+3/4*(5-z)*(z>1)*(z<5)
+    
+    return rate
+
+def D_comoving(z, H0, Omega_m):
+    return FlatLambdaCDM(H0, Omega_m).comoving_distance(z).value
+
+
+###############################################
+
+
 def dDL_integrand_w(z, Om, w):
     """
     Function of the integrand of the dL formula, 
