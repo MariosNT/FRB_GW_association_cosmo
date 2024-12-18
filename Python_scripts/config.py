@@ -34,22 +34,23 @@ import seaborn as sns
 ### Constants and Parameters
 
 ## Defining useful constants (SI)
-OMEGA_MATTER = 0.2865
+# # Updated values according to Planck18 # previous values
+OMEGA_MATTER = 0.30966 #0.2865
 W_LAMBDA = -1
-HUBBLE = 69.3
+HUBBLE = 67.66 # 69.3
 
 f_IGM = 0.83
-OMEGA_BARYONS = 0.049
+OMEGA_BARYONS = 0.04897 # 0.049
 PI = const.pi
 C_LIGHT = const.c
 G_NEWTON = const.G
 M_PROTON = const.m_p
 
-KM_2_MPC = 3.24e-20 
+KM_2_MPC = 3.240779-20 # 3.24e-20 
 HUBBLE_TIME = HUBBLE*KM_2_MPC  # Hubble in 1/seconds
 
-DM_2_PCCM3 = 3.24e-23  # Multiply with this to get from the SI result to pc/cm^3
-MPC_2_M = 3.086e+22  
+DM_2_PCCM3 = 3.240779-23 # 3.24e-23  # Multiply with this to get from the SI result (1/m**2) to pc/cm^3
+MPC_2_M = 3.085678e+22 # 3.086e+22  
 
 SNR_GW = 8
 DL_ERROR_PERC = 10
