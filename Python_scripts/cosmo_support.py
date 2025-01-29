@@ -8,6 +8,25 @@ from config import *
 
 ###############################################
 
+def Hubble_function(z, H0, Omega_m):
+    """
+    Hubble function
+    """
+    return np.sqrt(H0**2*(Omega_m*(1+z)**3+(1-Omega_m)))
+
+
+def rate_function(z):
+    rate = (1+2*z)*(z<=1)+3/4*(5-z)*(z>1)*(z<5)
+    
+    return rate
+
+def D_comoving(z, H0, Omega_m):
+    return FlatLambdaCDM(H0, Omega_m).comoving_distance(z).value
+
+
+###############################################
+
+
 def dDL_integrand_w(z, Om, w):
     """
     Function of the integrand of the dL formula, 
@@ -139,7 +158,7 @@ def sigma_dL(z, H0, Om, w=-1, method='Wei'):
     
     Output
     ---------
-    s_dL : distance error in Mpc
+    s_dL : distance erro in Mpc
     """      
     
     dL = luminosity_distance(z, H0, Om, w)
@@ -188,33 +207,3 @@ def sigma_dLDM(dL, DM, error_dL):
     s_dLDM = np.sqrt(first_term+second_term)
     
     return s_dLDM
-
-
-
-
-
-
-
-######################################
-
-# def dDM_integrand(z, Om):
-#     """
-#     Function that it inside the integral of the DM formula.
-    
-#     Input
-#     ----------
-#     z : redshift
-#     Om: Omega matter
-#     """
-#     return (1+z)/np.sqrt(Om*(1+z)**3+1-Om)
-
-# def dispersion_measure(z, Om, H0):
-
-#     factor = 3*C_LIGHT*(H0*KM_2_MPC)*OMEGA_BARYONS*f_IGM/(8*PI*G_NEWTON*M_PROTON)*(7/8)
-#     integral = quad(dDM_integrand, 0, z, args=(Om))[0]
-    
-#     unit_transform = 3.24e-23
-    
-#     DM = unit_transform*factor*integral
-    
-#     return DM
