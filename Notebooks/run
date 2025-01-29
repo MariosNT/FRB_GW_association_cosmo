@@ -1,2 +1,25 @@
-g++ FRB_DM_z.cpp -o FRB_pdf.out
-./FRB_pdf.out
+#!/bin/bash
+
+# Set source file and output file names
+SOURCE_FILE="FRB_DM_z.cpp"
+OUTPUT_FILE="FRB_pdf.out"
+
+# Measure compilation time
+echo "Compiling the program..."
+COMPILE_TIME=$( { time g++ "$SOURCE_FILE" -o "$OUTPUT_FILE"; } 2>&1 )
+
+# Check if compilation was successful
+if [ $? -eq 0 ]; then
+    echo "Compilation successful"
+    echo "Compilation time:"
+    echo "$COMPILE_TIME"
+    
+    echo "Running the program..."
+    # Measure run time
+    RUN_TIME=$( { time ./"$OUTPUT_FILE"; } 2>&1 )
+    
+    echo "Program execution time:"
+    echo "$RUN_TIME"
+else
+    echo "Compilation failed, please check the source code"
+fi
