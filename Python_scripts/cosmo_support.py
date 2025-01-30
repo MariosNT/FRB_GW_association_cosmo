@@ -3,7 +3,7 @@
 ###############################################
 
 from config import *
-
+from support import normalise
 
 
 ###############################################
@@ -25,6 +25,55 @@ def D_comoving(z, H0, Omega_m):
 
 
 ###############################################
+
+
+def draw_redshift_distribution(z_array, H0=HUBBLE, Omega_m=OMEGA_MATTER, N_draws=50, method='rates'):
+    """
+    Function that generates random redshifts for our GWs/FRB events.
+
+    Input
+    ----------
+    z_array : redshift range from which to draw samples
+    
+    H0 : Hubble constant [km/s/Mpc]
+    
+    Omega_m : Omega matter
+    
+    N_draws : Number of mock redshifts to draw
+    
+    method : Choose between `rates` and `uniform`. Defines the method used to draw random samples.
+    
+    Output
+    ---------
+    redshift_draws : Mock redshift observations
+    """
+    
+    if method == 'rates':
+        Dc_squared = D_comoving(z_array, H0, Omega_m)**2
+        rate = rate_function(z_array)
+        Hz = Hubble_function(z_array, H0, Omega_m)
+
+        pdf = normalise(4*np.pi*Dc_squared*rate/(Hz*(1+z_array)))
+        
+        redshift_draws = np.random.choice(z_array, p=pdf, replace=True, size=N_draws)
+        
+    elif method == 'uniform':
+        redshift_draws = np.random.choice(z_array, replace=False, size=N_draws)
+        
+    else:
+        raise Exception("Wrong method chosen! Choose between 'rates' and 'uniform'.")
+        
+    ## Check if we have many events with the same redshift
+    if np.unique(redshift_draws).size/N_draws < 0.8:
+        raise Exception("Many replications in redshifts drawn. Retry the sampling!")      
+    
+    return redshift_draws
+
+
+
+###############################################
+
+
 
 
 def dDL_integrand_w(z, Om, w):
