@@ -105,7 +105,7 @@ def dDM_integrand_w(z, Om, w):
     
     w : DE EoS parameter (w=-1 for Λ)
     """
-    return (1+z)/np.sqrt(Om*(1+z)**3+(1-Om)*(1+z)**(3*(1+w)))
+    return (1+0.3*z/(1+z))*(1+z)/np.sqrt(Om*(1+z)**3+(1-Om)*(1+z)**(3*(1+w)))
 
 
 def dispersion_measure(z, H0, Om, w=-1):
