@@ -329,8 +329,8 @@ def C0_sigma(sigma, x_min=0, x_max=np.inf, alpha=3, beta=3):
     """
     
     def objective_function(C_0):
-        result1,_= quad(lambda x: x*pdf_DM_cosmo(x, C_0, 1, sigma, alpha, beta), 0, np.inf)
-        result2,_= quad(lambda x: pdf_DM_cosmo(x, C_0, 1, sigma, alpha, beta), 0, np.inf)
+        result1,_= quad(lambda x: x*pdf_DM_cosmo(x, C_0, 1, sigma, alpha, beta), x_min, x_max)
+        result2,_= quad(lambda x: pdf_DM_cosmo(x, C_0, 1, sigma, alpha, beta), x_min, x_max)
       
         return result1-result2
 
@@ -349,7 +349,7 @@ def C0_sigma(sigma, x_min=0, x_max=np.inf, alpha=3, beta=3):
         return None
     
     
-def find_C0(F, z, alpha=3, beta=3, method="interpolation", sigmas=sigmas, C0s=C0s, x_min=0, x_max=np.inf):
+def find_C0(F, z, sigmas, C0s, alpha=3, beta=3, method="interpolation", x_min=0, x_max=np.inf):
     """
     Use fsolve to find C_0 when to_C_0 = 1
     
@@ -375,6 +375,18 @@ def find_C0(F, z, alpha=3, beta=3, method="interpolation", sigmas=sigmas, C0s=C0
         print("Do accurate method")
         
         sigma=f_sigma_DM(F,z)
-        C0 = C0_sigma(sigma, x_min=0, x_max=np.inf, alpha=3, beta=3)
+        C0 = C0_sigma(sigma, x_min=x_min, x_max=x_max, alpha=3, beta=3)
     
         return C0    
+    
+
+def find_A(C_0, F, z, alpha=3, beta=3, x_min=0, x_max=np.inf):
+    sigma=f_sigma_DM(F,z)
+    pdf, error = quad(lambda x: pdf_DM_cosmo(x, C_0, 1, sigma, alpha, beta),  x_min, x_max)
+    
+    try:
+        return 1/pdf
+            
+    except Exception as e:
+        print(f"find_A error，pdf={pdf}, C_0={C_0}, F={F}, z={z}, error: {e}")
+        return None    
