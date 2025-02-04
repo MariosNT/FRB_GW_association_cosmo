@@ -74,7 +74,9 @@ def draw_redshift_distribution(z_array, H0=HUBBLE, Omega_m=OMEGA_MATTER, N_draws
 ###############################################
 
 
-
+def f_IGM_redshift(z, alpha=0.11, f_IGM_0 = f_IGM):
+    return f_IGM_0*(1+alpha*z/(1+z))
+    
 
 def dDL_integrand_w(z, Om, w):
     """
@@ -92,7 +94,7 @@ def dDL_integrand_w(z, Om, w):
     return 1/np.sqrt(Om*(1+z)**3+(1-Om)*(1+z)**(3*(1+w)))
 
 
-def dDM_integrand_w(z, Om, w):
+def dDM_integrand_w(z, Om, w, alpha=0.11, f_IGM_0 = f_IGM):
     """
     Function of the integrand of the DM formula, 
     eq. (12) in [arXiv:1805.12265].
@@ -105,10 +107,12 @@ def dDM_integrand_w(z, Om, w):
     
     w : DE EoS parameter (w=-1 for Λ)
     """
-    return (1+0.3*z/(1+z))*(1+z)/np.sqrt(Om*(1+z)**3+(1-Om)*(1+z)**(3*(1+w)))
+    f_IGM_z = f_IGM_redshift(z, alpha, f_IGM_0)
+    
+    return f_IGM_z*(1+z)/np.sqrt(Om*(1+z)**3+(1-Om)*(1+z)**(3*(1+w)))
 
 
-def dispersion_measure(z, H0, Om, w=-1):
+def dispersion_measure(z, H0, Om, w=-1, alpha=0.11, f_IGM_0 = f_IGM):
     """
     Function of the DM formula, 
     eq. (12) in [arXiv:1805.12265].
@@ -128,8 +132,8 @@ def dispersion_measure(z, H0, Om, w=-1):
     DM : Dispersion measure [pc/cm^3]
     """    
 
-    factor = 3*C_LIGHT*(H0*KM_2_MPC)*OMEGA_BARYONS*f_IGM/(8*PI*G_NEWTON*M_PROTON)*(7/8)
-    integral = quad(dDM_integrand_w, 0, z, args=(Om, w))[0]
+    factor = 3*C_LIGHT*(H0*KM_2_MPC)*OMEGA_BARYONS/(8*PI*G_NEWTON*M_PROTON)*(7/8)
+    integral = quad(dDM_integrand_w, 0, z, args=(Om, w, alpha, f_IGM_0))[0]
     
     unit_transform = DM_2_PCCM3
     
@@ -256,3 +260,121 @@ def sigma_dLDM(dL, DM, error_dL):
     s_dLDM = np.sqrt(first_term+second_term)
     
     return s_dLDM
+
+
+def sigma_DM_IGM(z, sigma_obs=1.5, sigma_MW=30, sigma_IGM=50, sigma_host=50):
+    """
+    Function that calculated the total error in the dispersion measure of an FRB,
+    eq. (13) in [arXiv:1805.12265].
+    """
+    
+    sigma_total=sigma_obs**2+sigma_MW**2+sigma_IGM**2+(sigma_host/(1+z))**2
+    
+    return np.sqrt(sigma_total)
+
+
+###############################################
+### Macquart PDFs 
+
+
+################
+### PDF HOST ###
+################
+
+def pdf_DM_host(DM, e_mu, sigma_host):
+    # e^\mu with 20-200 pc cm^{-3} and \sigma_{host} in 0.2-2.0
+    mu=np.log(e_mu)
+    
+    pdf=1.0/(sigma_host*np.sqrt(2*np.pi)*DM)*np.exp(-(np.log(DM)-mu)**2/(2*(sigma_host**2)))
+    
+    return pdf
+
+
+def Norm_pdf_host(e_mu,sigma_host):
+    try:
+        int, _=quad_vec(lambda x: pdf_DM_host(x, e_mu, sigma_host), 0, 1e20)
+        
+        return int
+    except:
+        print('Normalization pdf_DM_host error')
+        
+        
+##################
+### PDF COSMIC ###
+##################
+
+def f_sigma_DM(F, z):
+    return F/np.sqrt(z)
+
+
+def pdf_DM_cosmo(Delta, C_0, A, sigma, alpha=3, beta=3):
+    pdf=A*(Delta**(-beta))*np.exp(-((Delta**(-alpha)-C_0)**2)/(2*(alpha**2)*(sigma**2)))
+    return pdf
+
+
+def C0_sigma(sigma, x_min=0, x_max=np.inf, alpha=3, beta=3):
+    """
+    Use fsolve to find C_0 when to_C_0 = 1
+    
+    Parameters:
+    -----------
+    F: float - Structure factor parameter 
+    z: float - Redshift
+    alpha: float - Alpha parameter
+    initial_guess: float - C_0 initial guess
+    
+    Returns:
+    --------
+    float: C_0 or None if solution not found
+    """
+    
+    def objective_function(C_0):
+        result1,_= quad(lambda x: x*pdf_DM_cosmo(x, C_0, 1, sigma, alpha, beta), 0, np.inf)
+        result2,_= quad(lambda x: pdf_DM_cosmo(x, C_0, 1, sigma, alpha, beta), 0, np.inf)
+      
+        return result1-result2
+
+    try:
+        initial_guess=1.0
+        solution = fsolve(objective_function, [initial_guess], full_output=True)
+        
+        if solution[2] == 1:  # Check if solution is found
+            return solution[0][0]
+        else:
+            print(f"find_C0 warning: sigma={sigma}")
+            return None
+            
+    except Exception as e:
+        print(f"find_C0 error, sigma={sigma}, error: {e}")
+        return None
+    
+    
+def find_C0(F, z, alpha=3, beta=3, method="interpolation", sigmas=sigmas, C0s=C0s, x_min=0, x_max=np.inf):
+    """
+    Use fsolve to find C_0 when to_C_0 = 1
+    
+    Parameters:
+    -----------
+    F: float - Structure factor parameter 
+    z: float - Redshift
+    alpha: float - Alpha parameter
+    initial_guess: float - C_0 initial guess
+    
+    Returns:
+    --------
+    float: C_0 or None if solution not found
+    """
+    
+    if (method=="interpolation"):
+        sigma=f_sigma_DM(F,z)
+        DM_sigma = interpolate.interp1d(sigmas, C0s, kind='cubic')
+        C0 = DM_sigma(sigma)
+        return C0
+        
+    else:
+        print("Do accurate method")
+        
+        sigma=f_sigma_DM(F,z)
+        C0 = C0_sigma(sigma, x_min=0, x_max=np.inf, alpha=3, beta=3)
+    
+        return C0    
