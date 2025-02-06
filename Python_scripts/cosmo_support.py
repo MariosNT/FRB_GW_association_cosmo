@@ -141,6 +141,40 @@ def dispersion_measure(z, H0, Om, w=-1, alpha=0.11, f_IGM_0 = f_IGM):
     
     return DM
 
+
+def DM_IGM_O_bh_70(z, O_bh_70, Om=OMEGA_MATTER, w=-1, alpha=0.11, f_IGM_0 = f_IGM):
+    """
+    Function of the DM formula, 
+    eq. (12) in [arXiv:1805.12265].
+    
+    Update to compare with Macquart+ paper
+    
+    Input
+    ----------
+    z : redshift
+    
+    H0 : Hubble constant [km/s/Mpc]
+    
+    Om : Omega matter
+    
+    w : DE EoS parameter (w=-1 for Λ)
+    
+    Output
+    ---------
+    DM : Dispersion measure [pc/cm^3]
+    """    
+    
+    O_bH_0=O_bh_70*70
+
+    factor = 3*C_LIGHT*KM_2_MPC*O_bH_0/(8*PI*G_NEWTON*M_PROTON)*(7/8)
+    integral = quad(dDM_integrand_w, 0, z, args=(Om, w, alpha, f_IGM_0))[0]
+    
+    unit_transform = DM_2_PCCM3
+    
+    DM = unit_transform*factor*integral
+    
+    return DM
+
 def luminosity_distance(z, H0, Om, w=-1):
     """
     Function of the dL formula, 
