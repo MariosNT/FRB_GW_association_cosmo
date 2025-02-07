@@ -147,7 +147,8 @@ def DM_IGM_O_bh_70(z, O_bh_70, Om=OMEGA_MATTER, w=-1, alpha=0.11, f_IGM_0 = f_IG
     Function of the DM formula, 
     eq. (12) in [arXiv:1805.12265].
     
-    Update to compare with Macquart+ paper
+    Update to compare with Macquart+ paper,
+    [arXiv:2005.13161], Eq. (2).
     
     Input
     ----------
