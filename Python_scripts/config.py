@@ -40,7 +40,7 @@ OMEGA_MATTER = 0.30966
 W_LAMBDA = -1
 HUBBLE = 67.66
 
-f_IGM = 0.94
+f_IGM = 0.84
 OMEGA_BARYONS = 0.04897
 PI = const.pi
 C_LIGHT = const.c
