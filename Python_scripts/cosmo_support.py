@@ -26,6 +26,41 @@ def D_comoving(z, H0, Omega_m):
 
 ###############################################
 
+def distribution_redshift_Gaussian(z, epi=-7.553):
+    """
+    Gaussian time-delay model for NSBH merger delay models in 
+    [2011.02717]
+    """
+    
+    f=(1+z)**(3.879*epi)+((1+z)/73.5)**(-0.4901*epi)+((1+z)/3.672)**(-5.691*epi)+((1+z)/3.411)**(-11.46*epi)+((1+z)/3.546)**(-16.38*epi)+((1+z)/3.716)**(-20.66*epi)
+    f=f**(1/epi)
+    
+    return normalise(f)
+
+
+def distribution_redshift_LogNormal(z, epi=-5.51):
+    """
+    LogNormal time-delay model for NSBH merger delay models in 
+    [2011.02717]
+    """
+    
+    f=(1+z)**(4.131*epi)+((1+z)/22.37)**(-0.5789*epi)+((1+z)/2.978)**(-4.735*epi)+((1+z)/2.749)**(-10.77*epi)+((1+z)/2.867)**(-17.51*epi)+((1+z)/3.04)**(-(0.08148+z**0.574/0.08682)*epi)
+    f=f**(1/epi)
+    
+    return normalise(f)
+
+
+def distribution_redshift_Power(z, epi=-8.161):
+    """
+    Power-law time-delay model for NSBH merger delay models in 
+    [2011.02717]
+    """
+    
+    f=(1+z)**(1.895*epi)+((1+z)/5.722)**(-3.759*epi)+((1+z)/11.55)**(-0.7426*epi)
+    f=f**(1/epi)
+    
+    return normalise(f)
+
 
 def draw_redshift_distribution(z_array, H0=HUBBLE, Omega_m=OMEGA_MATTER, N_draws=50, method='rates'):
     """
@@ -59,9 +94,21 @@ def draw_redshift_distribution(z_array, H0=HUBBLE, Omega_m=OMEGA_MATTER, N_draws
         
     elif method == 'uniform':
         redshift_draws = np.random.choice(z_array, replace=False, size=N_draws)
+    
+    elif method == 'gaussian':
+        pdf = distribution_redshift_Gaussian(z_array)
+        redshift_draws = np.random.choice(z_array, p=pdf, replace=True, size=N_draws)
+        
+    elif method == 'lognormal':
+        pdf = distribution_redshift_LogNormal(z_array)
+        redshift_draws = np.random.choice(z_array, p=pdf, replace=True, size=N_draws)
+        
+    elif method == 'powerlaw':
+        pdf = distribution_redshift_Power(z_array)
+        redshift_draws = np.random.choice(z_array, p=pdf, replace=True, size=N_draws)        
         
     else:
-        raise Exception("Wrong method chosen! Choose between 'rates' and 'uniform'.")
+        raise Exception("Wrong method chosen! Choose between 'rates', 'uniform', 'gaussian', 'lognormal' and 'powerlaw'.")
         
     ## Check if we have many events with the same redshift
     if np.unique(redshift_draws).size/N_draws < 0.8:
