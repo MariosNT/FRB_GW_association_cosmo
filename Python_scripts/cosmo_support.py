@@ -293,7 +293,7 @@ def sigma_dL(z, H0, Om, w=-1, method='Wei'):
     
     Output
     ---------
-    s_dL : distance erro in Mpc
+    s_dL : distance error in Mpc
     """      
     
     dL = luminosity_distance(z, H0, Om, w)
@@ -385,16 +385,32 @@ def Norm_pdf_host(e_mu,sigma_host):
 ### PDF COSMIC ###
 ##################
 
-def f_sigma_DM(F, z):
-    return F/np.sqrt(z)
-
+def f_sigma_DM(F, z, met="log"):
+    if (met=="log"):
+        return F/np.log(1+z)
+    else:
+        return F/np.sqrt(z)
 
 def pdf_DM_cosmo(Delta, C_0, A, sigma, alpha=3, beta=3):
     pdf=A*(Delta**(-beta))*np.exp(-((Delta**(-alpha)-C_0)**2)/(2*(alpha**2)*(sigma**2)))
     return pdf
 
+def DM_diff_HOf(z, HOf, Om=OMEGA_MATTER, w=-1):
+    
+    def integrand(z, Om, w):
+        return (1+z)/np.sqrt(Om*(1+z)**3+(1-Om)*(1+z)**(3*(1+w)))
 
-def C0_sigma(sigma, x_min=0, x_max=np.inf, alpha=3, beta=3):
+    factor = 3*C_LIGHT*HOf/(8*PI*G_NEWTON*M_PROTON)*(7/8)
+    
+    integral, _ = quad(integrand, 0, z, args=(Om, w))
+    
+    unit_transform = DM_2_PCCM3*KM_2_MPC
+    
+    DM = unit_transform*factor*integral
+    
+    return DM
+
+def C0_sigma(sigma, x_min=0, x_max=np.inf, alpha=3, beta=3,condition='mean',initial_guess=1.0):
     """
     Use fsolve to find C_0 when to_C_0 = 1
     
@@ -404,34 +420,51 @@ def C0_sigma(sigma, x_min=0, x_max=np.inf, alpha=3, beta=3):
     z: float - Redshift
     alpha: float - Alpha parameter
     initial_guess: float - C_0 initial guess
+    condition: condition choose from "mean", "median" or "mode" value equal to 1. For the median recommend minimum sigma from 0.3.
     
     Returns:
     --------
     float: C_0 or None if solution not found
     """
     
-    def objective_function(C_0):
-        result1,_= quad(lambda x: x*pdf_DM_cosmo(x, C_0, 1, sigma, alpha, beta), x_min, x_max)
-        result2,_= quad(lambda x: pdf_DM_cosmo(x, C_0, 1, sigma, alpha, beta), x_min, x_max)
+    if (condition=="mean"):
+        def objective_function(C_0):
+            result1,_= quad(lambda x: x*pdf_DM_cosmo(x, C_0, 1, sigma, alpha, beta), x_min, x_max)
+            result2,_= quad(lambda x: pdf_DM_cosmo(x, C_0, 1, sigma, alpha, beta), x_min, x_max)
       
-        return result1-result2
+            return result1-result2
 
-    try:
-        initial_guess=1.0
-        solution = fsolve(objective_function, [initial_guess], full_output=True)
+    elif (condition=="median"):
+        def objective_function(C_0):
         
+            result,_= quad(lambda x: pdf_DM_cosmo(x, C_0, 1.0, sigma, alpha, beta), x_min, 1.0)
+            int,_= quad(lambda x: pdf_DM_cosmo(x, C_0, 1.0, sigma, alpha, beta), 0, np.inf)
+    
+            return result-0.5*int
+
+    elif (condition=="mode"):
+        def objective_function(C_0):
+        
+            criteria=C_0**2+4*alpha*beta*sigma**2
+            d3=2/(C_0+np.sqrt(criteria))
+    
+            return d3-1
+
+    else:
+        print('Choose condition from["mean","median","mode"]')
+        
+    try:
+        solution = fsolve(objective_function, [initial_guess], full_output=True)
+    
         if solution[2] == 1:  # Check if solution is found
             return solution[0][0]
-        else:
-            print(f"find_C0 warning: sigma={sigma}")
-            return None
             
     except Exception as e:
-        print(f"find_C0 error, sigma={sigma}, error: {e}")
+        print(f"find_C0 error ({condition}), sigma={sigma}, error: {e}, initial_guess={initial_guess}, check input or change initial guess")
         return None
     
     
-def find_C0(F, z, sigmas, C0s, alpha=3, beta=3, method="interpolation", x_min=0, x_max=np.inf):
+def find_C0(F, z, sigmas, C0s, alpha=3, beta=3, sigma_met="num",method="interpolation", x_min=0, x_max=np.inf):
     """
     Use fsolve to find C_0 when to_C_0 = 1
     
@@ -448,22 +481,24 @@ def find_C0(F, z, sigmas, C0s, alpha=3, beta=3, method="interpolation", x_min=0,
     """
     
     if (method=="interpolation"):
-        sigma=f_sigma_DM(F,z)
-        DM_sigma = interpolate.interp1d(sigmas, C0s, kind='cubic')
+        sigma=f_sigma_DM(F,z,met=sigma_met)
+        DM_sigma = interpolate.interp1d(sigmas, C0s, kind='cubic',bounds_error=False, 
+    fill_value='extrapolate')
         C0 = DM_sigma(sigma)
         return C0
         
     else:
         print("Do accurate method")
         
-        sigma=f_sigma_DM(F,z)
-        C0 = C0_sigma(sigma, x_min=x_min, x_max=x_max, alpha=3, beta=3)
+        sigma=f_sigma_DM(F,z,met=sigma_met)
+        C0 = C0_sigma(sigma, x_min=x_min, x_max=x_max, alpha=alpha, beta=beta)
     
         return C0    
     
 
-def find_A(C_0, F, z, alpha=3, beta=3, x_min=0, x_max=np.inf):
-    sigma=f_sigma_DM(F,z)
+def find_A(C_0, F, z, alpha=3, beta=3, x_min=0, x_max=np.inf, sigma_met="num"):
+    sigma=f_sigma_DM(F,z,met=sigma_met)
+    
     pdf, error = quad(lambda x: pdf_DM_cosmo(x, C_0, 1, sigma, alpha, beta),  x_min, x_max)
     
     try:
@@ -472,3 +507,120 @@ def find_A(C_0, F, z, alpha=3, beta=3, x_min=0, x_max=np.inf):
     except Exception as e:
         print(f"find_A error，pdf={pdf}, C_0={C_0}, F={F}, z={z}, error: {e}")
         return None    
+    
+    # for vaiance-sigma relation calculation
+    
+######### For vaiance-sigma version #########
+
+'''
+The following functions are used for calculate the variance for ∆ and get the sigma (but in function we do a reverse way which from each sigma to calculate variance). This is because we find the \sigma_{diff} in P(∆) is not exactly its variance and they also don't show linear relation.
+'''
+
+def var_z(z):
+    Om=OMEGA_MATTER
+    def dDc(x):
+        return 1/np.sqrt(Om*(1+x)**3+(1-Om))
+    
+    def dDM(x):
+        return (1+x)/np.sqrt(Om*(1+x)**3+(1-Om))
+    
+    int1,_=quad(dDc, 0, z)
+    int2,_=quad(dDM, 0, z)
+    
+    return int1/int2**2
+
+def f_variance_delta(F,z,met='num'):
+    '''
+    please do sigma-variance interpolate in code to finish variance-sigma convert
+    example:
+    sigma_var = interpolate.interp1d(Vars, Sigmas, kind=1,bounds_error=False, 
+    # fill_value='extrapolate'
+    )
+    '''
+    if (met=='num'):
+        return F*var_z(z)
+    else:
+        return F/z
+    
+def find_C0_sigma(sigma, sigmas, C0s, alpha=3, beta=3, method="interpolation", x_min=0, x_max=np.inf):
+    """
+    Use fsolve to find C_0 when to_C_0 = 1
+    
+    Parameters:
+    -----------
+    F: float - Structure factor parameter 
+    z: float - Redshift
+    alpha: float - Alpha parameter
+    initial_guess: float - C_0 initial guess
+    
+    Returns:
+    --------
+    float: C_0 or None if solution not found
+    """
+    
+    if (method=="interpolation"):
+        DM_sigma = interpolate.interp1d(sigmas, C0s, kind=2,bounds_error=False, 
+        # fill_value='extrapolate'
+        )
+        C0 = DM_sigma(sigma)
+        return C0
+        
+    else:
+        print("Do accurate method")
+        
+        C0 = C0_sigma(sigma, x_min=x_min, x_max=x_max, alpha=alpha, beta=beta)
+    
+        return C0    
+    
+def find_A_sigma(C_0, sigma, alpha=3, beta=3, x_min=0, x_max=np.inf):
+    
+    pdf, error = quad(lambda x: pdf_DM_cosmo(x, C_0, 1, sigma, alpha, beta),  x_min, x_max)
+    
+    try:
+        return 1/pdf
+            
+    except Exception as e:
+        print(f"find_A error，pdf={pdf}, C_0={C_0}, sigma={sigma}, error: {e}")
+        return None 
+    
+def calculate_var(C0, A, sigma_DM, x_min=0, x_max=1e6, error=1e-20, limit=200):
+    
+    def first_moment_integrand(delta):
+        return delta * pdf_DM_cosmo(delta, C0, A, sigma_DM)
+    
+    def second_moment_integrand(delta):
+        return delta**2 * pdf_DM_cosmo(delta, C0, A, sigma_DM)
+    
+    if (x_max!=np.inf):
+        x_max1=int_limit(first_moment_integrand, init=x_max, error=error)
+        x_max2=int_limit(second_moment_integrand, init=x_max, error=error)
+        x_max=np.max([x_max1,x_max2])
+        #print(x_max)
+    
+    mean, _ = quad(first_moment_integrand, x_min, x_max,limit=limit)
+
+    second_moment, _ = quad(second_moment_integrand, x_min, x_max,limit=limit)
+    
+    variance = second_moment - mean**2
+    
+    return variance
+
+######## For the third immediate environment component ########
+
+def pdf_DM_src(DM, a, DM_min, DM_max):
+    '''
+    Assume a power-law distribution for DM_src:
+    DM=C*t^{-b}
+    If p\propto t, one have:
+    P(DM)=C*DM^{-1/b}
+    where C is the normalization parameter. b is the free parameter we do the grid search. Note C should be also related with the integrate limitation.
+    '''
+    def int(DM):
+        # integration for the pdf with normalization parameter C=1
+        index=1-1/a
+        return DM**(index)/index
+    
+    C=1/(int(DM_max)-int(DM_min))
+    
+    return C*DM**(-1/a)
+    
