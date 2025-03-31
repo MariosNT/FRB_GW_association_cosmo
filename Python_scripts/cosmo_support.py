@@ -385,7 +385,7 @@ def Norm_pdf_host(e_mu,sigma_host):
 ### PDF COSMIC ###
 ##################
 
-def f_sigma_DM(F, z, met="log"):
+def f_sigma_DM(F, z, met="Mac"):
     if (met=="log"):
         return F/np.log(1+z)
     else:
@@ -464,7 +464,7 @@ def C0_sigma(sigma, x_min=0, x_max=np.inf, alpha=3, beta=3,condition='mean',init
         return None
     
     
-def find_C0(F, z, sigmas, C0s, alpha=3, beta=3, sigma_met="num",method="interpolation", x_min=0, x_max=np.inf):
+def find_C0(F, z, sigmas, C0s, alpha=3, beta=3, sigma_met="Mac",method="interpolation", x_min=0, x_max=np.inf):
     """
     Use fsolve to find C_0 when to_C_0 = 1
     
@@ -577,19 +577,19 @@ def find_A_sigma(C_0, sigma, alpha=3, beta=3, x_min=0, x_max=np.inf):
     pdf, error = quad(lambda x: pdf_DM_cosmo(x, C_0, 1, sigma, alpha, beta),  x_min, x_max)
     
     try:
-        return 1/pdf
+        return 1.0/pdf
             
     except Exception as e:
         print(f"find_A error，pdf={pdf}, C_0={C_0}, sigma={sigma}, error: {e}")
         return None 
     
-def calculate_var(C0, A, sigma_DM, x_min=0, x_max=1e6, error=1e-20, limit=200):
+def calculate_var(C0, A, sigma_DM, alpha=3, beta=3, x_min=0, x_max=np.inf, error=1e-20, limit=200):
     
     def first_moment_integrand(delta):
-        return delta * pdf_DM_cosmo(delta, C0, A, sigma_DM)
+        return delta * pdf_DM_cosmo(delta, C0, A, sigma_DM, alpha, beta)
     
     def second_moment_integrand(delta):
-        return delta**2 * pdf_DM_cosmo(delta, C0, A, sigma_DM)
+        return delta**2 * pdf_DM_cosmo(delta, C0, A, sigma_DM, alpha, beta)
     
     if (x_max!=np.inf):
         x_max1=int_limit(first_moment_integrand, init=x_max, error=error)
@@ -607,20 +607,21 @@ def calculate_var(C0, A, sigma_DM, x_min=0, x_max=1e6, error=1e-20, limit=200):
 
 ######## For the third immediate environment component ########
 
-def pdf_DM_src(DM, a, DM_min, DM_max):
+def pdf_DM_src(DM, b, DM_min, DM_max):
     '''
     Assume a power-law distribution for DM_src:
     DM=C*t^{-b}
     If p\propto t, one have:
     P(DM)=C*DM^{-1/b}
-    where C is the normalization parameter. b is the free parameter we do the grid search. Note C should be also related with the integrate limitation.
+    where C is the normalization parameter. a is the free parameter we do the grid search. Note C should be also related with the integrate limitation.
+    b within -3 to 2/5 according to Yang & Zhang 2017
     '''
     def int(DM):
         # integration for the pdf with normalization parameter C=1
-        index=1-1/a
+        index=1-1/b
         return DM**(index)/index
     
     C=1/(int(DM_max)-int(DM_min))
     
-    return C*DM**(-1/a)
+    return C*DM**(-1/b)*((DM>=DM_min)&(DM<=DM_max))
     
