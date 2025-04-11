@@ -529,6 +529,20 @@ def var_z(z):
     
     return int1/int2**2
 
+def var_z_fast(z):
+    Om=OMEGA_MATTER
+    def dDc(x):
+        return 1/np.sqrt(Om*(1+x)**3+(1-Om))
+    
+    def dDM(x):
+        return (1+x)/np.sqrt(Om*(1+x)**3+(1-Om))
+    
+    z_array = np.linspace(0, z, 1000)
+    int1 = np.trapz(dDc(z_array), x=z_array)
+    int2 = np.trapz(dDM(z_array), x=z_array)
+    
+    return int1/int2**2
+
 def f_variance_delta(F,z,met='num'):
     '''
     please do sigma-variance interpolate in code to finish variance-sigma convert
@@ -541,6 +555,19 @@ def f_variance_delta(F,z,met='num'):
         return F*var_z(z)
     else:
         return F/z
+    
+def f_variance_delta_fast(F,z,met='num'):
+    '''
+    please do sigma-variance interpolate in code to finish variance-sigma convert
+    example:
+    sigma_var = interpolate.interp1d(Vars, Sigmas, kind=1,bounds_error=False, 
+    # fill_value='extrapolate'
+    )
+    '''
+    if (met=='num'):
+        return F*var_z_fast(z)
+    else:
+        return F/z    
     
 def find_C0_sigma(sigma, sigmas, C0s, alpha=3, beta=3, method="interpolation", x_min=0, x_max=np.inf):
     """
@@ -582,6 +609,18 @@ def find_A_sigma(C_0, sigma, alpha=3, beta=3, x_min=0, x_max=np.inf):
     except Exception as e:
         print(f"find_A error，pdf={pdf}, C_0={C_0}, sigma={sigma}, error: {e}")
         return None 
+    
+def find_A_sigma_fast(C_0, sigma, alpha=3, beta=3, x_min=0, x_max=np.inf):
+    
+    x_array = np.logspace(-1, 5, 10_000)
+    pdf = np.trapz(pdf_DM_cosmo(x_array, C_0, 1, sigma, alpha, beta),  x=x_array)
+    
+    try:
+        return 1.0/pdf
+            
+    except Exception as e:
+        print(f"find_A error，pdf={pdf}, C_0={C_0}, sigma={sigma}, error: {e}")
+        return None     
     
 def calculate_var(C0, A, sigma_DM, alpha=3, beta=3, x_min=0, x_max=np.inf, error=1e-20, limit=200):
     
