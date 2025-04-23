@@ -4,6 +4,22 @@
 
 from config import *
 
+def int_limit(fun, init=1e6, error=1e-6, limit='upper', loop_num=10000, step=100, *args, **kwargs):
+        
+        # find integration limitation for exact function
+        
+        i=0
+        x=init
+        while(i<loop_num and fun(x, *args, **kwargs)>error):
+            
+            # uppper limit times step, lower limit devide step
+            x=x*(step**((limit=='upper')*2-1))
+            i+=1
+            
+        if i >= loop_num:
+            print(f'Reach to the loop limit while x={x}\n')
+            
+        return x
 
 def normalise(lista):
     """
