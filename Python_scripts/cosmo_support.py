@@ -121,7 +121,7 @@ def draw_redshift_distribution(z_array, H0=HUBBLE, Omega_m=OMEGA_MATTER, N_draws
 ###############################################
 
 
-def f_IGM_redshift(z, alpha=0.11, f_IGM_0 = f_IGM):
+def f_IGM_redshift(z, alpha=ALPHA_IGM, f_IGM_0 = f_IGM):
     return f_IGM_0*(1+alpha*z/(1+z))
     
 
@@ -141,7 +141,7 @@ def dDL_integrand_w(z, Om, w):
     return 1/np.sqrt(Om*(1+z)**3+(1-Om)*(1+z)**(3*(1+w)))
 
 
-def dDM_integrand_w(z, Om, w, alpha=0.11, f_IGM_0 = f_IGM):
+def dDM_integrand_w(z, Om, w, alpha=ALPHA_IGM, f_IGM_0 = f_IGM):
     """
     Function of the integrand of the DM formula, 
     eq. (12) in [arXiv:1805.12265].
@@ -159,7 +159,7 @@ def dDM_integrand_w(z, Om, w, alpha=0.11, f_IGM_0 = f_IGM):
     return f_IGM_z*(1+z)/np.sqrt(Om*(1+z)**3+(1-Om)*(1+z)**(3*(1+w)))
 
 
-def dispersion_measure(z, H0, Om, w=-1, alpha=0.11, f_IGM_0 = f_IGM):
+def dispersion_measure(z, H0, Om, w=-1, alpha=ALPHA_IGM, f_IGM_0 = f_IGM):
     """
     Function of the DM formula, 
     eq. (12) in [arXiv:1805.12265].
@@ -189,7 +189,7 @@ def dispersion_measure(z, H0, Om, w=-1, alpha=0.11, f_IGM_0 = f_IGM):
     return DM
 
 
-def DM_IGM_O_bh_70(z, O_bh_70, Om=OMEGA_MATTER, w=-1, alpha=0.11, f_IGM_0 = f_IGM):
+def DM_IGM_O_bh_70(z, O_bh_70, Om=OMEGA_MATTER, w=-1, alpha=ALPHA_IGM, f_IGM_0 = f_IGM):
     """
     Function of the DM formula, 
     eq. (12) in [arXiv:1805.12265].
