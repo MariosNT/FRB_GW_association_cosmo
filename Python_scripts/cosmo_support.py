@@ -365,11 +365,23 @@ def sigma_DM_IGM(z, sigma_obs=1.5, sigma_MW=30, sigma_IGM=50, sigma_host=50):
 
 def pdf_DM_host(DM, e_mu, sigma_host):
     # e^\mu with 20-200 pc cm^{-3} and \sigma_{host} in 0.2-2.0
-    mu=np.log(e_mu)
     
-    pdf=1.0/(sigma_host*np.sqrt(2*np.pi)*DM)*np.exp(-(np.log(DM)-mu)**2/(2*(sigma_host**2)))
+    DM_array = np.asarray(DM)
+    result = np.zeros_like(DM_array, dtype=float)
+    non_zero_indices = DM_array != 0
+    if np.any(non_zero_indices):
+        mu = np.log(e_mu)
+        non_zero_DM = DM_array[non_zero_indices]
+        result[non_zero_indices] = 1.0/(sigma_host*np.sqrt(2*np.pi)*non_zero_DM) * \
+                                  np.exp(-(np.log(non_zero_DM)-mu)**2/(2*(sigma_host**2)))
     
-    return pdf
+    return result
+
+    # old version
+    # mu=np.log(e_mu)
+    # pdf=1.0/(sigma_host*np.sqrt(2*np.pi)*DM)*np.exp(-(np.log(DM)-mu)**2/(2*(sigma_host**2)))
+    
+    # return pdf
 
 
 def Norm_pdf_host(e_mu,sigma_host):
@@ -392,8 +404,19 @@ def f_sigma_DM(F, z, met="Mac"):
         return F/np.sqrt(z)
 
 def pdf_DM_cosmo(Delta, C_0, A, sigma, alpha=3, beta=3):
-    pdf=A*(Delta**(-beta))*np.exp(-((Delta**(-alpha)-C_0)**2)/(2*(alpha**2)*(sigma**2)))
-    return pdf
+    
+    Delta_array = np.asarray(Delta)
+    result = np.zeros_like(Delta_array, dtype=float)
+    non_zero_indices = Delta_array != 0
+    if np.any(non_zero_indices):
+        non_zero_Delta = Delta_array[non_zero_indices]
+        result[non_zero_indices] = A*(non_zero_Delta**(-beta))*np.exp(-((non_zero_Delta**(-alpha)-C_0)**2)/(2*(alpha**2)*(sigma**2)))
+                    
+    return result
+
+    # Old version
+    # pdf=A*(Delta**(-beta))*np.exp(-((Delta**(-alpha)-C_0)**2)/(2*(alpha**2)*(sigma**2)))
+    # return pdf
 
 def DM_diff_HOf(z, HOf, Om=OMEGA_MATTER, w=-1):
     
@@ -529,6 +552,7 @@ def var_z(z):
     
     return int1/int2**2
 
+
 def var_z_fast(z):
     Om=OMEGA_MATTER
     def dDc(x):
@@ -566,8 +590,19 @@ def f_variance_delta_fast(F,z,met='num'):
     '''
     if (met=='num'):
         return F*var_z_fast(z)
+    
+def f_sqrtvar_delta(F,z,met='num'):
+    '''
+    please do sigma-variance interpolate in code to finish variance-sigma convert
+    example:
+    sigma_var = interpolate.interp1d(Vars, Sigmas, kind=1,bounds_error=False, 
+    # fill_value='extrapolate'
+    )
+    '''
+    if (met=='num'):
+        return F*np.sqrt(var_z(z))
     else:
-        return F/z    
+        return F/np.sqrt(z)
     
 def find_C0_sigma(sigma, sigmas, C0s, alpha=3, beta=3, method="interpolation", x_min=0, x_max=np.inf):
     """
@@ -653,14 +688,37 @@ def pdf_DM_src(DM, b, DM_min, DM_max):
     If p\propto t, one have:
     P(DM)=C*DM^{-1/b}
     where C is the normalization parameter. a is the free parameter we do the grid search. Note C should be also related with the integrate limitation.
-    b within -3 to 2/5 according to Yang & Zhang 2017
+    b within -2/5 to 3 according to Yang & Zhang 2017
     '''
-    def int(DM):
-        # integration for the pdf with normalization parameter C=1
-        index=1-1/b
-        return DM**(index)/index
+    if abs(b - 1.0) < 1e-10:
+        C = 1.0 / (np.log(DM_max) - np.log(DM_min))
+    else:
+        def int(DM):
+            # integration for the pdf with normalization parameter C=1
+            index = 1 - 1/b
+            return DM**(index) / index
+        C = 1.0 / (int(DM_max) - int(DM_min))
     
-    C=1/(int(DM_max)-int(DM_min))
+    DM_array = np.asarray(DM, dtype=np.float64)
+    result = np.zeros_like(DM_array, dtype=np.float64)
     
-    return C*DM**(-1/b)*((DM>=DM_min)&(DM<=DM_max))
+    valid_indices = (DM_array > 0) & (DM_array >= DM_min) & (DM_array <= DM_max)
+    if np.any(valid_indices):
+        valid_DM = DM_array[valid_indices]
+        log_result = np.log(C) - (1/b) * np.log(valid_DM)
+        result[valid_indices] = np.exp(log_result)
+        
+    # if np.any(non_zero_indices):
+    #     non_zero_DM = DM_array[non_zero_indices]
+    #     result[non_zero_indices] = C*non_zero_DM**(-1/b)*((non_zero_DM>=DM_min)&(non_zero_DM<=DM_max))
+    
+    return result
+    
+    # old version
+    # def int(DM):
+    #         # integration for the pdf with normalization parameter C=1
+    #         index=1-1/b
+    #         return DM**(index)/index
+    # C=1/(int(DM_max)-int(DM_min))
+    # return C*DM**(-1/b)*((DM>=DM_min)&(DM<=DM_max))
     
