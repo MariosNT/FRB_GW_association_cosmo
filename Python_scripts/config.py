@@ -15,7 +15,11 @@ import scipy.constants as const
 from scipy.integrate import quad
 from scipy.optimize import fsolve
 from scipy.integrate import quad_vec
+from scipy.stats import chi2
 from scipy.stats import gaussian_kde
+
+
+from tqdm import tqdm
 
 
 ### Astropy package

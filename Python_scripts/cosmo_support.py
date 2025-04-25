@@ -356,7 +356,8 @@ def sigma_DM_IGM(z, sigma_obs=1.5, sigma_MW=30, sigma_IGM=50, sigma_host=50):
 
 
 ###############################################
-### Macquart PDFs 
+### Macquart PDFs
+
 
 
 ################
@@ -722,3 +723,120 @@ def pdf_DM_src(DM, b, DM_min, DM_max):
     # C=1/(int(DM_max)-int(DM_min))
     # return C*DM**(-1/b)*((DM>=DM_min)&(DM<=DM_max))
     
+
+    
+##################################################################
+##################### Automate Analysis ##########################
+##################################################################
+
+def DM_IGM_H0_O_b_f_IGM_fast(z, H0_O_b_f_IGM, Om=OMEGA_MATTER, w=W_LAMBDA):
+    
+    def integrand(z, Om, w):
+        return (1+z)/np.sqrt(Om*(1+z)**3+(1-Om)*(1+z)**(3*(1+w)))
+
+    factor = 3*C_LIGHT*H0_O_b_f_IGM/(8*PI*G_NEWTON*M_PROTON)*(7/8)
+    
+    z_array = np.linspace(0, z, 1000)
+    integral = np.trapz(integrand(z_array, Om, w), x=z_array)
+    
+    unit_transform = DM_2_PCCM3*KM_2_MPC
+    
+    DM = unit_transform*factor*integral
+    
+    return DM
+
+def calculate_dm_probability_num_HOf_fast(DM_frb_max, z, F, HOf, e_mu, sigma_host):
+    
+    ## Cosmic calculation    
+    DM_th = DM_IGM_H0_O_b_f_IGM_fast(z=z, H0_O_b_f_IGM=HOf, Om=OMEGA_MATTER, w=-1)
+    
+    Delta_array = np.linspace(0.01, DM_frb_max / DM_th-0.01, 5000)
+    
+    sigma=sigma_var(np.sqrt(f_variance_delta_fast(F,z)))
+    
+    C_0=find_C0_sigma(sigma=sigma, sigmas=sigmas, C0s=C0s)
+    A = find_A_sigma_fast(C_0=C_0, sigma=sigma, alpha=3, beta=3)
+    pdf_cosmic = pdf_DM_cosmo(Delta_array, C_0, A=A, sigma=sigma)
+    
+    # print([f_variance_delta(F,z),sigma,C_0, A])
+    
+    ## Host calculation
+    pdf_host = pdf_DM_host((1+z)*(DM_frb_max-DM_th * Delta_array), e_mu, sigma_host)
+    
+    ## Combine together    
+    prob = np.trapz(pdf_host*pdf_cosmic, x=Delta_array)
+    
+    ## Transform to probabilities
+    # dDM = np.abs(np.diff(DM_frb_array)[0])/DM_IGM_O_bh_70(z=z, O_bh_70=O_bh_70, Om=OMEGA_MATTER, w=-1,alpha=0)/(1+z)
+    
+    return prob*(1+z)
+
+
+def posterior_analysis(Dv_4D, Dv_array, HOf_array, sigma_host_array, e_mu_array, FRB_data):
+    log_posterior_4D = np.zeros_like(Dv_4D, dtype= np.float64)
+    total_iterations = len(FRB_data['FRB'])
+
+    # Create flattened parameter combinations
+    param_combinations = [
+        (Dv, HOf, sigma_host, e_mu)
+        for Dv in Dv_array
+        for HOf in HOf_array
+        for sigma_host in sigma_host_array
+        for e_mu in e_mu_array
+    ]
+
+    # Initialize progress bar
+    pbar = tqdm(total=total_iterations, desc='Computing posteriors')
+
+    # Calculate and accumulate probabilities for each FRB
+    for _, row in FRB_data.iterrows():
+        # Iterate through parameter combinations
+        for idx, (Dv, HOf, sigma_host, e_mu) in enumerate(param_combinations):
+            prob = calculate_dm_probability_num_HOf_fast(
+                DM_frb_max=row['DM_ext'],
+                z=row['z'],
+                F=Dv,
+                HOf=HOf,
+                sigma_host=sigma_host,
+                e_mu=e_mu
+            )
+
+            # Calculate indices for 4D array
+            i = idx // (len(HOf_array) * len(sigma_host_array) * len(e_mu_array))
+            j = (idx % (len(HOf_array) * len(sigma_host_array) * len(e_mu_array))) // (len(sigma_host_array) * len(e_mu_array))
+            k = (idx % (len(sigma_host_array) * len(e_mu_array))) // len(e_mu_array)
+            l = idx % len(e_mu_array)
+
+            # Store result
+            if prob > 0:
+                log_posterior_4D[i,j,k,l] += np.log(prob)
+            else:
+                log_posterior_4D[i,j,k,l] = -np.inf
+
+            # Update progress bar
+            pbar.update(1)
+
+            # Optional: Add parameter values to progress bar description
+            pbar.set_description(f"idx={_}, FRB={row['FRB']}, z={row['z']:.2f}, Dv={Dv:.2f}, HOf={HOf:.2f}, σ={sigma_host:.2f}, μ={e_mu:.2f}, prob={prob:.2f}")
+
+        # # log_posterior = np.log(posterior_4D)
+        log_sum = np.logaddexp.reduce(log_posterior_4D.ravel())
+        if np.isfinite(log_sum):
+            log_posterior_4D = log_posterior_4D - log_sum
+        else:
+            print(f"Warning: posterior sum is zero for FRB={row['FRB']}")
+            break
+
+        pbar.update(1)
+        pbar.set_description(f"FRB={row['FRB']}")
+
+    # Close progress bar
+    pbar.close()
+    
+    log_sum = np.logaddexp.reduce(log_posterior_4D.ravel())
+    if np.isfinite(log_sum):
+        posterior_4D = np.exp(log_posterior_4D - log_sum)
+    else:
+        print(f"Warning: posterior sum is zero")
+    
+    return posterior_4D
