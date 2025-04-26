@@ -694,11 +694,11 @@ def pdf_DM_src(DM, b, DM_min, DM_max):
     if abs(b - 1.0) < 1e-10:
         C = 1.0 / (np.log(DM_max) - np.log(DM_min))
     else:
-        def int(DM):
+        def integrant(DM):
             # integration for the pdf with normalization parameter C=1
             index = 1 - 1/b
             return DM**(index) / index
-        C = 1.0 / (int(DM_max) - int(DM_min))
+        C = 1.0 / (integrant(DM_max) - integrant(DM_min))
     
     DM_array = np.asarray(DM, dtype=np.float64)
     result = np.zeros_like(DM_array, dtype=np.float64)
