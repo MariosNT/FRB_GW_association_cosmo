@@ -121,7 +121,7 @@ def draw_redshift_distribution(z_array, H0=HUBBLE, Omega_m=OMEGA_MATTER, N_draws
 ###############################################
 
 
-def f_IGM_redshift(z, alpha=ALPHA_IGM, f_IGM_0 = f_IGM):
+def f_IGM_redshift(z, alpha=0.11, f_IGM_0 = f_IGM):
     return f_IGM_0*(1+alpha*z/(1+z))
     
 
@@ -129,6 +129,7 @@ def dDL_integrand_w(z, Om, w):
     """
     Function of the integrand of the dL formula, 
     eq. (5) in [arXiv:1805.12265].
+    [https://arxiv.org/abs/2302.10585]
     
     Input
     ----------
@@ -141,7 +142,7 @@ def dDL_integrand_w(z, Om, w):
     return 1/np.sqrt(Om*(1+z)**3+(1-Om)*(1+z)**(3*(1+w)))
 
 
-def dDM_integrand_w(z, Om, w, alpha=ALPHA_IGM, f_IGM_0 = f_IGM):
+def dDM_integrand_w(z, Om, w, alpha=0.11, f_IGM_0 = f_IGM):
     """
     Function of the integrand of the DM formula, 
     eq. (12) in [arXiv:1805.12265].
@@ -159,7 +160,7 @@ def dDM_integrand_w(z, Om, w, alpha=ALPHA_IGM, f_IGM_0 = f_IGM):
     return f_IGM_z*(1+z)/np.sqrt(Om*(1+z)**3+(1-Om)*(1+z)**(3*(1+w)))
 
 
-def dispersion_measure(z, H0, Om, w=-1, alpha=ALPHA_IGM, f_IGM_0 = f_IGM):
+def dispersion_measure(z, H0, Om, w=-1, alpha=0.11, f_IGM_0 = f_IGM):
     """
     Function of the DM formula, 
     eq. (12) in [arXiv:1805.12265].
@@ -189,7 +190,7 @@ def dispersion_measure(z, H0, Om, w=-1, alpha=ALPHA_IGM, f_IGM_0 = f_IGM):
     return DM
 
 
-def DM_IGM_O_bh_70(z, O_bh_70, Om=OMEGA_MATTER, w=-1, alpha=ALPHA_IGM, f_IGM_0 = f_IGM):
+def DM_IGM_O_bh_70(z, O_bh_70, Om=OMEGA_MATTER, w=-1, alpha=0.11, f_IGM_0 = f_IGM):
     """
     Function of the DM formula, 
     eq. (12) in [arXiv:1805.12265].
@@ -354,12 +355,6 @@ def sigma_DM_IGM(z, sigma_obs=1.5, sigma_MW=30, sigma_IGM=50, sigma_host=50):
     
     return np.sqrt(sigma_total)
 
-
-###############################################
-### Macquart PDFs
-
-
-
 ################
 ### PDF HOST ###
 ################
@@ -368,22 +363,17 @@ def pdf_DM_host(DM, e_mu, sigma_host):
     # e^\mu with 20-200 pc cm^{-3} and \sigma_{host} in 0.2-2.0
     
     DM_array = np.asarray(DM)
-    result = np.zeros_like(DM_array, dtype=float)
-    non_zero_indices = DM_array != 0
-    if np.any(non_zero_indices):
+    result = np.zeros_like(DM_array, dtype=float) # np.full_like(DM_array, 1e-10, dtype=np.float64)
+    
+    valid_indices = (DM_array > 0) & np.isfinite(DM_array)
+    
+    if np.any(valid_indices):
         mu = np.log(e_mu)
-        non_zero_DM = DM_array[non_zero_indices]
-        result[non_zero_indices] = 1.0/(sigma_host*np.sqrt(2*np.pi)*non_zero_DM) * \
-                                  np.exp(-(np.log(non_zero_DM)-mu)**2/(2*(sigma_host**2)))
+        valid_DM = DM_array[valid_indices]
+        result[valid_indices] = 1.0/(sigma_host*np.sqrt(2*np.pi)*valid_DM) * \
+                               np.exp(-(np.log(valid_DM)-mu)**2/(2*(sigma_host**2)))
     
     return result
-
-    # old version
-    # mu=np.log(e_mu)
-    # pdf=1.0/(sigma_host*np.sqrt(2*np.pi)*DM)*np.exp(-(np.log(DM)-mu)**2/(2*(sigma_host**2)))
-    
-    # return pdf
-
 
 def Norm_pdf_host(e_mu,sigma_host):
     try:
@@ -398,16 +388,10 @@ def Norm_pdf_host(e_mu,sigma_host):
 ### PDF COSMIC ###
 ##################
 
-def f_sigma_DM(F, z, met="Mac"):
-    if (met=="log"):
-        return F/np.log(1+z)
-    else:
-        return F/np.sqrt(z)
-
 def pdf_DM_cosmo(Delta, C_0, A, sigma, alpha=3, beta=3):
     
     Delta_array = np.asarray(Delta)
-    result = np.zeros_like(Delta_array, dtype=float)
+    result = np.zeros_like(Delta_array, dtype=float) #np.full_like(Delta_array, 1e-10, dtype=np.float64) # np.zeros_like(Delta_array, dtype=float)
     non_zero_indices = Delta_array != 0
     if np.any(non_zero_indices):
         non_zero_Delta = Delta_array[non_zero_indices]
@@ -433,8 +417,99 @@ def DM_diff_HOf(z, HOf, Om=OMEGA_MATTER, w=-1):
     DM = unit_transform*factor*integral
     
     return DM
+    
+######################################################################
+### For Macquart way to find C0 and A, which \sigma_diff=f/sqrt(z) ###
+######################################################################
 
-def C0_sigma(sigma, x_min=0, x_max=np.inf, alpha=3, beta=3,condition='mean',initial_guess=1.0):
+def f_sigma_DM(F, z, met="Mac"):
+    if (met=="log"):
+        return F/np.log(1+z)
+    else:
+        return F/np.sqrt(z)
+
+def find_C0(F, z, sigma_met="Mac", alpha=3, beta=3, x_min=0, x_max=np.inf):
+    """
+    Use fsolve to find C_0 when to_C_0 = 1
+    
+    Parameters:
+    -----------
+    F: float - Structure factor parameter 
+    z: float - Redshift
+    alpha: float - Alpha parameter
+    initial_guess: float - C_0 initial guess
+    
+    Returns:
+    --------
+    float: C_0 or None if solution not found
+    """
+        
+    sigma=f_sigma_DM(F,z,met=sigma_met)
+    C0 = find_C0_sigma(sigma, x_min=x_min, x_max=x_max, alpha=alpha, beta=beta)
+    
+    return C0    
+    
+
+def find_A(C_0, F, z, alpha=3, beta=3, x_min=0, x_max=np.inf, sigma_met="Mac"):
+    sigma=f_sigma_DM(F,z,met=sigma_met)
+    
+    pdf, error = quad(lambda x: pdf_DM_cosmo(x, C_0, 1, sigma, alpha, beta),  x_min, x_max)
+    
+    try:
+        return 1/pdf
+            
+    except Exception as e:
+        print(f"find_A error，pdf={pdf}, C_0={C_0}, F={F}, z={z}, error: {e}")
+        return None    
+
+######################################
+### For error-sigma_{diff} version ###
+######################################
+
+'''
+The following functions are used for calculate the error for ∆ and get the sigma (but in function we do a reverse way which from each sigma to calculate error). This is because we find the \sigma_{diff} in P(∆) is not exactly its error and they also don't show linear relation.
+'''
+
+def var_z(z):
+    Om=OMEGA_MATTER
+    def dDc(x):
+        return 1/np.sqrt(Om*(1+x)**3+(1-Om))
+    
+    def dDM(x):
+        return (1+x)/np.sqrt(Om*(1+x)**3+(1-Om))
+    
+    int1,_=quad(dDc, 0, z)
+    int2,_=quad(dDM, 0, z)
+    
+    return int1/int2**2
+
+def f_variance_delta(S,z,met='num'):
+    '''
+    please do sigma-variance interpolate in code to finish variance-sigma convert
+    example:
+    sigma_var = interpolate.interp1d(Vars, Sigmas, kind=1,bounds_error=False, 
+    # fill_value='extrapolate'
+    )
+    '''
+    if (met=='num'):
+        return S*var_z(z)
+    else:
+        return S/z
+    
+def f_sqrtvar_delta(F_tilde,z,met='num'):
+    '''
+    please do sigma-variance interpolate in code to finish variance-sigma convert
+    example:
+    sigma_var = interpolate.interp1d(Vars, Sigmas, kind=1,bounds_error=False, 
+    # fill_value='extrapolate'
+    )
+    '''
+    if (met=='num'):
+        return F_tilde*np.sqrt(var_z(z))
+    else:
+        return F_tilde/np.sqrt(z) 
+
+def find_C0_sigma(sigma, x_min=0, x_max=np.inf, alpha=3, beta=3, condition='mean',initial_guess=1.0):
     """
     Use fsolve to find C_0 when to_C_0 = 1
     
@@ -462,9 +537,9 @@ def C0_sigma(sigma, x_min=0, x_max=np.inf, alpha=3, beta=3,condition='mean',init
         def objective_function(C_0):
         
             result,_= quad(lambda x: pdf_DM_cosmo(x, C_0, 1.0, sigma, alpha, beta), x_min, 1.0)
-            int,_= quad(lambda x: pdf_DM_cosmo(x, C_0, 1.0, sigma, alpha, beta), 0, np.inf)
+            int,_= quad(lambda x: pdf_DM_cosmo(x, C_0, 1.0, sigma, alpha, beta), 1.0, x_max)
     
-            return result-0.5*int
+            return result-int
 
     elif (condition=="mode"):
         def objective_function(C_0):
@@ -486,155 +561,7 @@ def C0_sigma(sigma, x_min=0, x_max=np.inf, alpha=3, beta=3,condition='mean',init
     except Exception as e:
         print(f"find_C0 error ({condition}), sigma={sigma}, error: {e}, initial_guess={initial_guess}, check input or change initial guess")
         return None
-    
-    
-def find_C0(F, z, sigmas, C0s, alpha=3, beta=3, sigma_met="Mac",method="interpolation", x_min=0, x_max=np.inf):
-    """
-    Use fsolve to find C_0 when to_C_0 = 1
-    
-    Parameters:
-    -----------
-    F: float - Structure factor parameter 
-    z: float - Redshift
-    alpha: float - Alpha parameter
-    initial_guess: float - C_0 initial guess
-    
-    Returns:
-    --------
-    float: C_0 or None if solution not found
-    """
-    
-    if (method=="interpolation"):
-        sigma=f_sigma_DM(F,z,met=sigma_met)
-        DM_sigma = interpolate.interp1d(sigmas, C0s, kind='cubic',bounds_error=False, 
-    fill_value='extrapolate')
-        C0 = DM_sigma(sigma)
-        return C0
-        
-    else:
-        print("Do accurate method")
-        
-        sigma=f_sigma_DM(F,z,met=sigma_met)
-        C0 = C0_sigma(sigma, x_min=x_min, x_max=x_max, alpha=alpha, beta=beta)
-    
-        return C0    
-    
 
-def find_A(C_0, F, z, alpha=3, beta=3, x_min=0, x_max=np.inf, sigma_met="num"):
-    sigma=f_sigma_DM(F,z,met=sigma_met)
-    
-    pdf, error = quad(lambda x: pdf_DM_cosmo(x, C_0, 1, sigma, alpha, beta),  x_min, x_max)
-    
-    try:
-        return 1/pdf
-            
-    except Exception as e:
-        print(f"find_A error，pdf={pdf}, C_0={C_0}, F={F}, z={z}, error: {e}")
-        return None    
-    
-    # for vaiance-sigma relation calculation
-    
-######### For vaiance-sigma version #########
-
-'''
-The following functions are used for calculate the variance for ∆ and get the sigma (but in function we do a reverse way which from each sigma to calculate variance). This is because we find the \sigma_{diff} in P(∆) is not exactly its variance and they also don't show linear relation.
-'''
-
-def var_z(z):
-    Om=OMEGA_MATTER
-    def dDc(x):
-        return 1/np.sqrt(Om*(1+x)**3+(1-Om))
-    
-    def dDM(x):
-        return (1+x)/np.sqrt(Om*(1+x)**3+(1-Om))
-    
-    int1,_=quad(dDc, 0, z)
-    int2,_=quad(dDM, 0, z)
-    
-    return int1/int2**2
-
-
-def var_z_fast(z):
-    Om=OMEGA_MATTER
-    def dDc(x):
-        return 1/np.sqrt(Om*(1+x)**3+(1-Om))
-    
-    def dDM(x):
-        return (1+x)/np.sqrt(Om*(1+x)**3+(1-Om))
-    
-    z_array = np.linspace(0, z, 1000)
-    int1 = np.trapz(dDc(z_array), x=z_array)
-    int2 = np.trapz(dDM(z_array), x=z_array)
-    
-    return int1/int2**2
-
-def f_variance_delta(F,z,met='num'):
-    '''
-    please do sigma-variance interpolate in code to finish variance-sigma convert
-    example:
-    sigma_var = interpolate.interp1d(Vars, Sigmas, kind=1,bounds_error=False, 
-    # fill_value='extrapolate'
-    )
-    '''
-    if (met=='num'):
-        return F*var_z(z)
-    else:
-        return F/z
-    
-def f_variance_delta_fast(F,z,met='num'):
-    '''
-    please do sigma-variance interpolate in code to finish variance-sigma convert
-    example:
-    sigma_var = interpolate.interp1d(Vars, Sigmas, kind=1,bounds_error=False, 
-    # fill_value='extrapolate'
-    )
-    '''
-    if (met=='num'):
-        return F*var_z_fast(z)
-    
-def f_sqrtvar_delta(F,z,met='num'):
-    '''
-    please do sigma-variance interpolate in code to finish variance-sigma convert
-    example:
-    sigma_var = interpolate.interp1d(Vars, Sigmas, kind=1,bounds_error=False, 
-    # fill_value='extrapolate'
-    )
-    '''
-    if (met=='num'):
-        return F*np.sqrt(var_z(z))
-    else:
-        return F/np.sqrt(z)
-    
-def find_C0_sigma(sigma, sigmas, C0s, alpha=3, beta=3, method="interpolation", x_min=0, x_max=np.inf):
-    """
-    Use fsolve to find C_0 when to_C_0 = 1
-    
-    Parameters:
-    -----------
-    F: float - Structure factor parameter 
-    z: float - Redshift
-    alpha: float - Alpha parameter
-    initial_guess: float - C_0 initial guess
-    
-    Returns:
-    --------
-    float: C_0 or None if solution not found
-    """
-    
-    if (method=="interpolation"):
-        DM_sigma = interpolate.interp1d(sigmas, C0s, kind=2,bounds_error=False, 
-        # fill_value='extrapolate'
-        )
-        C0 = DM_sigma(sigma)
-        return C0
-        
-    else:
-        print("Do accurate method")
-        
-        C0 = C0_sigma(sigma, x_min=x_min, x_max=x_max, alpha=alpha, beta=beta)
-    
-        return C0    
-    
 def find_A_sigma(C_0, sigma, alpha=3, beta=3, x_min=0, x_max=np.inf):
     
     pdf, error = quad(lambda x: pdf_DM_cosmo(x, C_0, 1, sigma, alpha, beta),  x_min, x_max)
@@ -646,19 +573,10 @@ def find_A_sigma(C_0, sigma, alpha=3, beta=3, x_min=0, x_max=np.inf):
         print(f"find_A error，pdf={pdf}, C_0={C_0}, sigma={sigma}, error: {e}")
         return None 
     
-def find_A_sigma_fast(C_0, sigma, alpha=3, beta=3, x_min=0, x_max=np.inf):
-    
-    x_array = np.logspace(-1, 5, 10_000)
-    pdf = np.trapz(pdf_DM_cosmo(x_array, C_0, 1, sigma, alpha, beta),  x=x_array)
-    
-    try:
-        return 1.0/pdf
-            
-    except Exception as e:
-        print(f"find_A error，pdf={pdf}, C_0={C_0}, sigma={sigma}, error: {e}")
-        return None     
-    
-def calculate_var(C0, A, sigma_DM, alpha=3, beta=3, x_min=0, x_max=np.inf, error=1e-20, limit=200):
+def calculate_var(C0, A, sigma_DM, alpha=3, beta=3, x_min=0, x_max=np.inf, error=1e-20, limit=500):
+    '''
+    One way is to take error as the sqaure of the variance
+    '''
     
     def first_moment_integrand(delta):
         return delta * pdf_DM_cosmo(delta, C0, A, sigma_DM, alpha, beta)
@@ -674,15 +592,122 @@ def calculate_var(C0, A, sigma_DM, alpha=3, beta=3, x_min=0, x_max=np.inf, error
     
     mean, _ = quad(first_moment_integrand, x_min, x_max,limit=limit)
 
-    second_moment, _ = quad(second_moment_integrand, x_min, x_max,limit=limit)
+    second_moment, _ = quad_vec(second_moment_integrand, x_min, x_max,limit=limit)
     
     variance = second_moment - mean**2
     
     return variance
 
-######## For the third immediate environment component ########
+def calc_confidence_interval_width(sigma, C_0, A, target_prob=0.6827, alpha=3, beta=3):
+    """
+    Calculate the width of the 1σ confidence interval for the given sigma.
+    
+    Parameters:
+    -----------
+    sigma : float
+        The sigma_DM parameter
+    C_0 : float
+        The C_0 parameter
+    alpha : float, optional
+        Power in the exponent, default is 3
+    beta : float, optional
+        Power of Delta, default is 3
+    
+    Returns:
+    --------
+    float
+        The width of the σ confidence interval (upper limit - lower limit=2σ)
+    """
+    
+    # Find the mode (peak) of the distribution to help with interval search
+    def neg_pdf(Delta):
+        return -pdf_DM_cosmo(Delta, C_0, A, sigma, alpha, beta)
+    
+    # Use a safer initial guess for the mode
+    # Avoid potential issues with negative C_0 or problematic power operations
+    # if C_0 > 0:
+    #     initial_guess = max(1e-5, (C_0)**(1/alpha))
+    # else:
+    #     # If C_0 is negative or zero, use a default value
+    #     initial_guess = 1.0
+    
+    # Use a grid search first to find a good starting point
+    test_points = np.logspace(-3, 2, 50)  # Test points from 0.001 to 100
+    pdf_values = np.array([pdf_DM_cosmo(x, C_0, A, sigma, alpha, beta) for x in test_points])
+    best_idx = np.argmax(pdf_values)
+    better_initial_guess = test_points[best_idx]
+    
+    # Now use minimize with the better initial guess
+    result = minimize(neg_pdf, better_initial_guess, bounds=[(1e-10, 100)])
+    mode = result.x[0]
+    
+    # Rest of the function remains the same...
+    # Function to find probability mass up to a point
+    def cdf(Delta):
+        integral, _ = quad(lambda x: pdf_DM_cosmo(x, C_0, A, sigma, alpha, beta), 1e-10, Delta)
+        return integral
+    
+    # For 2σ confidence interval, we need 0.9545 mass (95.45%)
+    # target_prob = 0.6827 # 0.9545
+    # Find the central interval
+    lower_target = (1 - target_prob) / 2
+    upper_target = 1 - lower_target
+    
+    # Find the values at these probability levels using a more robust approach
+    def find_quantile(prob_level):
+        # First, sample points to get rough range
+        test_points = np.logspace(-3, 2, 100)  # Log-spaced points
+        cdf_values = np.array([cdf(x) for x in test_points])
+        
+        # Find points that bracket our target probability
+        if prob_level <= np.min(cdf_values):
+            return test_points[0]
+        if prob_level >= np.max(cdf_values):
+            return test_points[-1]
+        
+        # Find the two points that bracket our target
+        for i in range(len(cdf_values)-1):
+            if cdf_values[i] <= prob_level <= cdf_values[i+1]:
+                a, b = test_points[i], test_points[i+1]
+                
+                # Use bisection method which doesn't rely on sign change
+                mid = (a + b) / 2
+                for _ in range(20):  # 20 iterations should be enough
+                    mid = (a + b) / 2
+                    mid_val = cdf(mid)
+                    if abs(mid_val - prob_level) < 1e-6:
+                        return mid
+                    elif mid_val < prob_level:
+                        a = mid
+                    else:
+                        b = mid
+                return mid
+        
+        # Fallback
+        return mode
+    
+    lower_limit = find_quantile(lower_target)
+    upper_limit = find_quantile(upper_target)
+    
+    return upper_limit - lower_limit
 
-def pdf_DM_src(DM, b, DM_min, DM_max):
+
+##############################################
+### PDF SRC (Source/Immediate environment) ###
+##############################################
+
+import warnings
+import sys
+
+class WarningCatcher:
+    def __init__(self):
+        self.warnings = []
+    
+    def __call__(self, message, category, filename, lineno, file=None, line=None):
+        self.warnings.append(f"{category.__name__}: {message} in {filename} line {lineno}")
+        print(f"WARNING: {category.__name__}: {message} in {filename} line {lineno}", file=sys.stderr)
+
+def pdf_DM_src(DM, b, DM_min, DM_max, debug=True):
     '''
     Assume a power-law distribution for DM_src:
     DM=C*t^{-b}
@@ -691,15 +716,28 @@ def pdf_DM_src(DM, b, DM_min, DM_max):
     where C is the normalization parameter. a is the free parameter we do the grid search. Note C should be also related with the integrate limitation.
     b within -2/5 to 3 according to Yang & Zhang 2017
     '''
-    if abs(b - 1.0) < 1e-10:
+        
+    warning_catcher = WarningCatcher()
+    old_showwarning = warnings.showwarning
+    warnings.showwarning = warning_catcher
+    
+    if (b == 1.0):
         C = 1.0 / (np.log(DM_max) - np.log(DM_min))
     else:
-        def integrant(DM):
-            # integration for the pdf with normalization parameter C=1
-            index = 1 - 1/b
-            return DM**(index) / index
-        C = 1.0 / (integrant(DM_max) - integrant(DM_min))
+        index = 1 - 1/b
+        if abs(index) < 1e-10:
+            C = 1.0 / (np.log(DM_max) - np.log(DM_min))
+        else:
+            numerator = DM_max**index - DM_min**index # np.exp(index * np.log(DM_max)) - np.exp(index * np.log(DM_min))
+            C = index / numerator
     
+    warnings.showwarning = old_showwarning
+    
+    if warning_catcher.warnings and debug:
+        print("Warnings captured during pdf_DM_src execution:")
+        for warning in warning_catcher.warnings:
+            print(f"{warning}, b={b}, DM_min={DM_min}, DM_max={DM_max}, index={index}")
+            
     DM_array = np.asarray(DM, dtype=np.float64)
     result = np.zeros_like(DM_array, dtype=np.float64)
     
@@ -708,26 +746,146 @@ def pdf_DM_src(DM, b, DM_min, DM_max):
         valid_DM = DM_array[valid_indices]
         log_result = np.log(C) - (1/b) * np.log(valid_DM)
         result[valid_indices] = np.exp(log_result)
-        
-    # if np.any(non_zero_indices):
-    #     non_zero_DM = DM_array[non_zero_indices]
-    #     result[non_zero_indices] = C*non_zero_DM**(-1/b)*((non_zero_DM>=DM_min)&(non_zero_DM<=DM_max))
     
     return result
-    
-    # old version
-    # def int(DM):
-    #         # integration for the pdf with normalization parameter C=1
-    #         index=1-1/b
-    #         return DM**(index)/index
-    # C=1/(int(DM_max)-int(DM_min))
-    # return C*DM**(-1/b)*((DM>=DM_min)&(DM<=DM_max))
-    
 
+def pdf_DM_src_index(DM, index, DM_min, DM_max):
+    '''
+    Assume a power-law distribution for DM_src:
+    DM=C*t^{-b}
+    If p\propto t, one have:
+    P(DM)=C*DM^{-1/b}
+    define the index as -1/b
+    where C is the normalization parameter. a is the free parameter we do the grid search. Note C should be also related with the integrate limitation.
+    b within -2/5 to 3 according to Yang & Zhang 2017
     
+    '''
+    
+    if (index == -1.0):
+        C = 1.0 / (np.log(DM_max) - np.log(DM_min))
+    else:
+        if abs(index-1.0) < 1e-10:
+            C = 1.0 / (np.log(DM_max) - np.log(DM_min))
+        else:
+            numerator = DM_max**(index+1) - DM_min**(index+1)
+            C = (index+1) / numerator
+            
+    DM_array = np.asarray(DM, dtype=np.float64)
+    result = np.zeros_like(DM_array, dtype=np.float64)
+    
+    valid_indices = (DM_array > 0) & (DM_array >= DM_min) & (DM_array <= DM_max)
+    if np.any(valid_indices):
+        valid_DM = DM_array[valid_indices]
+        log_result = np.log(C) + index * np.log(valid_DM)
+        result[valid_indices] = np.exp(log_result)
+    
+    return result
+
 ##################################################################
 ##################### Automate Analysis ##########################
 ##################################################################
+
+########## Normal version ##########
+
+def DM_IGM_H0_O_b_f_IGM(z, H0_O_b_f_IGM, Om=OMEGA_MATTER, w=-1):
+    
+    def integrand(z, Om, w):
+        return (1+z)/np.sqrt(Om*(1+z)**3+(1-Om)*(1+z)**(3*(1+w)))
+
+    factor = 3*C_LIGHT*H0_O_b_f_IGM/(8*PI*G_NEWTON*M_PROTON)*(7/8)
+    
+    integral, _ = quad(integrand, 0, z, args=(Om, w))
+    
+    unit_transform = DM_2_PCCM3*KM_2_MPC
+    
+    DM = unit_transform*factor*integral
+    
+    return DM
+
+def calculate_dm_probability_num_HOf(DM_frb_max, z, # Data
+                                     S, HOf, e_mu, sigma_host, # parameters
+                                     f_sigma_error, # sigma(error) function
+                                     space='Delta', # which space to convolution
+                                     dropna=False, # drop nan value
+                                     error_calculator=None # custom error calculator
+                                     ):
+    
+    '''
+    ######### Interpolation version, make sure already do the interpolation #######
+    ######### For example, use the code below to do the interpolation ############
+load_arrays=np.load('./interpolation/068_C0median.npz')
+Sigmas=load_arrays['a']
+Vars_sqrt=load_arrays['d']
+
+sigma_var_inter= interpolate.interp1d(Vars_sqrt, Sigmas, kind=1,bounds_error=False, 
+    # fill_value='extrapolate'
+    )
+    '''
+    
+    if error_calculator is None:
+        error = np.sqrt(f_variance_delta(S, z))
+    else:
+        # custom error calculator
+        error = error_calculator(S, z)
+        
+    ## Cosmic calculation    
+    DM_th = DM_IGM_H0_O_b_f_IGM(z=z, H0_O_b_f_IGM=HOf, Om=OMEGA_MATTER, w=-1)
+    
+    ## parameters calculation
+    sigma=sigma=f_sigma_error(error) # f_sigma_error(np.sqrt(f_variance_delta(S,z)))
+    
+    C_0=find_C0_sigma(sigma=sigma, alpha=3, beta=3, condition='mean')
+    A = find_A_sigma(C_0=C_0, sigma=sigma, alpha=3, beta=3)
+    
+    ## integration
+    if (space=='Delta'):
+        
+        ## variable=Delta
+        varable_array = np.linspace(0, DM_frb_max / DM_th, 5000)
+
+        ## Cosmic calculation
+        p_cosmic = pdf_DM_cosmo(varable_array, C_0=C_0, A=A, sigma=sigma)
+    
+        # print([f_sqrtvar_delta(F,z),sigma,C_0, A])
+    
+        ## Host calculation
+        p_host = pdf_DM_host((1+z)*(DM_frb_max - DM_th * varable_array), e_mu, sigma_host)
+        
+        ## factor
+        factor=1+z
+        
+    elif (space=='DM'):
+        ## variable=DM
+        varable_array = np.linspace(0, DM_frb_max * (1+z), 5000)
+        
+        ## Cosmic calculation
+        Deltas = (DM_frb_max-varable_array/(1+z))/DM_th
+        p_cosmic = pdf_DM_cosmo(Deltas, C_0=C_0, A=A, sigma=sigma)
+    
+        # print([f_sqrtvar_delta(F,z),sigma,C_0, A])
+    
+        ## Host calculation
+        p_host = pdf_DM_host(varable_array, e_mu, sigma_host)
+        
+        ## factor
+        factor=1.0/DM_th
+        
+    else:
+        raise ValueError("Invalid space parameter. Choose 'Delta' or 'DM'.")
+    
+    if (dropna==True):
+        p_host[np.isnan(p_host)] = 0
+        p_cosmic[np.isnan(p_cosmic)] = 0
+        
+    ## Combine together    
+    prob = np.trapz(p_host*p_cosmic, x=varable_array)
+    
+    ## Transform to probabilities
+    # dDM = np.abs(np.diff(DM_frb_array)[0])/DM_IGM_O_bh_70(z=z, O_bh_70=O_bh_70, Om=OMEGA_MATTER, w=-1,alpha=0)/(1+z)
+    
+    return prob*factor
+
+########## Fast version ##########
 
 def DM_IGM_H0_O_b_f_IGM_fast(z, H0_O_b_f_IGM, Om=OMEGA_MATTER, w=W_LAMBDA):
     
@@ -736,7 +894,7 @@ def DM_IGM_H0_O_b_f_IGM_fast(z, H0_O_b_f_IGM, Om=OMEGA_MATTER, w=W_LAMBDA):
 
     factor = 3*C_LIGHT*H0_O_b_f_IGM/(8*PI*G_NEWTON*M_PROTON)*(7/8)
     
-    z_array = np.linspace(0, z, 1000)
+    z_array = np.linspace(0, z, 4000)
     integral = np.trapz(integrand(z_array, Om, w), x=z_array)
     
     unit_transform = DM_2_PCCM3*KM_2_MPC
@@ -745,32 +903,98 @@ def DM_IGM_H0_O_b_f_IGM_fast(z, H0_O_b_f_IGM, Om=OMEGA_MATTER, w=W_LAMBDA):
     
     return DM
 
-def calculate_dm_probability_num_HOf_fast(DM_frb_max, z, F, HOf, e_mu, sigma_host):
+def calculate_dm_probability_num_HOf_fast(DM_frb_max, z, # Data
+                                     S, HOf, e_mu, sigma_host, # parameters
+                                     f_sigma_error, # sigma(error) function
+                                     # If in Macquart way, try to define a y=x function as input
+                                     f_C0_sigma, f_A_sigma, # C0(sigma) and A(sigma) function
+                                     space='Delta', # which space to convolution
+                                     dropna=False, # drop nan value
+                                     error_calculator=None # custom error calculator
+                                     # One can use default f_variance_delta~S/z or f_sqrtvar_delta~F/sqrt(z)
+                                     ):
+    '''
+    ######### Interpolation version, make sure already do the interpolation #######
+    ######### For example, use the code below to do the interpolation ############
+load_arrays=np.load('./interpolation/068_C0median.npz')
+Sigmas=load_arrays['a']
+Vars_sqrt=load_arrays['d']
+C0s=load_arrays['c']
+As=load_arrays['b']
+
+sigma_var_inter= interpolate.interp1d(Vars_sqrt, Sigmas, kind=1,bounds_error=False, 
+    # fill_value='extrapolate'
+    )
+    
+C0_sigma_inter = interpolate.interp1d(Sigmas, C0s, kind=1,bounds_error=False, 
+    # fill_value='extrapolate'
+    )
+    
+A_sigma_inter = interpolate.interp1d(Sigmas, As, kind=1,bounds_error=False, 
+    # fill_value='extrapolate'
+    )
+    '''
+    
+    if error_calculator is None:
+        error = np.sqrt(f_variance_delta(S, z))
+    else:
+        # custom error calculator
+        error = error_calculator(S, z)
     
     ## Cosmic calculation    
     DM_th = DM_IGM_H0_O_b_f_IGM_fast(z=z, H0_O_b_f_IGM=HOf, Om=OMEGA_MATTER, w=-1)
+    sigma=f_sigma_error(error) #sigma_var_inter(f_sqrtvar_delta(S,z))# sigma_var_inter(np.sqrt(f_variance_delta(F,z)))
     
-    Delta_array = np.linspace(0.01, DM_frb_max / DM_th-0.01, 5000)
+    C_0=f_C0_sigma(sigma)
+    A = f_A_sigma(sigma)
+
+    ## integration
+    if (space=='Delta'):
+        
+        ## variable=Delta
+        varable_array = np.linspace(0, DM_frb_max / DM_th, 5000)
+
+        ## Cosmic calculation
+        p_cosmic = pdf_DM_cosmo(varable_array, C_0=C_0, A=A, sigma=sigma)
     
-    sigma=sigma_var(np.sqrt(f_variance_delta_fast(F,z)))
+        # print([f_sqrtvar_delta(F,z),sigma,C_0, A])
     
-    C_0=find_C0_sigma(sigma=sigma, sigmas=sigmas, C0s=C0s)
-    A = find_A_sigma_fast(C_0=C_0, sigma=sigma, alpha=3, beta=3)
-    pdf_cosmic = pdf_DM_cosmo(Delta_array, C_0, A=A, sigma=sigma)
+        ## Host calculation
+        p_host = pdf_DM_host((1+z)*(DM_frb_max - DM_th * varable_array), e_mu, sigma_host)
+        
+        ## factor
+        factor=1+z
+        
+    elif (space=='DM'):
+        ## variable=DM
+        varable_array = np.linspace(0, DM_frb_max * (1+z), 5000)
+        
+        ## Cosmic calculation
+        Deltas = (DM_frb_max-varable_array/(1+z))/DM_th
+        p_cosmic = pdf_DM_cosmo(Deltas, C_0=C_0, A=A, sigma=sigma)
     
-    # print([f_variance_delta(F,z),sigma,C_0, A])
+        # print([f_sqrtvar_delta(F,z),sigma,C_0, A])
     
-    ## Host calculation
-    pdf_host = pdf_DM_host((1+z)*(DM_frb_max-DM_th * Delta_array), e_mu, sigma_host)
+        ## Host calculation
+        p_host = pdf_DM_host(varable_array, e_mu, sigma_host)
+        
+        ## factor
+        factor=1.0/DM_th
+        
+    else:
+        raise ValueError("Invalid space parameter. Choose 'Delta' or 'DM'.")
     
+    if (dropna==True):
+        p_host[np.isnan(p_host)] = 0
+        p_cosmic[np.isnan(p_cosmic)] = 0
+        
     ## Combine together    
-    prob = np.trapz(pdf_host*pdf_cosmic, x=Delta_array)
+    prob = np.trapz(p_host*p_cosmic, x=varable_array)
     
     ## Transform to probabilities
     # dDM = np.abs(np.diff(DM_frb_array)[0])/DM_IGM_O_bh_70(z=z, O_bh_70=O_bh_70, Om=OMEGA_MATTER, w=-1,alpha=0)/(1+z)
     
-    return prob*(1+z)
-
+    return prob*factor
 
 def posterior_analysis(Dv_4D, Dv_array, HOf_array, sigma_host_array, e_mu_array, FRB_data):
     log_posterior_4D = np.zeros_like(Dv_4D, dtype= np.float64)
@@ -840,3 +1064,79 @@ def posterior_analysis(Dv_4D, Dv_array, HOf_array, sigma_host_array, e_mu_array,
         print(f"Warning: posterior sum is zero")
     
     return posterior_4D
+
+############
+### MCMC ###
+############
+
+'''
+Because running MCMC depend on proior and likelihood function defination, so only include analyze function here.
+'''
+
+def mcmc_analyze_results(sampler, burn_in=10, thin=15, target_prob=0.6827):
+    """
+    Analyze the MCMC results.
+    
+    Args:
+        sampler: emcee sampler with results
+        burn_in: Number of initial steps to discard
+        thin: Thinning factor for samples
+    
+    Returns:
+        samples: Flattened, burned-in, and thinned samples
+        params_median: Median parameter values
+        params_errors: Parameter uncertainties (16th and 84th percentiles)
+    """
+    # Discard burn-in, flatten and thin the samples
+    flat_samples = sampler.get_chain(discard=burn_in, thin=thin, flat=True)
+    
+    # Calculate the median and 16th and 84th percentiles for the parameters
+    params_median = np.median(flat_samples, axis=0)
+    params_lower = np.percentile(flat_samples, 50-target_prob*50, axis=0) # np.percentile(flat_samples, 16, axis=0)
+    params_upper = np.percentile(flat_samples, 50+target_prob*50, axis=0) #np.percentile(flat_samples, 84, axis=0)
+    
+    # Calculate errors
+    params_errors = [(params_upper[i] - params_lower[i]) / 2 for i in range(len(params_median))]
+    
+    return flat_samples, params_median, params_errors
+
+def mcmc_plot_results(samples, param_names, savetitle=None, bins=30, target_prob=0.6827):
+    """
+    Plot the MCMC results.
+    
+    Args:
+        samples: MCMC samples
+        param_names: Names of the parameters
+    """
+    
+    # Create corner plot
+    
+    fig = corner.corner(
+        samples, 
+        labels=param_names,
+        quantiles=[0.5-target_prob/2, 0.5, 0.5+target_prob/2], # [0.16, 0.5, 0.84],
+        show_titles=True,
+        title_kwargs={"fontsize": 12},
+        title_fmt='.3f',
+        bins=bins
+    )
+    
+    plt.show()
+    if savetitle is not None:
+        plt.savefig(savetitle+"_corner_plot.png", dpi=300, bbox_inches='tight')
+    plt.close()
+    
+    # Plot chains for each parameter
+    fig, axes = plt.subplots(4, 1, figsize=(10, 8), sharex=True)
+    
+    for i, (ax, name) in enumerate(zip(axes, param_names)):
+        ax.plot(samples[:, i], 'k-', alpha=0.3)
+        ax.set_ylabel(name)
+        if i == 3:
+            ax.set_xlabel("Sample Number")
+    
+    plt.tight_layout()
+    plt.show()
+    if savetitle is not None:
+        plt.savefig(savetitle+"_chains.png", dpi=300, bbox_inches='tight')
+    plt.close()
