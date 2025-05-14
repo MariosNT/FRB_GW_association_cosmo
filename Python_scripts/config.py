@@ -15,12 +15,9 @@ import scipy.constants as const
 from scipy.integrate import quad
 from scipy.optimize import fsolve
 from scipy.integrate import quad_vec
-from scipy.stats import chi2
 from scipy.stats import gaussian_kde
-
-
-from tqdm import tqdm
-
+from scipy.optimize import curve_fit
+from scipy.optimize import root_scalar, minimize
 
 ### Astropy package
 import astropy.units as u
@@ -28,6 +25,7 @@ from astropy.cosmology import FlatLambdaCDM
 from astropy.cosmology import z_at_value
 import astropy.constants as astc
 from astropy.cosmology import Planck18
+from astropy.coordinates import SkyCoord
 
 ### Plotting
 import matplotlib.pyplot as plt
@@ -35,6 +33,12 @@ from matplotlib import rcParams
 from matplotlib import cm, ticker
 import seaborn as sns
 
+### MCMC
+import emcee
+from multiprocessing import Pool, cpu_count
+import corner
+
+from tqdm import tqdm
 
 ### Constants and Parameters
 
@@ -44,7 +48,6 @@ OMEGA_MATTER = 0.30966
 W_LAMBDA = -1
 HUBBLE = 67.66
 
-ALPHA_IGM = 0.11
 f_IGM = 0.84
 OMEGA_BARYONS = 0.04897
 PI = const.pi

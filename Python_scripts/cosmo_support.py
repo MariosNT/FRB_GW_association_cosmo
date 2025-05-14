@@ -1121,9 +1121,9 @@ def mcmc_plot_results(samples, param_names, savetitle=None, bins=30, target_prob
         bins=bins
     )
     
-    plt.show()
     if savetitle is not None:
         plt.savefig(savetitle+"_corner_plot.png", dpi=300, bbox_inches='tight')
+    plt.show()
     plt.close()
     
     # Plot chains for each parameter
@@ -1136,7 +1136,7 @@ def mcmc_plot_results(samples, param_names, savetitle=None, bins=30, target_prob
             ax.set_xlabel("Sample Number")
     
     plt.tight_layout()
-    plt.show()
     if savetitle is not None:
         plt.savefig(savetitle+"_chains.png", dpi=300, bbox_inches='tight')
+    plt.show()
     plt.close()
