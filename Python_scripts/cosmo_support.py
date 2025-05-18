@@ -1118,7 +1118,9 @@ def mcmc_plot_results(samples, param_names, savetitle=None, bins=30, target_prob
         show_titles=True,
         title_kwargs={"fontsize": 12},
         title_fmt='.3f',
-        bins=bins
+        bins=bins,
+        smooth=True,
+        color='tab:blue'
     )
     
     if savetitle is not None:
