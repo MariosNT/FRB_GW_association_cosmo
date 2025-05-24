@@ -34,6 +34,8 @@ from matplotlib import cm, ticker
 import seaborn as sns
 
 ### MCMC
+
+### MOVE TO THE MCMCM notebooks
 import emcee
 from multiprocessing import Pool, cpu_count
 import corner
