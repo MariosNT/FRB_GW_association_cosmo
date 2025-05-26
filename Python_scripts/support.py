@@ -68,6 +68,11 @@ def posterior_contour_2D(posterior_2D_norm, n=1000):
     f_post = interpolate.interp1d(integral_post, t_post)
     return f_post(np.array([0.99, 0.95, 0.68]))
 
+
+#################################################################
+### Load interpolations for pdf
+###############################
+
 load_arrays=np.load('interpolation/A_C0_Macquart.npz')
 Sigmas=load_arrays['a']
 C0s=load_arrays['c']

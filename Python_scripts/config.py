@@ -31,13 +31,7 @@ from astropy.coordinates import SkyCoord
 import matplotlib.pyplot as plt
 from matplotlib import rcParams
 from matplotlib import cm, ticker
-import seaborn as sns
-
-### MCMC
-
-### MOVE TO THE MCMCM notebooks
-import emcee
-from multiprocessing import Pool, cpu_count
+# import seaborn as sns
 import corner
 
 from tqdm import tqdm

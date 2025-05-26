@@ -2,46 +2,30 @@
 ### Functions to run the MCMC analysis ###
 ##########################################
 
+
+#######################
+### General modules ###
+#######################
+
 from config import *
 from cosmo_support import *
 from support import *
 
+
+####################
+### MCMC modules ###
+####################
+
+import emcee
+from multiprocessing import Pool, cpu_count
 
 ###############################
 ### MCMC Analysis functions ###
 ###############################
 
 
-def calculate_dm_probability_num_HOf_fast1(DM_frb_max, z, F, HOf, e_mu, sigma_host):
-    
-    ## Cosmic calculation    
-    DM_th = DM_IGM_H0_O_b_f_IGM_fast(z=z, H0_O_b_f_IGM=HOf, Om=OMEGA_MATTER, w=-1)
-    
-    Delta_array = np.linspace(0, DM_frb_max / DM_th, 5000)
-    
-    # sigma=sigma_var(np.sqrt(f_variance_delta(F,z)))
-    sigma=f_sqrtvar_delta(F,z)
-    
-    C_0=C0_sigma_inter(sigma)#C0_sigma(sigma,condition='mean')#C0_sigma_inter(sigma)
-    A = A_sigma_inter(sigma)#find_A_sigma(C_0=C_0, sigma=sigma) # A_sigma_inter(sigma)
-    
-    pdf_cosmic = pdf_DM_cosmo(Delta_array, C_0, A=A, sigma=sigma)
-    
-    ## Host calculation
-    pdf_host = pdf_DM_host((1+z)*(DM_frb_max-DM_th * Delta_array), e_mu, sigma_host)
-    
-    ## Combine together    
-    prob = np.trapz(pdf_host*pdf_cosmic, x=Delta_array)
-    
-    ## Transform to probabilities
-    # dDM = np.abs(np.diff(DM_frb_array)[0])/DM_IGM_O_bh_70(z=z, O_bh_70=O_bh_70, Om=OMEGA_MATTER, w=-1,alpha=0)/(1+z)
-    
-    return prob*(1+z)
-
-
 def sigma_error(error):
     return error
-
 
 
 def log_likelihood(theta, data):
