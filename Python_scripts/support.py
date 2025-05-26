@@ -68,20 +68,17 @@ def posterior_contour_2D(posterior_2D_norm, n=1000):
     f_post = interpolate.interp1d(integral_post, t_post)
     return f_post(np.array([0.99, 0.95, 0.68]))
 
-import sys
-print(sys.path)
-
-load_arrays=np.load('./../interpolation/A_C0_Macquart.npz')
-# Sigmas=load_arrays['a']
-# C0s=load_arrays['c']
-# As=load_arrays['b']
+load_arrays=np.load('interpolation/A_C0_Macquart.npz')
+Sigmas=load_arrays['a']
+C0s=load_arrays['c']
+As=load_arrays['b']
 
 
-# C0_sigma_inter = interpolate.interp1d(Sigmas, C0s, kind=1,bounds_error=False, 
-#     # fill_value='extrapolate'
-#     )
+C0_sigma_inter = interpolate.interp1d(Sigmas, C0s, kind=1,bounds_error=False, 
+    # fill_value='extrapolate'
+    )
 
 
-# A_sigma_inter = interpolate.interp1d(Sigmas, As, kind=1,bounds_error=False, 
-#     # fill_value='extrapolate'
-#     )
+A_sigma_inter = interpolate.interp1d(Sigmas, As, kind=1,bounds_error=False, 
+    # fill_value='extrapolate'
+    )
