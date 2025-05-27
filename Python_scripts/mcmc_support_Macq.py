@@ -19,6 +19,27 @@ from support import *
 import emcee
 from multiprocessing import Pool, cpu_count
 
+
+###################################
+### Load interpolations for pdf ###
+###################################
+
+load_arrays=np.load('interpolation/A_C0_Macquart.npz')
+Sigmas=load_arrays['a']
+C0s=load_arrays['c']
+As=load_arrays['b']
+
+
+C0_sigma_inter = interpolate.interp1d(Sigmas, C0s, kind=1,bounds_error=False, 
+    # fill_value='extrapolate'
+    )
+
+
+A_sigma_inter = interpolate.interp1d(Sigmas, As, kind=1,bounds_error=False, 
+    # fill_value='extrapolate'
+    )
+
+
 ###############################
 ### MCMC Analysis functions ###
 ###############################
