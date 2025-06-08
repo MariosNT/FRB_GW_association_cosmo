@@ -1,118 +1,118 @@
-FRB,z,DM,DM_ext,gl,gb,From,Ref
-FRB 20180814A,0.068,190.9,73.3,136.46,16.58,Fan,https://www.nature.com/articles/s41586-018-0864-x
-FRB 20181030A,0.00385,103.396,32.3,133.4,40.9,Fan,https://iopscience.iop.org/article/10.3847/2041-8213/ab4a80
-FRB 20220529A,0.1839,246,176,130.78767,-41.85802,Fan,https://arxiv.org/abs/2503.04727
-FRB 20220610A,1.016,1458.15,1397.15,8.8392,-70.1857,Fan,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4
-FRB 20220717A,0.36295,637.34,489.04,19.83515767,-17.63203224,Fan,https://arxiv.org/pdf/2407.02173
-FRB 20220831A,0.262,1146.25,989.45,110.96,12.47,Fan,https://data.caltech.edu/records/3cd7s-1hx79
-FRB 20230521B,1.354,1342.9,1174.1,115.65,9.97,Fan,https://data.caltech.edu/records/fqmrk-sx247
-FRB 20230814A,0.553,696.4,561.6,112.56,13.2,Fan,https://data.caltech.edu/records/5h96h-7hw86
-FRB 20231220A,0.3355,491.2,411.3,143.29,31.69,Fan,https://data.caltech.edu/records/bsp4b-e5m03
-FRB 20240119A,0.376,483.1,415.1,112.37,43.24,Fan,https://data.caltech.edu/records/19p9x-jnx25
-FRB 20240123A,0.968,1462,1341.8,138.14,15.34,Fan,https://data.caltech.edu/records/snwvs-6fj29
-FRB 20240213A,0.1185,357.4,287.4,136.49,41.57,Fan,https://data.caltech.edu/records/99pa3-q0257
-FRB 20240215A,0.21,549.5,471.6,102.29,30.17,Fan,https://data.caltech.edu/records/9rxv2-g8g33
-FRB 20240229A,0.287,491.15,423.15,131.13,44.11,Fan,https://www.wis-tns.org/object/FRB20240229A/discovery-cert
-FRB 20220204A,0.4012,612.2,529.43,102.26,27.06,Kritti,https://data.caltech.edu/records/0m397-8vy97
-FRB 20220207C,0.0433,262.3,152.98,106.94,18.39,Kritti,https://data.caltech.edu/records/3c8kh-x6373
-FRB 20220208A,0.351,437,316.65,107.62,15.36,Kritti,https://data.caltech.edu/records/3dg2k-38r28
-FRB 20220307B,0.2481,499.15,333.43,116.24,10.47,Kritti,https://data.caltech.edu/records/sxn95-1ym34
-FRB 20220310F,0.478,462.15,386.71,140.02,34.8,Kritti,https://data.caltech.edu/records/8pv69-3en32
-FRB 20220330D,0.3714,468.1,398.75,134.18,42.93,Kritti,https://data.caltech.edu/records/jp35k-ehm67
-FRB 20220418A,0.6213,623.45,555.84,110.75,44.47,Kritti,https://data.caltech.edu/records/jbt97-nb561
-FRB 20220506D,0.3004,369.93,277.81,108.35,16.51,Kritti,https://data.caltech.edu/records/byyt8-y6a26
-FRB 20220509G,0.0894,269.5,184.29,100.94,25.48,Kritti,https://data.caltech.edu/records/53dr5-16b81
-FRB 20220726A,0.3619,686.55,571.37,139.97,17.57,Kritti,https://data.caltech.edu/records/5zakw-b8918
-FRB 20220825A,0.2414,651.2,541.5,106.99,17.79,Kritti,https://data.caltech.edu/records/7zry5-cpa32
-FRB 20220914A,0.1139,631.05,545.86,104.31,26.13,Kritti,https://data.caltech.edu/records/6jbbd-p8572
-FRB 20220920A,0.1582,315,244.68,104.92,38.89,Kritti,https://data.caltech.edu/records/thzm5-ckx73
-FRB 20221012A,0.2847,441.2,357.85,101.14,26.14,Kritti,https://data.caltech.edu/records/rn8j2-g1e84
-FRB 20221027A,0.5422,452.5,375.36,142.66,33.96,Kritti,https://data.caltech.edu/records/05q3a-bgm50
-FRB 20221029A,0.975,1391.05,1317.42,140.39,38.01,Kritti,https://data.caltech.edu/records/91bm6-x2f47
-FRB 20221101B,0.2395,490.7,336.21,113.25,11.06,Kritti,https://data.caltech.edu/records/r7jkw-a4g05
-FRB 20221113A,0.2505,411.027,293.5,139.53,16.99,"Kritti, Fan",https://data.caltech.edu/records/9s8bj-rm791
-FRB 20221116A,0.2764,643.448,466.8,124.47,8.71,"Kritti, Fan",https://data.caltech.edu/records/hevaf-20f84
-FRB 20221219A,0.553,706.708,632.3,103.19,34.07,"Kritti, Fan",https://data.caltech.edu/records/hqdsb-v4n88
-FRB 20230124A,0.0939,590.574,521.1,107.55,40.25,"Kritti, Fan",https://data.caltech.edu/records/m397d-9wf04
-FRB 20230216A,0.531,828,758.8,242.6,46.33,Kritti,https://data.caltech.edu/records/f9g9m-e0873
-FRB 20230307A,0.2706,608.854,550.65,127.35,45,"Kritti, Fan",https://data.caltech.edu/records/c6a0z-0yd73
-FRB 20230501A,0.3015,532.471,383,112.43,11.51,"Kritti, Fan",https://data.caltech.edu/records/x16bp-afh35
-FRB 20230626A,0.327,361.4,381.9,105.68,38.34,"Kritti, Fan",https://data.caltech.edu/records/vwwt9-ets63
-FRB 20230628A,0.127,344.952,276.35,135.48,42.21,"Kritti, Fan",https://data.caltech.edu/records/dcv4j-74144
-FRB 20230712A,0.4525,587.567,518.21,132.31,43.69,"Kritti, Fan",https://data.caltech.edu/records/wrn1x-xnt27
-FRB 20231120A,0.0368,438.9,365.8,140.43,37.94,Kritti,https://data.caltech.edu/records/nbtw5-37m55
-FRB 20231123B,0.2621,396.857,326.1,105.71,38.38,"Kritti, Fan",https://data.caltech.edu/records/6hskc-pfe37
-FRB 20121102A,0.19273,557,339,174.89,-0.23,Surajit,https://iopscience.iop.org/article/10.1088/0004-637X/790/2/101
-FRB 20171020A,0.0086,114.1,46.1,29.3,-51.3,Surajit,https://www.nature.com/articles/s41586-018-0588-y
-FRB 20180301A,0.3304,522,340,204.412,-6.481,Surajit,https://academic.oup.com/mnras/article/486/3/3636/5432360?login=false
-FRB 20180916B,0.0337,349.3,119.3,129.71,3.73,Surajit,https://iopscience.iop.org/article/10.3847/2041-8213/ab4a80
-FRB 20180924B,0.3214,361.42,290.92,0.7424,-49.4147,Surajit,https://www.science.org/doi/10.1126/science.aaw5903
-FRB 20181112A,0.4755,589.27,457.27,342.5995,-47.6988,Surajit,https://www.science.org/doi/10.1126/science.aay0073
-FRB 20181220A,0.02746,209.4,53.4,105.24,-10.73,Surajit,https://www.chime-frb.ca/catalog/FRB20181220A
-FRB 20181223C,0.03024,112.5,62.5,207.75,79.51,Surajit,https://www.chime-frb.ca/catalog/FRB20181223C
-FRB 20190102C,0.291,363.6,276.3,312.6537,-33.4931,Surajit,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4
-FRB 20190110C,0.12244,221.6,154.5,65.6,42.1,Surajit,https://iopscience.iop.org/article/10.3847/1538-4357/acc6c1
-FRB 20190303A,0.064,222.4,163.4,97.5,65.7,Surajit,https://iopscience.iop.org/article/10.3847/2041-8213/ab7208
-FRB 20190418A,0.07132,184.5,83.5,179.3,-22.93,Surajit,https://www.chime-frb.ca/catalog/FRB20190418A
-FRB 20190425A,0.03122,128.2,49.2,42.06,33.02,Surajit,https://www.chime-frb.ca/catalog/FRB20190425A
-FRB 20190520B,0.241,1204.7,1061.7,359.67,29.91,Surajit,https://www.nature.com/articles/s41586-022-04755-5
-FRB 20190523A,0.66,760.8,693.8,117.03,44,Surajit,https://www.nature.com/articles/s41586-019-1389-7
-FRB 20190608B,0.1178,338.7,271.5,53.2088,-48.5296,Surajit,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4
-FRB 20190611B,0.3778,321.4,233.57,312.9352,-33.2818,Surajit,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4
-FRB 20190614D,0.6,959.2,845.7,136.3,16.5,Surajit,https://www.wis-tns.org/object/frb20190614d
-FRB 20190711A,0.522,593.1,506.7,310.9081,-33.902,Surajit,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4
-FRB 20190714A,0.2365,504,435,289.6972,48.9359,Surajit,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4
-FRB 20191001A,0.234,506.92,432.22,341.2267,-44.9039,Surajit,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4
-FRB 20191106C,0.10775,332.2,277.2,105.7,73.2,Surajit,https://iopscience.iop.org/article/10.3847/1538-4357/acc6c1
-FRB 20191228A,0.2432,297.5,234.5,20.5553,-64.9245,Surajit,https://iopscience.iop.org/article/10.3847/1538-3881/ac3aec
-FRB 20200223B,0.0602,201.8,126.2,118.1,-33.9,Surajit,https://iopscience.iop.org/article/10.3847/1538-4357/acc6c1
-FRB 20200430A,0.16,380.1,323.1,17.1396,52.503,Surajit,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4
-FRB 20200906A,0.3688,577.8,511.8,202.257,-49.9989,Surajit,https://iopscience.iop.org/article/10.3847/1538-3881/ac3aec
-FRB 20201123A,0.05,433.55,151.62,340.23,-9.68,Surajit,https://academic.oup.com/mnras/article/514/2/1961/6595347?login=false
-FRB 20201124A,0.098,413.52,260.32,177.6,-8.5,Surajit,https://www.wis-tns.org/object/frb20201124a
-FRB 20210117A,0.2145,730,665.6,45.9175,-57.6464,Surajit,https://iopscience.iop.org/article/10.3847/1538-4357/acc178
-FRB 20210320C,0.2797,384.8,312.8,318.8729,45.3081,Surajit,https://arxiv.org/abs/2302.05465
-FRB 20210405I,0.066,565.17,19.07,338.19,-4.59,Surajit,https://www.wis-tns.org/object/frb20210405i
-FRB 20210410D,0.1415,578.78,492.58,312.32,-34.13,Surajit,https://www.wis-tns.org/object/frb20210410d
-FRB 20210603A,0.177,500.147,430.15,119.71,-41.58,Surajit,https://arxiv.org/abs/2307.09502
-FRB 20210807D,0.12927,251.9,100.7,39.8612,-14.8775,Surajit,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4
-FRB 20211127I,0.0469,234.83,162.33,312.0214,43.5427,Surajit,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4
-FRB 20211203C,0.3437,636.2,543.2,314.5185,30.4361,Surajit,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4
-FRB 20211212A,0.0715,206,148.9,244.0081,47.3154,Surajit,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4
-FRB 20220105A,0.2785,583,531,18.555,74.808,Surajit,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4
-FRB 20220319D,0.011,110.95,15.7,129.18,9.11,Surajit,https://data.caltech.edu/records/z80e7-7wk68
-FRB 20220501C,0.381,449.5,388.5,11.1777,-71.4731,Surajit,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4
-FRB 20220610A,1.017,1458,1397,8.8392,-70.1857,Surajit,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4
-FRB 20220725A,0.1962,290.4,229.4,0.0017,-71.1863,Surajit,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4
-FRB 20220912A,0.077,651.24,64.46,347.27,48.7,Surajit,https://www.astronomerstelegram.org/?read=15679
-FRB 20220918A,0.491,656.8,585.8,300.6851,-46.2342,Surajit,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4
-FRB 20221106A,0.2044,314.99,278.8,220.901,-50.8788,Surajit,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4
-FRB 20230526A,0.157,361.4,281.4,290.171,-63.4721,Surajit,https://www.wis-tns.org/object/frb20230526a
-FRB 20230708A,0.105,411.51,331.51,342.6288,-33.3877,Surajit,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4
-FRB 20230718A,0.0357,476.6,53.6,259.4629,-0.3666,Surajit,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4
-FRB 20230902A,0.3619,440.1,376.1,256.9906,-53.3387,Surajit,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4
-FRB 20231226A,0.1569,329.9,154.9,236.5768,48.6458,Surajit,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4
-FRB 20240114A,0.42,527.7,457.7,57.73,-31.68,Surajit,https://www.astronomerstelegram.org/?read=16420
-FRB 20240201A,0.042729,374.5,306.5,222.1335,47.9692,Surajit,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4
-FRB 20240210A,0.023686,283.8,222.73,14.4396,-86.2116,Surajit,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4
-FRB 20240310A,0.127,601.8,535.8,291.7066,-72.2713,Surajit,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4
-FRB 20200120E,0.0008,87.82,17.74,142.19,41.22, kirsten2022repeating200120 ,https://iopscience.iop.org/article/10.3847/2041-8213/abeaa6
-FRB 20230203A,0.1464,420.1,354.81,188.7125372,54.08702676,"CHIME2025 (original RA, DEC)",https://arxiv.org/pdf/2502.11217
-FRB 20230222A,0.1223,706.1,556.03,204.7163778,8.695736261,CHIME2025,https://arxiv.org/pdf/2502.11217
-FRB 20230222B,0.11,187.8,130.18,49.61758206,49.97872118,CHIME2025,https://arxiv.org/pdf/2502.11217
-FRB 20230311A,0.1918,364.3,248.31,157.7133766,16.03946791,CHIME2025,https://arxiv.org/pdf/2502.11217
-FRB 20230703A,0.1184,291.3,234.6,137.2097857,67.47502062,CHIME2025,https://arxiv.org/pdf/2502.11217
-FRB 20230730A,0.2115,312.5,201.92,158.8166352,-17.81644809,CHIME2025,https://arxiv.org/pdf/2502.11217
-FRB 20230926A,0.0553,222.8,139.28,68.23527902,27.48398452,CHIME2025,https://arxiv.org/pdf/2502.11217
-FRB 20231005A,0.0713,189.4,125.08,57.16529291,44.35315679,CHIME2025,https://arxiv.org/pdf/2502.11217
-FRB 20231011A,0.0783,186.3,87.08,127.2286992,-20.94298363,CHIME2025,https://arxiv.org/pdf/2502.11217
-FRB 20231017A,0.245,344.2,249.31,100.6098004,-21.65190357,CHIME2025,https://arxiv.org/pdf/2502.11217
-FRB 20231025B,0.3238,368.7,289.45,93.43324314,29.43399566,CHIME2025,https://arxiv.org/pdf/2502.11217
-FRB 20231123A,0.0729,302.1,186.69,199.3094435,-15.74274898,CHIME2025,https://arxiv.org/pdf/2502.11217
-FRB 20231128A,0.1079,331.6,271.27,105.6852393,73.2240021,CHIME2025,https://arxiv.org/pdf/2502.11217
-FRB 20231201A,0.1119,169.4,71.94,163.0405249,-22.7702363,CHIME2025,https://arxiv.org/pdf/2502.11217
-FRB 20231204A,0.0644,221,159.94,97.62375629,65.92814517,CHIME2025,https://arxiv.org/pdf/2502.11217
-FRB 20231206A,0.0659,457.7,370.12,161.0581675,27.48189499,CHIME2025,https://arxiv.org/pdf/2502.11217
-FRB 20231223C,0.1059,165.8,87.07,52.31072392,32.08016178,CHIME2025,https://arxiv.org/pdf/2502.11217
-FRB 20231229A,0.019,198.5,110.98,135.344911,-26.44334852,CHIME2025,https://arxiv.org/pdf/2502.11217
-FRB 20231230A,0.0298,131.4,41.02,195.8701482,-25.2386886,CHIME2025,https://arxiv.org/pdf/2502.11217
+FRB,z,DM,DM_ext,gl,gb,From,Ref,Ref.
+FRB 20180814A,0.068,190.9,73.3,136.46,16.58,Fan,https://www.nature.com/articles/s41586-018-0864-x,https://www.nature.com/articles/s41586-018-0864-x
+FRB 20181030A,0.00385,103.396,32.3,133.4,40.9,Fan,https://iopscience.iop.org/article/10.3847/2041-8213/ab4a80,https://iopscience.iop.org/article/10.3847/2041-8213/ab4a80
+FRB 20220529A,0.1839,246,176,130.78767,-41.85802,Fan,https://arxiv.org/abs/2503.04727,https://arxiv.org/abs/2503.04727
+FRB 20220610A,1.016,1458.15,1397.15,8.8392,-70.1857,Fan,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4
+FRB 20220717A,0.36295,637.34,489.04,19.83515767,-17.63203224,Fan,https://arxiv.org/pdf/2407.02173,https://arxiv.org/pdf/2407.02173
+FRB 20220831A,0.262,1146.25,989.45,110.96,12.47,Fan,https://data.caltech.edu/records/3cd7s-1hx79,https://arxiv.org/pdf/2409.16952
+FRB 20230521B,1.354,1342.9,1174.1,115.65,9.97,Fan,https://data.caltech.edu/records/fqmrk-sx247,https://arxiv.org/pdf/2409.16952
+FRB 20230814A,0.553,696.4,561.6,112.56,13.2,Fan,https://data.caltech.edu/records/5h96h-7hw86,https://arxiv.org/pdf/2409.16952
+FRB 20231220A,0.3355,491.2,411.3,143.29,31.69,Fan,https://data.caltech.edu/records/bsp4b-e5m03,https://arxiv.org/pdf/2409.16952
+FRB 20240119A,0.376,483.1,415.1,112.37,43.24,Fan,https://data.caltech.edu/records/19p9x-jnx25,https://arxiv.org/pdf/2409.16952
+FRB 20240123A,0.968,1462,1341.8,138.14,15.34,Fan,https://data.caltech.edu/records/snwvs-6fj29,https://arxiv.org/pdf/2409.16952
+FRB 20240213A,0.1185,357.4,287.4,136.49,41.57,Fan,https://data.caltech.edu/records/99pa3-q0257,https://arxiv.org/pdf/2409.16952
+FRB 20240215A,0.21,549.5,471.6,102.29,30.17,Fan,https://data.caltech.edu/records/9rxv2-g8g33,https://arxiv.org/pdf/2409.16952
+FRB 20240229A,0.287,491.15,423.15,131.13,44.11,Fan,https://www.wis-tns.org/object/FRB20240229A/discovery-cert,https://www.wis-tns.org/object/FRB20240229A/discovery-cert
+FRB 20220204A,0.4012,612.2,529.43,102.26,27.06,Kritti,https://data.caltech.edu/records/0m397-8vy97,https://arxiv.org/pdf/2409.16952
+FRB 20220207C,0.0433,262.3,152.98,106.94,18.39,Kritti,https://data.caltech.edu/records/3c8kh-x6373,https://arxiv.org/pdf/2409.16952
+FRB 20220208A,0.351,437,316.65,107.62,15.36,Kritti,https://data.caltech.edu/records/3dg2k-38r28,https://arxiv.org/pdf/2409.16952
+FRB 20220307B,0.2481,499.15,333.43,116.24,10.47,Kritti,https://data.caltech.edu/records/sxn95-1ym34,https://arxiv.org/pdf/2409.16952
+FRB 20220310F,0.478,462.15,386.71,140.02,34.8,Kritti,https://data.caltech.edu/records/8pv69-3en32,https://arxiv.org/pdf/2409.16952
+FRB 20220330D,0.3714,468.1,398.75,134.18,42.93,Kritti,https://data.caltech.edu/records/jp35k-ehm67,https://arxiv.org/pdf/2409.16952
+FRB 20220418A,0.6213,623.45,555.84,110.75,44.47,Kritti,https://data.caltech.edu/records/jbt97-nb561,https://arxiv.org/pdf/2409.16952
+FRB 20220506D,0.3004,369.93,277.81,108.35,16.51,Kritti,https://data.caltech.edu/records/byyt8-y6a26,https://arxiv.org/pdf/2409.16952
+FRB 20220509G,0.0894,269.5,184.29,100.94,25.48,Kritti,https://data.caltech.edu/records/53dr5-16b81,https://arxiv.org/pdf/2409.16952
+FRB 20220726A,0.3619,686.55,571.37,139.97,17.57,Kritti,https://data.caltech.edu/records/5zakw-b8918,https://arxiv.org/pdf/2409.16952
+FRB 20220825A,0.2414,651.2,541.5,106.99,17.79,Kritti,https://data.caltech.edu/records/7zry5-cpa32,https://arxiv.org/pdf/2409.16952
+FRB 20220914A,0.1139,631.05,545.86,104.31,26.13,Kritti,https://data.caltech.edu/records/6jbbd-p8572,https://arxiv.org/pdf/2409.16952
+FRB 20220920A,0.1582,315,244.68,104.92,38.89,Kritti,https://data.caltech.edu/records/thzm5-ckx73,https://arxiv.org/pdf/2409.16952
+FRB 20221012A,0.2847,441.2,357.85,101.14,26.14,Kritti,https://data.caltech.edu/records/rn8j2-g1e84,https://arxiv.org/pdf/2409.16952
+FRB 20221027A,0.5422,452.5,375.36,142.66,33.96,Kritti,https://data.caltech.edu/records/05q3a-bgm50,https://arxiv.org/pdf/2409.16952
+FRB 20221029A,0.975,1391.05,1317.42,140.39,38.01,Kritti,https://data.caltech.edu/records/91bm6-x2f47,https://arxiv.org/pdf/2409.16952
+FRB 20221101B,0.2395,490.7,336.21,113.25,11.06,Kritti,https://data.caltech.edu/records/r7jkw-a4g05,https://arxiv.org/pdf/2409.16952
+FRB 20221113A,0.2505,411.027,293.5,139.53,16.99,"Kritti, Fan",https://data.caltech.edu/records/9s8bj-rm791,https://arxiv.org/pdf/2409.16952
+FRB 20221116A,0.2764,643.448,466.8,124.47,8.71,"Kritti, Fan",https://data.caltech.edu/records/hevaf-20f84,https://arxiv.org/pdf/2409.16952
+FRB 20221219A,0.553,706.708,632.3,103.19,34.07,"Kritti, Fan",https://data.caltech.edu/records/hqdsb-v4n88,https://arxiv.org/pdf/2409.16952
+FRB 20230124A,0.0939,590.574,521.1,107.55,40.25,"Kritti, Fan",https://data.caltech.edu/records/m397d-9wf04,https://arxiv.org/pdf/2409.16952
+FRB 20230216A,0.531,828,758.8,242.6,46.33,Kritti,https://data.caltech.edu/records/f9g9m-e0873,https://arxiv.org/pdf/2409.16952
+FRB 20230307A,0.2706,608.854,550.65,127.35,45,"Kritti, Fan",https://data.caltech.edu/records/c6a0z-0yd73,https://arxiv.org/pdf/2409.16952
+FRB 20230501A,0.3015,532.471,383,112.43,11.51,"Kritti, Fan",https://data.caltech.edu/records/x16bp-afh35,https://arxiv.org/pdf/2409.16952
+FRB 20230626A,0.327,361.4,381.9,105.68,38.34,"Kritti, Fan",https://data.caltech.edu/records/vwwt9-ets63,https://arxiv.org/pdf/2409.16952
+FRB 20230628A,0.127,344.952,276.35,135.48,42.21,"Kritti, Fan",https://data.caltech.edu/records/dcv4j-74144,https://arxiv.org/pdf/2409.16952
+FRB 20230712A,0.4525,587.567,518.21,132.31,43.69,"Kritti, Fan",https://data.caltech.edu/records/wrn1x-xnt27,https://arxiv.org/pdf/2409.16952
+FRB 20231120A,0.0368,438.9,365.8,140.43,37.94,Kritti,https://data.caltech.edu/records/nbtw5-37m55,https://arxiv.org/pdf/2409.16952
+FRB 20231123B,0.2621,396.857,326.1,105.71,38.38,"Kritti, Fan",https://data.caltech.edu/records/6hskc-pfe37,https://arxiv.org/pdf/2409.16952
+FRB 20121102A,0.19273,557,339,174.89,-0.23,Surajit,https://iopscience.iop.org/article/10.1088/0004-637X/790/2/101,https://iopscience.iop.org/article/10.1088/0004-637X/790/2/101
+FRB 20171020A,0.0086,114.1,46.1,29.3,-51.3,Surajit,https://www.nature.com/articles/s41586-018-0588-y,https://iopscience.iop.org/article/10.3847/2041-8213/aae7cb
+FRB 20180301A,0.3304,522,340,204.412,-6.481,Surajit,https://academic.oup.com/mnras/article/486/3/3636/5432360?login=false,https://iopscience.iop.org/article/10.3847/1538-3881/ac3aec
+FRB 20180916B,0.0337,349.3,119.3,129.71,3.73,Surajit,https://iopscience.iop.org/article/10.3847/2041-8213/ab4a80,https://iopscience.iop.org/article/10.3847/2041-8213/ab4a80
+FRB 20180924B,0.3214,361.42,290.92,0.7424,-49.4147,Surajit,https://www.science.org/doi/10.1126/science.aaw5903,https://www.science.org/doi/10.1126/science.aaw5903
+FRB 20181112A,0.4755,589.27,457.27,342.5995,-47.6988,Surajit,https://www.science.org/doi/10.1126/science.aay0073,https://www.science.org/doi/10.1126/science.aay0073
+FRB 20181220A,0.02746,209.4,53.4,105.24,-10.73,Surajit,https://www.chime-frb.ca/catalog/FRB20181220A,CHIME4
+FRB 20181223C,0.03024,112.5,62.5,207.75,79.51,Surajit,https://www.chime-frb.ca/catalog/FRB20181223C,CHIME4
+FRB 20190102C,0.291,363.6,276.3,312.6537,-33.4931,Surajit,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4,Macquart
+FRB 20190110C,0.12244,221.6,154.5,65.6,42.1,Surajit,https://iopscience.iop.org/article/10.3847/1538-4357/acc6c1,CHIME_host
+FRB 20190303A,0.064,222.4,163.4,97.5,65.7,Surajit,https://iopscience.iop.org/article/10.3847/2041-8213/ab7208,CHIME13
+FRB 20190418A,0.07132,184.5,83.5,179.3,-22.93,Surajit,https://www.chime-frb.ca/catalog/FRB20190418A,CHIME4
+FRB 20190425A,0.03122,128.2,49.2,42.06,33.02,Surajit,https://www.chime-frb.ca/catalog/FRB20190425A,CHIME4
+FRB 20190520B,0.241,1204.7,1061.7,359.67,29.91,Surajit,https://www.nature.com/articles/s41586-022-04755-5,https://www.nature.com/articles/s41586-022-04755-5
+FRB 20190523A,0.66,760.8,693.8,117.03,44,Surajit,https://www.nature.com/articles/s41586-019-1389-7,https://www.nature.com/articles/s41586-019-1389-7
+FRB 20190608B,0.1178,338.7,271.5,53.2088,-48.5296,Surajit,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4
+FRB 20190611B,0.3778,321.4,233.57,312.9352,-33.2818,Surajit,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4
+FRB 20190614D,0.6,959.2,845.7,136.3,16.5,Surajit,https://www.wis-tns.org/object/frb20190614d,https://iopscience.iop.org/article/10.3847/1538-4357/aba4ac
+FRB 20190711A,0.522,593.1,506.7,310.9081,-33.902,Surajit,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4
+FRB 20190714A,0.2365,504,435,289.6972,48.9359,Surajit,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4
+FRB 20191001A,0.234,506.92,432.22,341.2267,-44.9039,Surajit,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4
+FRB 20191106C,0.10775,332.2,277.2,105.7,73.2,Surajit,https://iopscience.iop.org/article/10.3847/1538-4357/acc6c1,CHIME_host
+FRB 20191228A,0.2432,297.5,234.5,20.5553,-64.9245,Surajit,https://iopscience.iop.org/article/10.3847/1538-3881/ac3aec,https://iopscience.iop.org/article/10.3847/1538-3881/ac3aec
+FRB 20200223B,0.0602,201.8,126.2,118.1,-33.9,Surajit,https://iopscience.iop.org/article/10.3847/1538-4357/acc6c1,CHIME_host
+FRB 20200430A,0.16,380.1,323.1,17.1396,52.503,Surajit,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4
+FRB 20200906A,0.3688,577.8,511.8,202.257,-49.9989,Surajit,https://iopscience.iop.org/article/10.3847/1538-3881/ac3aec,https://iopscience.iop.org/article/10.3847/1538-3881/ac3aec
+FRB 20201123A,0.05,433.55,151.62,340.23,-9.68,Surajit,https://academic.oup.com/mnras/article/514/2/1961/6595347?login=false,https://academic.oup.com/mnras/article/514/2/1961/6595347?login=false
+FRB 20201124A,0.098,413.52,260.32,177.6,-8.5,Surajit,https://www.wis-tns.org/object/frb20201124a,https://ui.adsabs.harvard.edu/abs/2022MNRAS.513..982R/abstract
+FRB 20210117A,0.2145,730,665.6,45.9175,-57.6464,Surajit,https://iopscience.iop.org/article/10.3847/1538-4357/acc178,https://iopscience.iop.org/article/10.3847/1538-4357/acc178
+FRB 20210320C,0.2797,384.8,312.8,318.8729,45.3081,Surajit,https://arxiv.org/abs/2302.05465,https://arxiv.org/abs/2302.05465
+FRB 20210405I,0.066,565.17,19.07,338.19,-4.59,Surajit,https://www.wis-tns.org/object/frb20210405i,20210405I
+FRB 20210410D,0.1415,578.78,492.58,312.32,-34.13,Surajit,https://www.wis-tns.org/object/frb20210410d,https://www.wis-tns.org/object/frb20210410d
+FRB 20210603A,0.177,500.147,430.15,119.71,-41.58,Surajit,https://arxiv.org/abs/2307.09502,https://arxiv.org/abs/2307.09502
+FRB 20210807D,0.12927,251.9,100.7,39.8612,-14.8775,Surajit,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4
+FRB 20211127I,0.0469,234.83,162.33,312.0214,43.5427,Surajit,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4
+FRB 20211203C,0.3437,636.2,543.2,314.5185,30.4361,Surajit,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4
+FRB 20211212A,0.0715,206,148.9,244.0081,47.3154,Surajit,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4
+FRB 20220105A,0.2785,583,531,18.555,74.808,Surajit,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4
+FRB 20220319D,0.011,110.95,15.7,129.18,9.11,Surajit,https://data.caltech.edu/records/z80e7-7wk68,https://data.caltech.edu/records/z80e7-7wk68
+FRB 20220501C,0.381,449.5,388.5,11.1777,-71.4731,Surajit,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4
+FRB 20220610A,1.017,1458,1397,8.8392,-70.1857,Surajit,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4
+FRB 20220725A,0.1962,290.4,229.4,0.0017,-71.1863,Surajit,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4
+FRB 20220912A,0.077,651.24,64.46,347.27,48.7,Surajit,https://www.astronomerstelegram.org/?read=15679,https://www.astronomerstelegram.org/?read=15679
+FRB 20220918A,0.491,656.8,585.8,300.6851,-46.2342,Surajit,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4
+FRB 20221106A,0.2044,314.99,278.8,220.901,-50.8788,Surajit,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4
+FRB 20230526A,0.157,361.4,281.4,290.171,-63.4721,Surajit,https://www.wis-tns.org/object/frb20230526a,https://www.wis-tns.org/object/frb20230526a
+FRB 20230708A,0.105,411.51,331.51,342.6288,-33.3877,Surajit,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4
+FRB 20230718A,0.0357,476.6,53.6,259.4629,-0.3666,Surajit,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4
+FRB 20230902A,0.3619,440.1,376.1,256.9906,-53.3387,Surajit,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4
+FRB 20231226A,0.1569,329.9,154.9,236.5768,48.6458,Surajit,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4
+FRB 20240114A,0.42,527.7,457.7,57.73,-31.68,Surajit,https://www.astronomerstelegram.org/?read=16420,https://www.astronomerstelegram.org/?read=16420
+FRB 20240201A,0.042729,374.5,306.5,222.1335,47.9692,Surajit,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4
+FRB 20240210A,0.023686,283.8,222.73,14.4396,-86.2116,Surajit,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4
+FRB 20240310A,0.127,601.8,535.8,291.7066,-72.2713,Surajit,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4,https://www.cambridge.org/core/journals/publications-of-the-astronomical-society-of-australia/article/commensal-realtime-askap-fast-transient-incoherentsum-survey/3486D8F81134D00A43DACFAC9831FAA4
+FRB 20200120E,0.0008,87.82,17.74,142.19,41.22, kirsten2022repeating200120 ,https://iopscience.iop.org/article/10.3847/2041-8213/abeaa6,https://iopscience.iop.org/article/10.3847/2041-8213/abeaa6
+FRB 20230203A,0.1464,420.1,354.81,188.7125372,54.08702676,"CHIME2025 (original RA, DEC)",https://arxiv.org/pdf/2502.11217,https://arxiv.org/pdf/2502.11217
+FRB 20230222A,0.1223,706.1,556.03,204.7163778,8.695736261,CHIME2025,https://arxiv.org/pdf/2502.11217,https://arxiv.org/pdf/2502.11217
+FRB 20230222B,0.11,187.8,130.18,49.61758206,49.97872118,CHIME2025,https://arxiv.org/pdf/2502.11217,https://arxiv.org/pdf/2502.11217
+FRB 20230311A,0.1918,364.3,248.31,157.7133766,16.03946791,CHIME2025,https://arxiv.org/pdf/2502.11217,https://arxiv.org/pdf/2502.11217
+FRB 20230703A,0.1184,291.3,234.6,137.2097857,67.47502062,CHIME2025,https://arxiv.org/pdf/2502.11217,https://arxiv.org/pdf/2502.11217
+FRB 20230730A,0.2115,312.5,201.92,158.8166352,-17.81644809,CHIME2025,https://arxiv.org/pdf/2502.11217,https://arxiv.org/pdf/2502.11217
+FRB 20230926A,0.0553,222.8,139.28,68.23527902,27.48398452,CHIME2025,https://arxiv.org/pdf/2502.11217,https://arxiv.org/pdf/2502.11217
+FRB 20231005A,0.0713,189.4,125.08,57.16529291,44.35315679,CHIME2025,https://arxiv.org/pdf/2502.11217,https://arxiv.org/pdf/2502.11217
+FRB 20231011A,0.0783,186.3,87.08,127.2286992,-20.94298363,CHIME2025,https://arxiv.org/pdf/2502.11217,https://arxiv.org/pdf/2502.11217
+FRB 20231017A,0.245,344.2,249.31,100.6098004,-21.65190357,CHIME2025,https://arxiv.org/pdf/2502.11217,https://arxiv.org/pdf/2502.11217
+FRB 20231025B,0.3238,368.7,289.45,93.43324314,29.43399566,CHIME2025,https://arxiv.org/pdf/2502.11217,https://arxiv.org/pdf/2502.11217
+FRB 20231123A,0.0729,302.1,186.69,199.3094435,-15.74274898,CHIME2025,https://arxiv.org/pdf/2502.11217,https://arxiv.org/pdf/2502.11217
+FRB 20231128A,0.1079,331.6,271.27,105.6852393,73.2240021,CHIME2025,https://arxiv.org/pdf/2502.11217,https://arxiv.org/pdf/2502.11217
+FRB 20231201A,0.1119,169.4,71.94,163.0405249,-22.7702363,CHIME2025,https://arxiv.org/pdf/2502.11217,https://arxiv.org/pdf/2502.11217
+FRB 20231204A,0.0644,221,159.94,97.62375629,65.92814517,CHIME2025,https://arxiv.org/pdf/2502.11217,https://arxiv.org/pdf/2502.11217
+FRB 20231206A,0.0659,457.7,370.12,161.0581675,27.48189499,CHIME2025,https://arxiv.org/pdf/2502.11217,https://arxiv.org/pdf/2502.11217
+FRB 20231223C,0.1059,165.8,87.07,52.31072392,32.08016178,CHIME2025,https://arxiv.org/pdf/2502.11217,https://arxiv.org/pdf/2502.11217
+FRB 20231229A,0.019,198.5,110.98,135.344911,-26.44334852,CHIME2025,https://arxiv.org/pdf/2502.11217,https://arxiv.org/pdf/2502.11217
+FRB 20231230A,0.0298,131.4,41.02,195.8701482,-25.2386886,CHIME2025,https://arxiv.org/pdf/2502.11217,https://arxiv.org/pdf/2502.11217
