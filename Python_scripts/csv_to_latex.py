@@ -82,7 +82,7 @@ def dataframe_to_latex_long_ref(data, output_file=None, caption="", label="", he
         
         # Add reference to tablecomments
         if ref_comments:
-            latex_code += f"\n\\tablecomments{{{'; '.join(ref_comments)}}}"
+            latex_code += f"\n\\tablecomments{{{'Reference: '+'; '.join(ref_comments)}}}"
         
         latex_code += "\n\\end{deluxetable}"
         
@@ -351,11 +351,12 @@ if __name__ == "__main__":
 def format_column_name(col):
     col = col.strip()
     
-    if 'DM_ext' in col:
-        col = col.replace('DM_ext', r'$\DM_{\rm ext}$')
+    """ if 'DM_MW, ISM' in col:
+        col = col.replace('DM_MW, ISM', r'$\DM_{\rm MW,ISM}$')
     else:
-        col = col.replace('_', r'\_')
-        
+        col = col.replace('_', r'\_') """
+    
+    # col = col.replace('_', r'\_')
     col = col.replace('%', '\\%')
     col = col.replace('#', '\\#')
     
