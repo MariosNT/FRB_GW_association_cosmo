@@ -2,6 +2,112 @@ import pandas as pd
 import argparse
 import sys
 
+# For a longtable or deluxetable LaTeX table with reference in footnote
+def dataframe_to_latex_long_ref(data, output_file=None, caption="", label="", head2="", refcol='Ref.'):
+    try:
+        # type
+        if isinstance(data, pd.DataFrame):
+            df = data.copy() 
+        elif isinstance(data, str):
+            df = pd.read_csv(data)
+        else:
+            raise ValueError("input must be pandas DataFrame or CSV path")
+        
+        # Reference column to number
+        ref_mapping = {}
+        ref_comments = []
+        
+        if refcol in df.columns:
+            # Get only reference
+            all_refs = set()
+            for cell in df[refcol].dropna():
+                if isinstance(cell, str):
+                    # split by ','
+                    refs_in_cell = [ref.strip() for ref in cell.split(',') if ref.strip()]
+                    all_refs.update(refs_in_cell)
+            
+            # Give number for reference
+            for i, ref in enumerate(sorted(all_refs), 1):
+                ref_mapping[ref] = str(i)
+                ref_comments.append(f"({i}) \\citet{{{ref}}}")
+            
+            # Replace refcol to number
+            def convert_refs_to_numbers(cell):
+                if pd.isna(cell) or cell == '':
+                    return ''
+                refs_in_cell = [ref.strip() for ref in str(cell).split(',') if ref.strip()]
+                numbers = [ref_mapping.get(ref, ref) for ref in refs_in_cell]
+                return ', '.join(numbers)
+            
+            df[refcol] = df[refcol].apply(convert_refs_to_numbers)
+        
+        df.columns = [format_column_name(col) for col in df.columns]
+        
+        for col in df.columns:
+            if df[col].dtype == 'object':
+                df[col] = df[col].str.replace('%', '\\%')
+                df[col] = df[col].str.replace('#', '\\#')
+                df[col] = df[col].str.replace('&', '\\&')
+
+        num_cols = len(df.columns)
+        col_format = 'c' * num_cols
+        
+        latex_code = f"""\\startlongtable"""
+
+        latex_code += f"""\n\\begin{{deluxetable}}{{{col_format}}}"""
+
+        if label:
+            latex_code += f"\n\\label{{{label}}}"
+            
+        latex_code += "\n\\centering"
+        
+        if caption:
+            latex_code += f"\n\\tablecaption{{{caption}}}\n"
+        
+        # head
+        colhead_format = [f'\\colhead{{{col}}}' for col in df.columns]
+        header_row = '\\tablehead{' + ' & '.join(colhead_format) + ' \\\\'
+        latex_code += header_row
+        if head2:
+            latex_code += f"\n{head2}"
+        latex_code += '\n}\n'
+        
+        # data
+        latex_code += """\\startdata\n"""
+        for _, row in df.iterrows():
+            data_row = ' & '.join([str(val) for val in row.values]) + ' \\\\'
+            latex_code += data_row + '\n'
+        
+        latex_code += """\\enddata"""
+        
+        # Add reference to tablecomments
+        if ref_comments:
+            latex_code += f"\n\\tablecomments{{{'; '.join(ref_comments)}}}"
+        
+        latex_code += "\n\\end{deluxetable}"
+        
+        # output
+        if output_file:
+            with open(output_file, 'w', encoding='utf-8') as f:
+                f.write(latex_code)
+            print(f"LaTeX already save to: {output_file}")
+        else:
+            print("LaTeX table code:")
+            print("-" * 50)
+            print(latex_code)
+        
+        return latex_code
+        
+    except FileNotFoundError:
+        print(f"error: cannot find file '{data}'")
+        return None
+    except ValueError as e:
+        print(f"input error: {str(e)}")
+        return None
+    except Exception as e:
+        print(f"error when convert: {str(e)}")
+        return None
+
 # For a longtable or deluxetable LaTeX table
 def dataframe_to_latex_long(data, output_file=None, caption="", label="",head2=""):
     try:
