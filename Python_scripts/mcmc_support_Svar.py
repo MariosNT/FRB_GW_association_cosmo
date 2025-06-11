@@ -72,7 +72,7 @@ def log_likelihood(theta, data):
     try:
         for _, row in data.iterrows():
             prob = calculate_dm_probability_num_HOf_fast(
-                DM_frb_max=row['DM_ext'],
+                DM_frb_max=row['DM_ext(ne2001)'],
                 z=row['z'],
                 S=S,
                 HOf=HOf,
