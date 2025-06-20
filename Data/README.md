@@ -51,7 +51,8 @@ To calculate ${\rm DM}_{\rm ext}$ we have used: ${\rm DM}_{\rm ext}={\rm DM}-50-
 ## FRB data
 
 - `FRB_new.csv` is the new dataset, produce by preprocessing `FRB.csv` with `FRB_DM_ext_recalculate.ipynb`, which uses the `pygedm` package to calculate ${\rm DM}_{\rm MW,\ ISM}$ with the `ne2001` model. For the other parameters for the ${\rm DM}$:
-  - We assumes ${\rm DM}_{\rm MW,\ halo}=30$.
+  - We assume ${\rm DM}_{\rm MW,\ halo}=30$.
   - ${\rm DM}_{\rm ext}$ is calculated as: ${\rm DM}_{\rm ext}({\rm ne2001})={\rm DM}_{\rm obs}-{\rm DM}_{\rm MW, \ ISM}-{\rm DM}_{\rm MW,\ halo} = {\rm DM}_{\rm diff} + {\rm DM}_{\rm host,\ src}$. 
   - We drop the FRB  20220319D, which has negative ${\rm DM}_{\rm ext}$. 
+  - In the `FRB.csv`, for the calculation of ${\rm DM_{\rm ext}}$ we take the values from the literature (as specified in the file)
 

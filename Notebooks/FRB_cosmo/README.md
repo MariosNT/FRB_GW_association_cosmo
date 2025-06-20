@@ -14,3 +14,7 @@ In order to keep the cosmological and host dependence on ${\rm DM}$, we need to 
 All the packages model the `NE2001` model for the galactic distribution of free electrons. Original papers [[Cordes & Lazio, 2002](https://arxiv.org/abs/astro-ph/0207156)] and [[Cordes & Lazio, 2003](https://arxiv.org/abs/astro-ph/0301598)].
 
 We use the `pygedm` package for the final results, since it is consistent with the other packages, runs faster and has coverage of large redshifts, without throwing any errors.
+
+**Note 1**: The old ${\rm DM}_{\rm ext}$ in `FRB.csv` is still using the `ne2001` model, but is collected from other papers, as specified in the dataset. The values there are recalculated only from the data coming from [[CHIME 2025](https://arxiv.org/abs/2502.11217)], where we recalculate the ${\rm DM}_{\rm ext}$ values using the `ne2001` model.
+
+**Note 2**: In the paper, and in `FRB_new.csv` , we report the values of both the `ne2001` and `ymw16` models. In our work, we use the `ne2001` model, since it produces fewer FRBs with negative ${\rm DM}_{\rm ext}$ values. The `ymw16` is also calculated through the `pygedm` package.
