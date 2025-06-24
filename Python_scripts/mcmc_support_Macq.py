@@ -24,7 +24,7 @@ from multiprocessing import Pool, cpu_count
 ### Load interpolations for pdf ###
 ###################################
 
-load_arrays=np.load('interpolation/A_C0_Macquart.npz')
+load_arrays=np.load('interpolation/A_C0_Macquart_mean.npz')
 Sigmas=load_arrays['a']
 C0s=load_arrays['c']
 As=load_arrays['b']
@@ -67,7 +67,7 @@ def log_likelihood(theta, data):
     try:
         for _, row in data.iterrows():
             prob = calculate_dm_probability_num_HOf_fast(
-                DM_frb_max=row['DM_ext'],
+                DM_frb_max=row['DM_ext(ne2001)'],
                 z=row['z'],
                 S=F,
                 HOf=HOf,
