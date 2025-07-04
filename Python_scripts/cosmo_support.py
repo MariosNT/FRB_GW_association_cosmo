@@ -508,6 +508,17 @@ def f_sqrtvar_delta(F_tilde,z,met='num'):
         return F_tilde*np.sqrt(var_z(z))
     else:
         return F_tilde/np.sqrt(z) 
+    
+def f_sqrtvar_delta_Mac(F_tilde,z):
+    '''
+    please do sigma-variance interpolate in code to finish variance-sigma convert
+    example:
+    sigma_var = interpolate.interp1d(Vars, Sigmas, kind=1,bounds_error=False, 
+    # fill_value='extrapolate'
+    )
+    '''
+
+    return F_tilde/np.sqrt(z) 
 
 def find_C0_sigma(sigma, x_min=0, x_max=np.inf, alpha=3, beta=3, condition='mean',initial_guess=1.0):
     """

@@ -272,7 +272,7 @@ def mcmc_plot_results(samples, param_names, savetitle=None, bins=30, target_prob
     )
     
     if savetitle is not None:
-        plt.savefig(savetitle+"_corner_plot.png", dpi=300, bbox_inches='tight')
+        plt.savefig(savetitle+"_corner_plot.pdf", dpi=300, bbox_inches='tight')
     plt.show()
     plt.close()
     

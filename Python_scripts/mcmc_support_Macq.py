@@ -73,7 +73,8 @@ def log_likelihood(theta, data):
                 HOf=HOf,
                 sigma_host=sigma_host,
                 e_mu=e_mu,
-                f_sigma_error=sigma_error,f_C0_sigma=C0_sigma_inter,f_A_sigma=A_sigma_inter,error_calculator=f_sqrtvar_delta
+                f_sigma_error=sigma_error,f_C0_sigma=C0_sigma_inter,f_A_sigma=A_sigma_inter,
+                error_calculator=f_sqrtvar_delta_Mac
             )
             
             if prob > 0:
@@ -100,10 +101,10 @@ def log_prior(theta):
     F, HOf, sigma_host, e_mu = theta
     
     # Define your prior ranges here
-    F_min, F_max = 0.01, 1.0 # Example range, adjust based on your model
+    F_min, F_max = 0.01, 1.2 # Example range, adjust based on your model
     HOf_min, HOf_max = 1.0, 5.0  # Example range, adjust based on your model
     sigma_host_min, sigma_host_max = 0.2,1.4  # Example range
-    e_mu_min, e_mu_max = 10, 250  # Example range # e_mu_min, e_mu_max = 50, 300  # Example range
+    e_mu_min, e_mu_max = 10, 300  # Example range # e_mu_min, e_mu_max = 50, 300  # Example range
     
     # Check if parameters are within prior ranges
     if (F_min <= F <= F_max and 
@@ -268,7 +269,7 @@ def mcmc_plot_results(samples, param_names, savetitle=None, bins=30, target_prob
     )
     
     if savetitle is not None:
-        plt.savefig(savetitle+"_corner_plot.png", dpi=300, bbox_inches='tight')
+        plt.savefig(savetitle+"_corner_plot.pdf", dpi=300, bbox_inches='tight')
     plt.show()
     plt.close()
     
