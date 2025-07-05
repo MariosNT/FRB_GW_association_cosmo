@@ -586,7 +586,7 @@ def find_A_sigma(C_0, sigma, alpha=3, beta=3, x_min=0, x_max=np.inf):
     
 def calculate_var(C0, A, sigma_DM, alpha=3, beta=3, x_min=0, x_max=np.inf, error=1e-20, limit=500):
     '''
-    One way is to take error as the sqaure of the variance
+    One way is to take error as the sqaure root of the variance
     '''
     
     def first_moment_integrand(delta):

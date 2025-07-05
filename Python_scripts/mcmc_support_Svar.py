@@ -25,6 +25,7 @@ from multiprocessing import Pool, cpu_count
 ###################################
 
 load_arrays=np.load('interpolation/068_C0median.npz')
+# load_arrays=np.load('interpolation/StandardD_C0mean.npz')
 Sigmas=load_arrays['a']
 Errors=load_arrays['d']
 C0s=load_arrays['c']
