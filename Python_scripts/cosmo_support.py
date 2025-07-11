@@ -252,7 +252,7 @@ def luminosity_distance(z, H0, Om, w=-1):
     return dL
 
 
-def dLDM_measure(z, H0, Om, w=-1):
+def dLDM_measure(z, H0, Om, w=-1, DM_host=0):
     """
     Function that calculates the dLDM product.
     
@@ -272,7 +272,7 @@ def dLDM_measure(z, H0, Om, w=-1):
     """
 
     dL = luminosity_distance(z, H0, Om, w)
-    DM = dispersion_measure(z, H0, Om, w)
+    DM = DM_host+dispersion_measure(z, H0, Om, w)
     
     dLDM = dL*DM
     
@@ -316,7 +316,7 @@ def sigma_dL(z, H0, Om, w=-1, method='Wei'):
     
 
 
-def sigma_dLDM(dL, DM, error_dL):
+def sigma_dLDM(dL, DM, error_dL, error_DM=SIGMA_DM):
     """
     Function that calculates the error of dLDM product,
     eq. (14) in [arXiv:1805.12265].
@@ -335,7 +335,7 @@ def sigma_dLDM(dL, DM, error_dL):
     """    
        
     s_dL = error_dL
-    s_DM = SIGMA_DM
+    s_DM = error_DM
     
     first_term = (DM*s_dL)**2
     second_term = (dL*s_DM)**2
