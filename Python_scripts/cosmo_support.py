@@ -609,47 +609,84 @@ def calculate_var(C0, A, sigma_DM, alpha=3, beta=3, x_min=0, x_max=np.inf, error
     
     return variance
 
-def calc_confidence_interval_width(sigma, C_0, A, target_prob=0.6827, alpha=3, beta=3):
-    """
-    Calculate the width of the 1σ confidence interval for the given sigma.
+def calc_confidence_interval_width(cdf, target_prob=0.6827):
     
-    Parameters:
-    -----------
-    sigma : float
-        The sigma_DM parameter
-    C_0 : float
-        The C_0 parameter
-    alpha : float, optional
-        Power in the exponent, default is 3
-    beta : float, optional
-        Power of Delta, default is 3
+    # For 2σ confidence interval, we need 0.9545 mass (95.45%)
+    # target_prob = 0.6827 # 0.9545
+    # Find the central interval
+    lower_target = (1 - target_prob) / 2
+    upper_target = 1 - lower_target
     
-    Returns:
-    --------
-    float
-        The width of the σ confidence interval (upper limit - lower limit=2σ)
-    """
+    # Find the values at these probability levels using a more robust approach
+    def find_quantile(prob_level, cdf=cdf):
+        # First, sample points to get rough range
+        test_points = np.logspace(-3, 2, 100)  # Log-spaced points
+        cdf_values = np.array([cdf(x) for x in test_points])
+        
+        # Find points that bracket our target probability
+        if prob_level <= np.min(cdf_values):
+            return test_points[0]
+        if prob_level >= np.max(cdf_values):
+            return test_points[-1]
+        
+        # Find the two points that bracket our target
+        for i in range(len(cdf_values)-1):
+            if cdf_values[i] <= prob_level <= cdf_values[i+1]:
+                a, b = test_points[i], test_points[i+1]
+                
+                # Use bisection method which doesn't rely on sign change
+                mid = (a + b) / 2
+                for _ in range(20):  # 20 iterations should be enough
+                    mid = (a + b) / 2
+                    mid_val = cdf(mid)
+                    if abs(mid_val - prob_level) < 1e-6:
+                        return mid
+                    elif mid_val < prob_level:
+                        a = mid
+                    else:
+                        b = mid
+                return mid
+        
+        # Fallback
+        return None
+    
+    lower_limit = find_quantile(lower_target)
+    upper_limit = find_quantile(upper_target)
+    
+    return upper_limit - lower_limit
+
+""" def calc_confidence_interval_width(sigma, C_0, A, target_prob=0.6827, alpha=3, beta=3):
+
+    # Calculate the width of the 1σ confidence interval for the given sigma.
+    
+    # Parameters:
+    # -----------
+    # sigma : float
+    #     The sigma_DM parameter
+    # C_0 : float
+    #     The C_0 parameter
+    # alpha : float, optional
+    #     Power in the exponent, default is 3
+    # beta : float, optional
+    #     Power of Delta, default is 3
+    
+    # Returns:
+    # --------
+    # float
+    #     The width of the σ confidence interval (upper limit - lower limit=2σ)
     
     # Find the mode (peak) of the distribution to help with interval search
     def neg_pdf(Delta):
         return -pdf_DM_cosmo(Delta, C_0, A, sigma, alpha, beta)
     
-    # Use a safer initial guess for the mode
-    # Avoid potential issues with negative C_0 or problematic power operations
-    # if C_0 > 0:
-    #     initial_guess = max(1e-5, (C_0)**(1/alpha))
-    # else:
-    #     # If C_0 is negative or zero, use a default value
-    #     initial_guess = 1.0
-    
     # Use a grid search first to find a good starting point
-    test_points = np.logspace(-3, 2, 50)  # Test points from 0.001 to 100
-    pdf_values = np.array([pdf_DM_cosmo(x, C_0, A, sigma, alpha, beta) for x in test_points])
-    best_idx = np.argmax(pdf_values)
-    better_initial_guess = test_points[best_idx]
+    # test_points = np.logspace(-3, 2, 50)  # Test points from 0.001 to 100
+    # pdf_values = np.array([pdf_DM_cosmo(x, C_0, A, sigma, alpha, beta) for x in test_points])
+    # best_idx = np.argmax(pdf_values)
+    # better_initial_guess = test_points[best_idx]
     
     # Now use minimize with the better initial guess
-    result = minimize(neg_pdf, better_initial_guess, bounds=[(1e-10, 100)])
+    # result = minimize(neg_pdf, better_initial_guess, bounds=[(1e-10, 100)])
     mode = result.x[0]
     
     # Rest of the function remains the same...
@@ -665,7 +702,7 @@ def calc_confidence_interval_width(sigma, C_0, A, target_prob=0.6827, alpha=3, b
     upper_target = 1 - lower_target
     
     # Find the values at these probability levels using a more robust approach
-    def find_quantile(prob_level):
+    def find_quantile(prob_level, cdf=cdf):
         # First, sample points to get rough range
         test_points = np.logspace(-3, 2, 100)  # Log-spaced points
         cdf_values = np.array([cdf(x) for x in test_points])
@@ -700,7 +737,7 @@ def calc_confidence_interval_width(sigma, C_0, A, target_prob=0.6827, alpha=3, b
     lower_limit = find_quantile(lower_target)
     upper_limit = find_quantile(upper_target)
     
-    return upper_limit - lower_limit
+    return upper_limit - lower_limit """
 
 
 ##############################################
