@@ -224,7 +224,47 @@ def DM_IGM_O_bh_70(z, O_bh_70, Om=OMEGA_MATTER, w=-1, alpha=0.11, f_IGM_0 = f_IG
     
     return DM
 
-def luminosity_distance(z, H0, Om, w=-1):
+def luminosity_distance(z, H0=HUBBLE, Om=OMEGA_MATTER, w=W_LAMBDA):
+    """
+    Function of the dL formula,
+    eq. (5) in [arXiv:1805.12265].
+    
+    Input
+    ----------
+    z : redshift (can be a scalar or array)
+    H0 : Hubble constant [km/s/Mpc]
+    Om : Omega matter
+    w : DE EoS parameter (w=-1 for Λ)
+    
+    Output
+    ---------
+    dL : Luminosity distance [Mpc] (same type as input z)
+    """
+    
+    # Convert input to numpy array for uniform handling
+    z_array = np.asarray(z)
+    is_scalar = z_array.ndim == 0
+    
+    # If scalar input, convert to 1D array for processing
+    if is_scalar:
+        z_array = z_array.reshape(1)
+    
+    # Initialize output array
+    dL = np.zeros_like(z_array, dtype=float)
+    
+    # Calculate luminosity distance for each redshift value
+    for i, z_val in enumerate(z_array):
+        factor = (1 + z_val) * (C_LIGHT * 1e-3) / H0
+        integral = quad(dDL_integrand_w, 0, z_val, args=(Om, w))[0]
+        dL[i] = factor * integral
+    
+    # Return scalar if input was scalar, otherwise return array
+    if is_scalar:
+        return dL[0]
+    else:
+        return dL
+
+# def luminosity_distance(z, H0, Om, w=-1):
     """
     Function of the dL formula, 
     eq. (5) in [arXiv:1805.12265].
@@ -244,12 +284,12 @@ def luminosity_distance(z, H0, Om, w=-1):
     dL : Luminosity distance [Mpc]
     """      
 
-    factor = (1+z)*(C_LIGHT*1e-3)/H0
-    integral = quad(dDL_integrand_w, 0, z, args=(Om, w))[0]
+    # factor = (1+z)*(C_LIGHT*1e-3)/H0
+    # integral = quad(dDL_integrand_w, 0, z, args=(Om, w))[0]
         
-    dL = factor*integral
+    # dL = factor*integral
     
-    return dL
+    # return dL
 
 
 def dLDM_measure(z, H0, Om, w=-1, DM_host=0):

@@ -24,28 +24,27 @@ from multiprocessing import Pool, cpu_count
 ### Load interpolations for pdf ###
 ###################################
 
-DATA_PATH = 'interpolation/068_C0mean.npz'
+load_arrays=np.load('interpolation/068_C0median.npz')
+# load_arrays=np.load('interpolation/StandardD_C0mean.npz')
+Sigmas=load_arrays['a']
+Errors=load_arrays['d']
+C0s=load_arrays['c']
+As=load_arrays['b']
 
-def _load_and_create_interpolators():
-    load_arrays = np.load(DATA_PATH)
-    Sigmas = load_arrays['a']
-    Errors = load_arrays['d']
-    C0s = load_arrays['c'] 
-    As = load_arrays['b']
-    
-    sigma_error_inter = interpolate.interp1d(Errors, Sigmas, kind=1, bounds_error=False)
-    C0_sigma_inter = interpolate.interp1d(Sigmas, C0s, kind=1, bounds_error=False)
-    A_sigma_inter = interpolate.interp1d(Sigmas, As, kind=1, bounds_error=False)
-    
-    return Sigmas, Errors, C0s, As, sigma_error_inter, C0_sigma_inter, A_sigma_inter
+sigma_error_inter= interpolate.interp1d(Errors, Sigmas, kind=1,bounds_error=False, 
+    # fill_value='extrapolate'
+    )    
 
-Sigmas, Errors, C0s, As, sigma_error_inter, C0_sigma_inter, A_sigma_inter = _load_and_create_interpolators()
+## Interpolation of C0 terms (see Macquart+ paper)
+C0_sigma_inter = interpolate.interp1d(Sigmas, C0s, kind=1,bounds_error=False, 
+    # fill_value='extrapolate'
+    )
 
-def reload_with_path(path):
-    """reload"""
-    global DATA_PATH, Sigmas, Errors, C0s, As, sigma_error_inter, C0_sigma_inter, A_sigma_inter
-    DATA_PATH = path
-    Sigmas, Errors, C0s, As, sigma_error_inter, C0_sigma_inter, A_sigma_inter = _load_and_create_interpolators()
+## Interpolation of normalisation factor (so that pdf is normalised to 1)
+A_sigma_inter = interpolate.interp1d(Sigmas, As, kind=1,bounds_error=False, 
+    # fill_value='extrapolate'
+    )
+
 
 ###############################
 ### MCMC Analysis functions ###
@@ -107,10 +106,10 @@ def log_prior(theta):
     S, HOf, sigma_host, e_mu = theta
 
     # Define your prior ranges here
-    S_min, S_max = 10, 50 # 0.012, 0.10 #0.2 # Example range, adjust based on your model
+    S_min, S_max = 0.012, 0.04 #0.2 # Example range, adjust based on your model
     HOf_min, HOf_max = 1.0, 5.0  # Example range, adjust based on your model
     sigma_host_min, sigma_host_max = 0.2,1.4  # Example range
-    e_mu_min, e_mu_max = 50, 300  # Example range # e_mu_min, e_mu_max = 50, 300  # Example range
+    e_mu_min, e_mu_max = 10, 250  # Example range # e_mu_min, e_mu_max = 50, 300  # Example range
 
     # Check if parameters are within prior ranges
     if (S_min <= S <= S_max and 
