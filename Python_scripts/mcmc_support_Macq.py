@@ -24,20 +24,32 @@ from multiprocessing import Pool, cpu_count
 ### Load interpolations for pdf ###
 ###################################
 
-load_arrays=np.load('interpolation/A_C0_Macquart_mean.npz')
-Sigmas=load_arrays['a']
-C0s=load_arrays['c']
-As=load_arrays['b']
+DATA_PATH = 'interpolation/A_C0_Macquart_mean.npz'
 
-
-C0_sigma_inter = interpolate.interp1d(Sigmas, C0s, kind=1,bounds_error=False, 
+def _load_and_create_interpolators():
+    load_arrays = np.load(DATA_PATH)
+    Sigmas=load_arrays['a']
+    C0s=load_arrays['c']
+    As=load_arrays['b']
+    
+    C0_sigma_inter = interpolate.interp1d(Sigmas, C0s, kind=1,bounds_error=False, 
     # fill_value='extrapolate'
     )
 
 
-A_sigma_inter = interpolate.interp1d(Sigmas, As, kind=1,bounds_error=False, 
+    A_sigma_inter = interpolate.interp1d(Sigmas, As, kind=1,bounds_error=False, 
     # fill_value='extrapolate'
     )
+    
+    return Sigmas, C0s, As, C0_sigma_inter, A_sigma_inter
+
+Sigmas, C0s, As, C0_sigma_inter, A_sigma_inter = _load_and_create_interpolators()
+
+def reload_with_path(path):
+    """reload"""
+    global DATA_PATH, Sigmas, C0s, As, C0_sigma_inter, A_sigma_inter
+    DATA_PATH = path
+    Sigmas, C0s, As, C0_sigma_inter, A_sigma_inter = _load_and_create_interpolators()
 
 
 ###############################

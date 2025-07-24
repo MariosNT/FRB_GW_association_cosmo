@@ -652,7 +652,7 @@ def calculate_var(C0, A, sigma_DM, alpha=3, beta=3, x_min=0, x_max=np.inf, error
 def calc_confidence_interval_width(cdf, target_prob=0.6827):
     
     # For 2σ confidence interval, we need 0.9545 mass (95.45%)
-    # target_prob = 0.6827 # 0.9545
+    # target_prob = 0.6827 # 0.9545 #0.9973
     # Find the central interval
     lower_target = (1 - target_prob) / 2
     upper_target = 1 - lower_target

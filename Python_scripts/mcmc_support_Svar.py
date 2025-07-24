@@ -107,7 +107,7 @@ def log_prior(theta):
     S, HOf, sigma_host, e_mu = theta
 
     # Define your prior ranges here
-    S_min, S_max = 10, 50 # 0.012, 0.10 #0.2 # Example range, adjust based on your model
+    S_min, S_max = 0.008, 0.30 #0.016 # 0.2 # 2.0 #0.2 # Example range, adjust based on your model
     HOf_min, HOf_max = 1.0, 5.0  # Example range, adjust based on your model
     sigma_host_min, sigma_host_max = 0.2,1.4  # Example range
     e_mu_min, e_mu_max = 50, 300  # Example range # e_mu_min, e_mu_max = 50, 300  # Example range
