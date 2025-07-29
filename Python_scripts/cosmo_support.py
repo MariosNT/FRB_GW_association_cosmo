@@ -160,14 +160,14 @@ def dDM_integrand_w(z, Om, w, alpha=0.11, f_IGM_0 = f_IGM):
     return f_IGM_z*(1+z)/np.sqrt(Om*(1+z)**3+(1-Om)*(1+z)**(3*(1+w)))
 
 
-def dispersion_measure(z, H0, Om, w=-1, alpha=0.11, f_IGM_0 = f_IGM):
+def dispersion_measure(z, H0, Om, w=-1, alpha=0, f_IGM_0 = f_IGM):
     """
     Function of the DM formula, 
     eq. (12) in [arXiv:1805.12265].
     
     Input
     ----------
-    z : redshift
+    z : redshift (can be a scalar or array)
     
     H0 : Hubble constant [km/s/Mpc]
     
@@ -175,20 +175,36 @@ def dispersion_measure(z, H0, Om, w=-1, alpha=0.11, f_IGM_0 = f_IGM):
     
     w : DE EoS parameter (w=-1 for Λ)
     
+    alpha : Alpha parameter can be 0.11 (default is 0)
+    
     Output
     ---------
     DM : Dispersion measure [pc/cm^3]
     """    
 
+    # Convert input to numpy array for uniform handling
+    z_array = np.asarray(z)
+    is_scalar = z_array.ndim == 0
+    
+    # If scalar input, convert to 1D array for processing
+    if is_scalar:
+        z_array = z_array.reshape(1)
+    
+    # Initialize output array
+    DM = np.zeros_like(z_array, dtype=float)
+    
+    # Calculate DM for each redshift value
     factor = 3*C_LIGHT*(H0*KM_2_MPC)*OMEGA_BARYONS/(8*PI*G_NEWTON*M_PROTON)*(7/8)
-    integral = quad(dDM_integrand_w, 0, z, args=(Om, w, alpha, f_IGM_0))[0]
-    
     unit_transform = DM_2_PCCM3
+    for i, z_val in enumerate(z_array):
+        integral = integral = quad(dDM_integrand_w, 0, z_val, args=(Om, w, alpha, f_IGM_0))[0]
+        DM[i] = unit_transform*factor*integral
     
-    DM = unit_transform*factor*integral
-    
-    return DM
-
+    # Return scalar if input was scalar, otherwise return array
+    if is_scalar:
+        return DM[0]
+    else:
+        return DM
 
 def DM_IGM_O_bh_70(z, O_bh_70, Om=OMEGA_MATTER, w=-1, alpha=0.11, f_IGM_0 = f_IGM):
     """
@@ -264,6 +280,7 @@ def luminosity_distance(z, H0=HUBBLE, Om=OMEGA_MATTER, w=W_LAMBDA):
     else:
         return dL
 
+## old version
 # def luminosity_distance(z, H0, Om, w=-1):
     """
     Function of the dL formula, 
@@ -510,7 +527,7 @@ def find_A(C_0, F, z, alpha=3, beta=3, x_min=0, x_max=np.inf, sigma_met="Mac"):
 The following functions are used for calculate the error for ∆ and get the sigma (but in function we do a reverse way which from each sigma to calculate error). This is because we find the \sigma_{diff} in P(∆) is not exactly its error and they also don't show linear relation.
 '''
 
-def var_z(z):
+""" def var_z(z):
     Om=OMEGA_MATTER
     def dDc(x):
         return 1/np.sqrt(Om*(1+x)**3+(1-Om))
@@ -521,9 +538,25 @@ def var_z(z):
     int1,_=quad(dDc, 0, z)
     int2,_=quad(dDM, 0, z)
     
-    return int1/int2**2
+    return int1/int2**2 """
+    
+def var_z(z, Om = OMEGA_MATTER, w = W_LAMBDA):
+    # np.sqrt(Om*(1+z)**3+(1-Om)*(1+z)**(3*(1+w)))
+    def dDc(x):
+        return 1/np.sqrt(Om*(1+x)**3+(1-Om)*(1+x)**(3*(1+w)))
+    
+    def dDM(x):
+        return (1+x)/np.sqrt(Om*(1+x)**3+(1-Om)*(1+x)**(3*(1+w)))
+    
+    def single_z_calc(z_val):
+        int1, _ = quad(dDc, 0, z_val)
+        int2, _ = quad(dDM, 0, z_val)
+        return int1/int2**2
+    
+    vectorized_calc = np.vectorize(single_z_calc)
+    return vectorized_calc(z)
 
-def f_variance_delta(S,z,met='num'):
+def f_variance_delta(S, z, Om = OMEGA_MATTER, w = W_LAMBDA, met='num'):
     '''
     please do sigma-variance interpolate in code to finish variance-sigma convert
     example:
@@ -532,11 +565,11 @@ def f_variance_delta(S,z,met='num'):
     )
     '''
     if (met=='num'):
-        return S*var_z(z)
+        return S*var_z(z, Om=Om, w=w)
     else:
         return S/z
     
-def f_sqrtvar_delta(F_tilde,z,met='num'):
+def f_sqrtvar_delta(F_tilde, z, Om = OMEGA_MATTER, w = W_LAMBDA , met='num'):
     '''
     please do sigma-variance interpolate in code to finish variance-sigma convert
     example:
@@ -545,7 +578,7 @@ def f_sqrtvar_delta(F_tilde,z,met='num'):
     )
     '''
     if (met=='num'):
-        return F_tilde*np.sqrt(var_z(z))
+        return F_tilde*np.sqrt(var_z(z, Om=Om, w=w))
     else:
         return F_tilde/np.sqrt(z) 
     

@@ -19,41 +19,85 @@ from support import *
 import emcee
 from multiprocessing import Pool, cpu_count
 
-
 ###################################
 ### Load interpolations for pdf ###
 ###################################
 
-load_arrays=np.load('interpolation/068_C0median.npz')
-# load_arrays=np.load('interpolation/StandardD_C0mean.npz')
-Sigmas=load_arrays['a']
-Errors=load_arrays['d']
-C0s=load_arrays['c']
-As=load_arrays['b']
+DATA_PATH = '../FRB_cosmo/interpolation/095_C0mean.npz'
 
-sigma_error_inter= interpolate.interp1d(Errors, Sigmas, kind=1,bounds_error=False, 
-    # fill_value='extrapolate'
-    )    
+def _load_and_create_interpolators():
+    load_arrays = np.load(DATA_PATH)
+    Sigmas = load_arrays['a']
+    Errors = load_arrays['d']
+    C0s = load_arrays['c'] 
+    As = load_arrays['b']
+    
+    sigma_error_inter = interpolate.interp1d(Errors, Sigmas, kind=1, bounds_error=False)
+    C0_sigma_inter = interpolate.interp1d(Sigmas, C0s, kind=1, bounds_error=False)
+    A_sigma_inter = interpolate.interp1d(Sigmas, As, kind=1, bounds_error=False)
+    
+    return Sigmas, Errors, C0s, As, sigma_error_inter, C0_sigma_inter, A_sigma_inter
 
-## Interpolation of C0 terms (see Macquart+ paper)
-C0_sigma_inter = interpolate.interp1d(Sigmas, C0s, kind=1,bounds_error=False, 
-    # fill_value='extrapolate'
-    )
+Sigmas, Errors, C0s, As, sigma_error_inter, C0_sigma_inter, A_sigma_inter = _load_and_create_interpolators()
 
-## Interpolation of normalisation factor (so that pdf is normalised to 1)
-A_sigma_inter = interpolate.interp1d(Sigmas, As, kind=1,bounds_error=False, 
-    # fill_value='extrapolate'
-    )
+def reload_with_path(path):
+    """reload"""
+    global DATA_PATH, Sigmas, Errors, C0s, As, sigma_error_inter, C0_sigma_inter, A_sigma_inter
+    DATA_PATH = path
+    Sigmas, Errors, C0s, As, sigma_error_inter, C0_sigma_inter, A_sigma_inter = _load_and_create_interpolators()
 
+########################################
+### Load standard parameters for pdf ###
+########################################
+
+S=0.133
+EXP_MU=182.937
+SIGMA_HOST=0.605
+DM_MWHALO=30
+HOF=2.813
+
+################
+### sampling ###
+################
+
+def DM_diff_sampling(z, H0=HUBBLE, Om=OMEGA_MATTER, w=W_LAMBDA, N_draws=1, f_diff=0.84, f_diff_alpha=0,
+                        S=S, int_N=4000):
+    """
+    Sampling DM_diff for a given redshift and cosmology.
+    """
+    DM_th=dispersion_measure(z=z, H0=H0, Om=Om, w=w, alpha=f_diff_alpha, f_IGM_0 = f_diff)
+    error=f_variance_delta(S=S, z=z)
+    s_DM_obs = error*DM_th
+    
+    sigma_diff=sigma_error_inter(error)
+    C0=C0_sigma_inter(sigma_diff)
+    A=A_sigma_inter(sigma_diff)
+    
+    dm_range=np.linspace(0.01, 200+2*DM_th, int_N)
+    
+    p_range=[
+        pdf_DM_cosmo(Delta=dm/DM_th, C_0=C0, A=A, sigma=sigma_diff, alpha=3, beta=3)/DM_th
+        for dm in dm_range]
+    
+    p_range=normalise(p_range)
+    
+    dm_diff_obs = np.random.choice(dm_range, size=N_draws, replace=True,\
+            p=p_range
+            )
+    
+    return dm_diff_obs, s_DM_obs
 
 ###############################
 ### MCMC Analysis functions ###
 ###############################
 
+z_array=np.linspace(0.1, 3.0, 100)
 
-def sigma_error(error):
-    return error
+error_zs=f_variance_delta(S=S, z=z_array)
 
+sigma_diff_zs=sigma_error_inter(error_zs)
+C0_zs=C0_sigma_inter(sigma_diff_zs)
+A_zs=A_sigma_inter(sigma_diff_zs)
 
 def log_likelihood(theta, data):
     """
@@ -66,21 +110,31 @@ def log_likelihood(theta, data):
     Returns:
         Log likelihood
     """
-    S, HOf, sigma_host, e_mu = theta
+    hubble, omega, w = theta
 
     log_like = 0.0
 
     try:
         for _, row in data.iterrows():
-            prob = calculate_dm_probability_num_HOf_fast(
-                DM_frb_max=row['DM_ext(ne2001)'],
-                z=row['z'],
-                S=S,
-                HOf=HOf,
-                sigma_host=sigma_host,
-                e_mu=e_mu,
-                f_sigma_error=sigma_error_inter,f_C0_sigma=C0_sigma_inter,f_A_sigma=A_sigma_inter
-            )
+            ####### dL kde ######
+            dL_gaussian = np.random.normal(row['dL_obs'], row['s_dL'], 1000)
+            dL_gaussian[dL_gaussian<0]=0
+            GW_dL_kde = gaussian_kde(dL_gaussian)
+            
+            ######## p_DM(z) and p_dL(z) ########
+            
+            lum_distance=luminosity_distance(z=z_array, H0=hubble, Om=omega, w=w)
+            
+            p_DM=np.zeros_like(z_array)
+            
+            for idx, z_val in enumerate(z_array):
+                DM_th=dispersion_measure(z=z_val, H0=hubble, Om=omega, w=w, alpha=0, f_IGM_0 = 0.84)
+                
+                # print(f"p_DM={pdf_DM_cosmo(Delta=data['DM_obs']/DM_th, C_0=C0, A=A, sigma=sigma_diff, alpha=3, beta=3)}\n")
+
+                p_DM[idx]=pdf_DM_cosmo(Delta=row['DM_obs']/DM_th, C_0=C0, A=A, sigma=sigma_diff, alpha=3, beta=3)/DM_th
+                
+            prob = np.trapz(GW_dL_kde(lum_distance)*p_DM, z_array)
 
             if prob > 0:
                 log_like += np.log(prob)
@@ -103,19 +157,17 @@ def log_prior(theta):
     Returns:
         Log prior probability
     """
-    S, HOf, sigma_host, e_mu = theta
+    hubble, omega, w = theta
 
     # Define your prior ranges here
-    S_min, S_max = 0.012, 0.04 #0.2 # Example range, adjust based on your model
-    HOf_min, HOf_max = 1.0, 5.0  # Example range, adjust based on your model
-    sigma_host_min, sigma_host_max = 0.2,1.4  # Example range
-    e_mu_min, e_mu_max = 10, 250  # Example range # e_mu_min, e_mu_max = 50, 300  # Example range
+    hubble_min, hubble_max = 40, 100 #0.016 # 0.2 # 2.0 #0.2 # Example range, adjust based on your model
+    omega_min, omega_max = 0.1, 0.5  # Example range, adjust based on your model
+    w_min, w_max = -3.0, 0.0  # Example range
 
     # Check if parameters are within prior ranges
-    if (S_min <= S <= S_max and 
-        HOf_min <= HOf <= HOf_max and 
-        sigma_host_min <= sigma_host <= sigma_host_max and 
-        e_mu_min <= e_mu <= e_mu_max):
+    if (hubble_min <= hubble <= hubble_max and 
+        omega_min <= omega <= omega_max and 
+        w_min <= w <= w_max ):
         return 0.0  # Log(1) = 0, flat prior
     else:
         return -np.inf  # Log(0) = -inf, outside prior range       

@@ -52,8 +52,8 @@ def reload_with_path(path):
 ###############################
 
 
-def sigma_error(error):
-    return error
+""" def sigma_error(error):
+    return error """
 
 
 def log_likelihood(theta, data):
