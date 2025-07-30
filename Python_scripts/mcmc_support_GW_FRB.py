@@ -124,15 +124,19 @@ def log_likelihood(theta, data):
             ######## p_DM(z) and p_dL(z) ########
             
             lum_distance=luminosity_distance(z=z_array, H0=hubble, Om=omega, w=w)
+            DM_th_array=dispersion_measure(z=z_array, H0=hubble, Om=omega, w=w, alpha=0, f_IGM_0 = 0.84)
+            Delta_array = row['DM_obs']/ DM_th_array
             
             p_DM=np.zeros_like(z_array)
             
-            for idx, z_val in enumerate(z_array):
-                DM_th=dispersion_measure(z=z_val, H0=hubble, Om=omega, w=w, alpha=0, f_IGM_0 = 0.84)
-                
-                # print(f"p_DM={pdf_DM_cosmo(Delta=data['DM_obs']/DM_th, C_0=C0, A=A, sigma=sigma_diff, alpha=3, beta=3)}\n")
+            for idx, (z_val, Delta, DM_th) in enumerate(zip(z_array, Delta_array, DM_th_array)):
+                error=f_variance_delta(S=S, z=z_val, Om=omega, w=w)
 
-                p_DM[idx]=pdf_DM_cosmo(Delta=row['DM_obs']/DM_th, C_0=C0, A=A, sigma=sigma_diff, alpha=3, beta=3)/DM_th
+                sigma_diff=sigma_error_inter(error)
+                C0=C0_sigma_inter(sigma_diff)
+                A=A_sigma_inter(sigma_diff)
+
+                p_DM[idx]=pdf_DM_cosmo(Delta=Delta, C_0=C0, A=A, sigma=sigma_diff, alpha=3, beta=3)/DM_th
                 
             prob = np.trapz(GW_dL_kde(lum_distance)*p_DM, z_array)
 
