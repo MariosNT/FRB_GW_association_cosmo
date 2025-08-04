@@ -558,9 +558,10 @@ def var_z(z, Om = OMEGA_MATTER, w = W_LAMBDA):
 
 def f_variance_delta(S, z, Om = OMEGA_MATTER, w = W_LAMBDA, met='num'):
     '''
-    please do sigma-variance interpolate in code to finish variance-sigma convert
+    A general function Error(S,z) to calculate the error of the dispersion measure of diffuse eletron term.
+    please do sigma-error interpolate in code to finish error-sigma convert
     example:
-    sigma_var = interpolate.interp1d(Vars, Sigmas, kind=1,bounds_error=False, 
+    sigma_error = interpolate.interp1d(Errors, Sigmas, kind=1,bounds_error=False, 
     # fill_value='extrapolate'
     )
     '''
@@ -571,22 +572,24 @@ def f_variance_delta(S, z, Om = OMEGA_MATTER, w = W_LAMBDA, met='num'):
     
 def f_sqrtvar_delta(F_tilde, z, Om = OMEGA_MATTER, w = W_LAMBDA , met='num'):
     '''
-    please do sigma-variance interpolate in code to finish variance-sigma convert
+    A general function Error(F,z) to calculate the error of the dispersion measure of diffuse eletron term.
+    please do sigma-error interpolate in code to finish error-sigma convert
     example:
-    sigma_var = interpolate.interp1d(Vars, Sigmas, kind=1,bounds_error=False, 
+    sigma_error = interpolate.interp1d(Errors, Sigmas, kind=1,bounds_error=False, 
     # fill_value='extrapolate'
     )
     '''
     if (met=='num'):
         return F_tilde*np.sqrt(var_z(z, Om=Om, w=w))
     else:
-        return F_tilde/np.sqrt(z) 
+        return F_tilde/np.sqrt(z)
     
 def f_sqrtvar_delta_Mac(F_tilde,z):
     '''
-    please do sigma-variance interpolate in code to finish variance-sigma convert
+    A function Error(F,z) from Macquart method to calculate the error of the dispersion measure of diffuse eletron term.
+    please do sigma-error interpolate in code to finish error-sigma convert
     example:
-    sigma_var = interpolate.interp1d(Vars, Sigmas, kind=1,bounds_error=False, 
+    sigma_error = interpolate.interp1d(Errors, Sigmas, kind=1,bounds_error=False, 
     # fill_value='extrapolate'
     )
     '''
