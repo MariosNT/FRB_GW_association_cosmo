@@ -62,6 +62,49 @@ def distribution_redshift_Power(z, epi=-8.161):
     return normalise(f)
 
 
+def redshift_distribution(z_array, H0=HUBBLE, Omega_m=OMEGA_MATTER, method='rates'):
+    """
+    Function that generates random redshifts for our GWs/FRB events.
+
+    Input
+    ----------
+    z_array : redshift range from which to draw samples
+    
+    H0 : Hubble constant [km/s/Mpc]
+    
+    Omega_m : Omega matter
+    
+    method : Choose between `rates` and `uniform`. Defines the method used to draw random samples.
+    
+    Output
+    ---------
+    PDF : redshift distribution
+    """
+    
+    if method == 'rates':
+        Dc_squared = D_comoving(z_array, H0, Omega_m)**2
+        rate = rate_function(z_array)
+        Hz = Hubble_function(z_array, H0, Omega_m)
+
+        pdf = normalise(4*np.pi*Dc_squared*rate/(Hz*(1+z_array)))
+        
+    elif method == 'uniform':
+        pdf = None
+    
+    elif method == 'gaussian':
+        pdf = distribution_redshift_Gaussian(z_array)
+        
+    elif method == 'lognormal':
+        pdf = distribution_redshift_LogNormal(z_array)
+        
+    elif method == 'powerlaw':
+        pdf = distribution_redshift_Power(z_array)     
+        
+    else:
+        raise Exception("Wrong method chosen! Choose between 'rates', 'uniform', 'gaussian', 'lognormal' and 'powerlaw'.")
+    
+    return pdf
+
 def draw_redshift_distribution(z_array, H0=HUBBLE, Omega_m=OMEGA_MATTER, N_draws=50, method='rates'):
     """
     Function that generates random redshifts for our GWs/FRB events.
@@ -82,6 +125,40 @@ def draw_redshift_distribution(z_array, H0=HUBBLE, Omega_m=OMEGA_MATTER, N_draws
     ---------
     redshift_draws : Mock redshift observations
     """
+    
+    pdf=redshift_distribution(z_array, H0, Omega_m, method)
+    
+    redshift_draws = np.random.choice(z_array, p=pdf, replace=True, size=N_draws)
+        
+    ## Check if we have many events with the same redshift
+    if np.unique(redshift_draws).size/N_draws < 0.8:
+        raise Exception("Many replications in redshifts drawn. Retry the sampling!")      
+    
+    return redshift_draws
+
+
+### old version
+
+""" def draw_redshift_distribution(z_array, H0=HUBBLE, Omega_m=OMEGA_MATTER, N_draws=50, method='rates'):
+    """
+"""     Function that generates random redshifts for our GWs/FRB events.
+
+    Input
+    ----------
+    z_array : redshift range from which to draw samples
+    
+    H0 : Hubble constant [km/s/Mpc]
+    
+    Omega_m : Omega matter
+    
+    N_draws : Number of mock redshifts to draw
+    
+    method : Choose between `rates` and `uniform`. Defines the method used to draw random samples.
+    
+    Output
+    ---------
+    redshift_draws : Mock redshift observations """
+"""
     
     if method == 'rates':
         Dc_squared = D_comoving(z_array, H0, Omega_m)**2
@@ -114,7 +191,7 @@ def draw_redshift_distribution(z_array, H0=HUBBLE, Omega_m=OMEGA_MATTER, N_draws
     if np.unique(redshift_draws).size/N_draws < 0.8:
         raise Exception("Many replications in redshifts drawn. Retry the sampling!")      
     
-    return redshift_draws
+    return redshift_draws """
 
 
 
@@ -937,13 +1014,13 @@ def calculate_dm_probability_num_HOf(DM_frb_max, z, # Data
     '''
     ######### Interpolation version, make sure already do the interpolation #######
     ######### For example, use the code below to do the interpolation ############
-load_arrays=np.load('./interpolation/068_C0median.npz')
-Sigmas=load_arrays['a']
-Vars_sqrt=load_arrays['d']
+    load_arrays=np.load('./interpolation/068_C0median.npz')
+    Sigmas=load_arrays['a']
+    Vars_sqrt=load_arrays['d']
 
-sigma_var_inter= interpolate.interp1d(Vars_sqrt, Sigmas, kind=1,bounds_error=False, 
-    # fill_value='extrapolate'
-    )
+    sigma_var_inter= interpolate.interp1d(Vars_sqrt, Sigmas, kind=1,bounds_error=False, 
+        # fill_value='extrapolate'
+        )
     '''
     
     if error_calculator is None:
@@ -1189,3 +1266,74 @@ def posterior_analysis(Dv_4D, Dv_array, HOf_array, sigma_host_array, e_mu_array,
     
     return posterior_4D
 
+################### FRB_GW DM sampling ###################
+
+def DM_diff_sampling(z, # redshift
+                     S, HOF, # FRB fitting results
+                     sigma_error_inter, C0_sigma_inter, A_sigma_inter, # interpolation functions functions
+                     # H0=HUBBLE, f_diff=0.84, f_diff_alpha=0, # FRB standard parameters
+                     Om=OMEGA_MATTER, w=W_LAMBDA, # cosmology parameters
+                     N_draws=1, int_N=4000 # sampling settings
+                     ):
+    """
+    Sampling DM_diff for a given redshift and cosmology.
+    """
+    DM_th=DM_diff_HOf(z, HOF, Om=Om, w=w)
+    # DM_th=dispersion_measure(z=z, H0=H0, Om=Om, w=w, alpha=f_diff_alpha, f_IGM_0 = f_diff)
+    error=f_variance_delta(S=S, z=z)
+    s_DM_obs = error*DM_th
+    
+    sigma_diff=sigma_error_inter(error)
+    C0=C0_sigma_inter(sigma_diff)
+    A=A_sigma_inter(sigma_diff)
+    
+    dm_range=np.linspace(0.01, 200+2*DM_th, int_N)
+    
+    p_range=[
+        pdf_DM_cosmo(Delta=dm/DM_th, C_0=C0, A=A, sigma=sigma_diff, alpha=3, beta=3)/DM_th
+        for dm in dm_range]
+    
+    p_range=normalise(p_range)
+    
+    dm_diff_obs = np.random.choice(dm_range, size=N_draws, replace=True,\
+            p=p_range
+            )
+    
+    return dm_diff_obs, s_DM_obs
+
+def DM_ext_sampling(z, # redshift
+                     S, HOF, SIGMA_HOST, EXP_MU, # FRB fitting results
+                     sigma_error_inter, C0_sigma_inter, A_sigma_inter, # interpolation functions functions
+                     # H0=HUBBLE, f_diff=0.84, f_diff_alpha=0, # FRB standard parameters
+                     Om=OMEGA_MATTER, w=W_LAMBDA, # cosmology parameters
+                     N_draws=1, int_N=4000 # sampling settings
+                     ):
+    """
+    Sampling DM_ext for a given redshift and cosmology.
+    """
+    DM_th=DM_diff_HOf(z, HOF, Om=Om, w=w)
+    dm_range=np.linspace(0.01, 200+2*DM_th, int_N)
+    
+    p_range=[
+        calculate_dm_probability_num_HOf_fast(
+        DM_frb_max=dm,
+        z=z,
+        S=S,
+        HOf=HOF,
+        sigma_host=SIGMA_HOST,
+        e_mu=EXP_MU,
+        f_sigma_error=sigma_error_inter,f_C0_sigma=C0_sigma_inter,f_A_sigma=A_sigma_inter
+        ) for dm in dm_range]
+    
+    p_range=normalise(p_range)
+    
+    dm_ext_obs = np.random.choice(dm_range, size=N_draws, replace=True,\
+            p=p_range
+            )
+    
+    cdf_num=np.cumsum(p_range)
+    cdf = interpolate.interp1d(dm_range, cdf_num, kind=1, bounds_error=False, fill_value='extrapolate')
+    error4=calc_confidence_interval_width(cdf, target_prob=0.9545)
+    s_DM_obs = error4/4
+    
+    return dm_ext_obs, s_DM_obs
