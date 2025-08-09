@@ -1269,17 +1269,25 @@ def posterior_analysis(Dv_4D, Dv_array, HOf_array, sigma_host_array, e_mu_array,
 ################### FRB_GW DM sampling ###################
 
 def DM_diff_sampling(z, # redshift
-                     S, HOF, # FRB fitting results
                      sigma_error_inter, C0_sigma_inter, A_sigma_inter, # interpolation functions functions
-                     # H0=HUBBLE, f_diff=0.84, f_diff_alpha=0, # FRB standard parameters
-                     Om=OMEGA_MATTER, w=W_LAMBDA, # cosmology parameters
-                     N_draws=1, int_N=4000 # sampling settings
+                     #### if not choose 'standard' mode, use the following parameters ####
+                     S, HOF=None, # FRB fitting results
+                     #### if choose 'standard' mode, use the following parameters ####
+                     H0=HUBBLE, f_diff=0.84, f_diff_alpha=0, # FRB standard parameters
+                     Om=OMEGA_MATTER, w=W_LAMBDA, # other cosmology parameters
+                     N_draws=1, int_N=4000, # sampling settings
+                     mode='standard', # generate events from standard cosmology parameters, else from FRB MCMC fitting results
                      ):
     """
     Sampling DM_diff for a given redshift and cosmology.
     """
-    DM_th=DM_diff_HOf(z, HOF, Om=Om, w=w)
-    # DM_th=dispersion_measure(z=z, H0=H0, Om=Om, w=w, alpha=f_diff_alpha, f_IGM_0 = f_diff)
+    if (mode=='standard'):
+        DM_th=dispersion_measure(z=z, H0=H0, Om=Om, w=w, alpha=f_diff_alpha, f_IGM_0 = f_diff)
+    else:
+        if (HOF is None):
+            raise ValueError("HOF must be provided when not using standard mode.")
+        DM_th=DM_diff_HOf(z, HOF, Om=Om, w=w)
+        
     error=f_variance_delta(S=S, z=z)
     s_DM_obs = error*DM_th
     
