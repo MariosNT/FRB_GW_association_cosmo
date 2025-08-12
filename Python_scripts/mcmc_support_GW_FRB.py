@@ -32,9 +32,9 @@ def _load_and_create_interpolators():
     C0s = load_arrays['c'] 
     As = load_arrays['b']
     
-    sigma_error_inter = interpolate.interp1d(Errors, Sigmas, kind=1, bounds_error=False)
-    C0_sigma_inter = interpolate.interp1d(Sigmas, C0s, kind=1, bounds_error=False)
-    A_sigma_inter = interpolate.interp1d(Sigmas, As, kind=1, bounds_error=False)
+    sigma_error_inter = interpolate.interp1d(Errors, Sigmas, kind=1, bounds_error=False,fill_value='extrapolate')
+    C0_sigma_inter = interpolate.interp1d(Sigmas, C0s, kind=1, bounds_error=False,fill_value='extrapolate')
+    A_sigma_inter = interpolate.interp1d(Sigmas, As, kind=1, bounds_error=False,fill_value='extrapolate')
     
     return Sigmas, Errors, C0s, As, sigma_error_inter, C0_sigma_inter, A_sigma_inter
 
@@ -56,48 +56,30 @@ SIGMA_HOST=0.605
 DM_MWHALO=30
 HOF=2.813
 
-################
-### sampling ###
-################
+#######################
+### Generate events ###
+#######################
 
-def DM_diff_sampling(z, H0=HUBBLE, Om=OMEGA_MATTER, w=W_LAMBDA, N_draws=1, f_diff=0.84, f_diff_alpha=0,
-                        S=S, int_N=4000):
-    """
-    Sampling DM_diff for a given redshift and cosmology.
-    """
-    DM_th=dispersion_measure(z=z, H0=H0, Om=Om, w=w, alpha=f_diff_alpha, f_IGM_0 = f_diff)
-    error=f_variance_delta(S=S, z=z)
-    s_DM_obs = error*DM_th
-    
-    sigma_diff=sigma_error_inter(error)
-    C0=C0_sigma_inter(sigma_diff)
-    A=A_sigma_inter(sigma_diff)
-    
-    dm_range=np.linspace(0.01, 200+2*DM_th, int_N)
-    
-    p_range=[
-        pdf_DM_cosmo(Delta=dm/DM_th, C_0=C0, A=A, sigma=sigma_diff, alpha=3, beta=3)/DM_th
-        for dm in dm_range]
-    
-    p_range=normalise(p_range)
-    
-    dm_diff_obs = np.random.choice(dm_range, size=N_draws, replace=True,\
-            p=p_range
-            )
-    
-    return dm_diff_obs, s_DM_obs
+## Random choice of redshift
+REDSHIFT_METHOD = 'rates'  # choose from 'rates', 'uniform', 'gaussian', 'lognormal' and 'powerlaw'
+
+N_EVENTS = 20
+
+z_range = np.linspace(0.2, 2.0, 500)
+z_centre = draw_redshift_distribution(z_range, H0=HUBBLE, Omega_m=OMEGA_MATTER, N_draws=N_EVENTS, method=REDSHIFT_METHOD)
+
+# Theoretical dL, fiducial cosmo
+dL_centre = luminosity_distance(z=z_centre, H0=HUBBLE, Om=OMEGA_MATTER, w=W_LAMBDA)
+# Theoretical DM, fiducial cosmo
+DM_centre = dispersion_measure(z_centre, H0=HUBBLE, Om=OMEGA_MATTER)
 
 ###############################
 ### MCMC Analysis functions ###
 ###############################
 
-z_array=np.linspace(0.1, 3.0, 100)
+z_array=np.linspace(0.2, 3.0, 500)
 
-error_zs=f_variance_delta(S=S, z=z_array)
-
-sigma_diff_zs=sigma_error_inter(error_zs)
-C0_zs=C0_sigma_inter(sigma_diff_zs)
-A_zs=A_sigma_inter(sigma_diff_zs)
+p_selection = redshift_distribution(z_array=z_array, H0=HUBBLE, Omega_m=OMEGA_MATTER, method=REDSHIFT_METHOD)
 
 def log_likelihood(theta, data):
     """
@@ -135,10 +117,22 @@ def log_likelihood(theta, data):
                 sigma_diff=sigma_error_inter(error)
                 C0=C0_sigma_inter(sigma_diff)
                 A=A_sigma_inter(sigma_diff)
-
-                p_DM[idx]=pdf_DM_cosmo(Delta=Delta, C_0=C0, A=A, sigma=sigma_diff, alpha=3, beta=3)/DM_th
                 
-            prob = np.trapz(GW_dL_kde(lum_distance)*p_DM, z_array)
+                if (np.isnan([error,C0,A,sigma_diff]).any()):
+                    p_DM[idx]=0.0
+                    # print(f'NaN found for error at z={z_val}, H0={hubble}, Om={omega}, w={w} for error={error}, C0={C0}, A={A}, sigma_diff={sigma_diff}')
+                else:
+                    p_DM[idx]=pdf_DM_cosmo(Delta=Delta, C_0=C0, A=A, sigma=sigma_diff, alpha=3, beta=3)/DM_th
+                
+            p_dL=normalise(GW_dL_kde(lum_distance))
+            prob = np.trapz(p_selection*p_dL*p_DM, z_array)
+            
+            """ if (np.isnan(p_DM).any()):
+                print(f'NaN found for p_DM at H0={hubble}, Om={omega}, w={w} for p_DM(z)')
+            if (np.isnan(p_dL).any()):
+                print(f'NaN found for p_DM at H0={hubble}, Om={omega}, w={w} for p_dL(z)')
+            if (np.isnan(p_selection).any()):
+                print(f'NaN found for p_DM at H0={hubble}, Om={omega}, w={w} for p_selection(z)') """
 
             if prob > 0:
                 log_like += np.log(prob)
@@ -165,7 +159,7 @@ def log_prior(theta):
 
     # Define your prior ranges here
     hubble_min, hubble_max = 40, 100 #0.016 # 0.2 # 2.0 #0.2 # Example range, adjust based on your model
-    omega_min, omega_max = 0.1, 0.5  # Example range, adjust based on your model
+    omega_min, omega_max = 0.0, 1.0  # Example range, adjust based on your model
     w_min, w_max = -3.0, 0.0  # Example range
 
     # Check if parameters are within prior ranges
@@ -220,7 +214,7 @@ def run_mcmc(data, initial_params, nwalkers=32, heating=10, nsteps=10000):
 
     for i in range(nwalkers):
         while log_prior(pos[i]) == -np.inf:
-            pos[i] = initial_params + 0.1 * np.random.randn(ndim)
+            pos[i] = initial_params + 0.01 * np.random.randn(ndim)
 
     # Set up the sampler
     with Pool() as pool:
@@ -334,12 +328,12 @@ def mcmc_plot_results(samples, param_names, savetitle=None, bins=30, target_prob
     plt.close()
     
     # Plot chains for each parameter
-    fig, axes = plt.subplots(4, 1, figsize=(10, 8), sharex=True)
+    fig, axes = plt.subplots(len(param_names), 1, figsize=(10, 2*len(param_names)), sharex=True)
     
     for i, (ax, name) in enumerate(zip(axes, param_names)):
         ax.plot(samples[:, i], 'k-', alpha=0.3)
         ax.set_ylabel(name)
-        if i == 3:
+        if i == (len(param_names)-1):
             ax.set_xlabel("Sample Number")
     
     plt.tight_layout()
