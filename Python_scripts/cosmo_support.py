@@ -762,7 +762,7 @@ def calculate_var(C0, A, sigma_DM, alpha=3, beta=3, x_min=0, x_max=np.inf, error
     
     return variance
 
-def calc_confidence_interval_width(cdf, target_prob=0.6827):
+def calc_confidence_interval_width(cdf, target_prob=0.6827, x_log_min=-3, x_log_max=2):
     
     # For 2σ confidence interval, we need 0.9545 mass (95.45%)
     # target_prob = 0.6827 # 0.9545 #0.9973
@@ -773,7 +773,7 @@ def calc_confidence_interval_width(cdf, target_prob=0.6827):
     # Find the values at these probability levels using a more robust approach
     def find_quantile(prob_level, cdf=cdf):
         # First, sample points to get rough range
-        test_points = np.logspace(-3, 2, 100)  # Log-spaced points
+        test_points = np.logspace(x_log_min, x_log_max, 100)  # Log-spaced points
         cdf_values = np.array([cdf(x) for x in test_points])
         
         # Find points that bracket our target probability
@@ -1109,10 +1109,10 @@ def calculate_dm_probability_num_HOf_fast(DM_frb_max, z, # Data
                                      f_sigma_error, # sigma(error) function
                                      # If in Macquart way, try to define a y=x function as input
                                      f_C0_sigma, f_A_sigma, # C0(sigma) and A(sigma) function
-                                     space='Delta', # which space to convolution
+                                     space='Delta', # which space to do convolution
                                      dropna=False, # drop nan value
                                      error_calculator=None # custom error calculator
-                                     # One can use default f_variance_delta~S/z or f_sqrtvar_delta~F/sqrt(z)
+                                     # One can use default sqrt(f_variance_delta)~sqrt(S/z) or Macquart's one f_sqrtvar_delta~F/sqrt(z)
                                      ):
     '''
     ######### Interpolation version, make sure already do the interpolation #######
@@ -1137,6 +1137,7 @@ A_sigma_inter = interpolate.interp1d(Sigmas, As, kind=1,bounds_error=False,
     '''
     
     if error_calculator is None:
+        # Our method
         error = np.sqrt(f_variance_delta(S, z))
     else:
         # custom error calculator
@@ -1275,7 +1276,7 @@ def DM_diff_sampling(z, # redshift
                      #### if choose 'standard' mode, use the following parameters ####
                      H0=HUBBLE, f_diff=0.84, f_diff_alpha=0, # FRB standard parameters
                      Om=OMEGA_MATTER, w=W_LAMBDA, # other cosmology parameters
-                     N_draws=1, int_N=4000, # sampling settings
+                     N_draws=1, int_N=2000, # sampling settings
                      mode='standard', # generate events from standard cosmology parameters, else from FRB MCMC fitting results
                      ):
     """
@@ -1310,17 +1311,17 @@ def DM_diff_sampling(z, # redshift
     return dm_diff_obs, s_DM_obs
 
 def DM_ext_sampling(z, # redshift
-                     S, HOF, SIGMA_HOST, EXP_MU, # FRB fitting results
+                     S, HOF, EXP_MU, SIGMA_HOST, # FRB fitting results
                      sigma_error_inter, C0_sigma_inter, A_sigma_inter, # interpolation functions functions
                      # H0=HUBBLE, f_diff=0.84, f_diff_alpha=0, # FRB standard parameters
                      Om=OMEGA_MATTER, w=W_LAMBDA, # cosmology parameters
-                     N_draws=1, int_N=4000 # sampling settings
+                     N_draws=1, int_N=4000 # sampling settings,
                      ):
     """
     Sampling DM_ext for a given redshift and cosmology.
     """
     DM_th=DM_diff_HOf(z, HOF, Om=Om, w=w)
-    dm_range=np.linspace(0.01, 200+2*DM_th, int_N)
+    dm_range=np.linspace(0.01, 200+5*DM_th, int_N)
     
     p_range=[
         calculate_dm_probability_num_HOf_fast(
@@ -1341,7 +1342,7 @@ def DM_ext_sampling(z, # redshift
     
     cdf_num=np.cumsum(p_range)
     cdf = interpolate.interp1d(dm_range, cdf_num, kind=1, bounds_error=False, fill_value='extrapolate')
-    error4=calc_confidence_interval_width(cdf, target_prob=0.9545)
+    error4=calc_confidence_interval_width(cdf, target_prob=0.9545, x_log_min=-2, x_log_max=1+np.log10(dm_range[-1]))
     s_DM_obs = error4/4
     
     return dm_ext_obs, s_DM_obs
