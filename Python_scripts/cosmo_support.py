@@ -237,7 +237,7 @@ def dDM_integrand_w(z, Om, w, alpha=0.11, f_IGM_0 = f_IGM):
     return f_IGM_z*(1+z)/np.sqrt(Om*(1+z)**3+(1-Om)*(1+z)**(3*(1+w)))
 
 
-def dispersion_measure(z, H0, Om, w=-1, alpha=0, f_IGM_0 = f_IGM):
+def dispersion_measure(z, H0, Om, w=W_LAMBDA, alpha=0, f_IGM_0 = f_IGM):
     """
     Function of the DM formula, 
     eq. (12) in [arXiv:1805.12265].
@@ -537,7 +537,7 @@ def pdf_DM_cosmo(Delta, C_0, A, sigma, alpha=3, beta=3):
     # pdf=A*(Delta**(-beta))*np.exp(-((Delta**(-alpha)-C_0)**2)/(2*(alpha**2)*(sigma**2)))
     # return pdf
 
-def DM_diff_HOf(z, HOf, Om=OMEGA_MATTER, w=-1):
+def DM_diff_HOf(z, HOf, Om=OMEGA_MATTER, w=W_LAMBDA):
     
     def integrand(z, Om, w):
         return (1+z)/np.sqrt(Om*(1+z)**3+(1-Om)*(1+z)**(3*(1+w)))
@@ -1088,7 +1088,7 @@ def calculate_dm_probability_num_HOf(DM_frb_max, z, # Data
 
 ########## Fast version ##########
 
-def DM_IGM_H0_O_b_f_IGM_fast(z, H0_O_b_f_IGM, Om=OMEGA_MATTER, w=W_LAMBDA):
+def DM_diff_HOF_fast(z, H0_O_b_f_IGM, Om=OMEGA_MATTER, w=W_LAMBDA):
     
     def integrand(z, Om, w):
         return (1+z)/np.sqrt(Om*(1+z)**3+(1-Om)*(1+z)**(3*(1+w)))
@@ -1111,8 +1111,11 @@ def calculate_dm_probability_num_HOf_fast(DM_frb_max, z, # Data
                                      f_C0_sigma, f_A_sigma, # C0(sigma) and A(sigma) function
                                      space='Delta', # which space to do convolution
                                      dropna=False, # drop nan value
-                                     error_calculator=None # custom error calculator
-                                     # One can use default sqrt(f_variance_delta)~sqrt(S/z) or Macquart's one f_sqrtvar_delta~F/sqrt(z)
+                                     error_calculator=None, # custom error calculator
+                                     # One can use default sqrt(f_variance_delta)~sqrt(S/z) or Macquart's one 
+                                     # f_sqrtvar_delta~F/sqrt(z)
+                                     Om=OMEGA_MATTER, w=W_LAMBDA, # other cosmology parameters
+                                     int_N=5000, # number of integration points
                                      ):
     '''
     ######### Interpolation version, make sure already do the interpolation #######
@@ -1138,13 +1141,13 @@ A_sigma_inter = interpolate.interp1d(Sigmas, As, kind=1,bounds_error=False,
     
     if error_calculator is None:
         # Our method
-        error = np.sqrt(f_variance_delta(S, z))
+        error = np.sqrt(f_variance_delta(S, z, Om=Om, w=w))
     else:
         # custom error calculator
         error = error_calculator(S, z)
     
     ## Cosmic calculation    
-    DM_th = DM_IGM_H0_O_b_f_IGM_fast(z=z, H0_O_b_f_IGM=HOf, Om=OMEGA_MATTER, w=-1)
+    DM_th = DM_diff_HOF_fast(z=z, H0_O_b_f_IGM=HOf, Om=Om, w=w)
     sigma=f_sigma_error(error) #sigma_var_inter(f_sqrtvar_delta(S,z))# sigma_var_inter(np.sqrt(f_variance_delta(F,z)))
     
     C_0=f_C0_sigma(sigma)
@@ -1154,7 +1157,7 @@ A_sigma_inter = interpolate.interp1d(Sigmas, As, kind=1,bounds_error=False,
     if (space=='Delta'):
         
         ## variable=Delta
-        varable_array = np.linspace(0, DM_frb_max / DM_th, 5000)
+        varable_array = np.linspace(0, DM_frb_max / DM_th, int_N)
 
         ## Cosmic calculation
         p_cosmic = pdf_DM_cosmo(varable_array, C_0=C_0, A=A, sigma=sigma)
@@ -1169,7 +1172,7 @@ A_sigma_inter = interpolate.interp1d(Sigmas, As, kind=1,bounds_error=False,
         
     elif (space=='DM'):
         ## variable=DM
-        varable_array = np.linspace(0, DM_frb_max * (1+z), 5000)
+        varable_array = np.linspace(0, DM_frb_max * (1+z), int_N)
         
         ## Cosmic calculation
         Deltas = (DM_frb_max-varable_array/(1+z))/DM_th
@@ -1289,7 +1292,7 @@ def DM_diff_sampling(z, # redshift
             raise ValueError("HOF must be provided when not using standard mode.")
         DM_th=DM_diff_HOf(z, HOF, Om=Om, w=w)
         
-    error=f_variance_delta(S=S, z=z)
+    error=f_variance_delta(S=S, z=z, Om=Om, w=w)
     s_DM_obs = error*DM_th
     
     sigma_diff=sigma_error_inter(error)
@@ -1309,6 +1312,80 @@ def DM_diff_sampling(z, # redshift
             )
     
     return dm_diff_obs, s_DM_obs
+
+def p_dm_ext_fast(DM_ext, z, # Data
+                S, e_mu, sigma_host, # parameters
+                f_sigma_error, # sigma(error) function
+                # If in Macquart way, try to define a y=x function as input
+                f_C0_sigma, f_A_sigma, # C0(sigma) and A(sigma) function
+                space='Delta', # which space to do convolution
+                dropna=False, # drop nan value
+                error_calculator=None, # custom error calculator
+                # One can use default sqrt(f_variance_delta)~sqrt(S/z) or Macquart's one f_sqrtvar_delta~F/sqrt(z)
+                H0=HUBBLE, f_diff=0.84, f_diff_alpha=0, # FRB standard parameters
+                Om=OMEGA_MATTER, w=W_LAMBDA, # other cosmology parameters
+                int_N=5000 # integration points
+                ):
+    
+    if error_calculator is None:
+        # Our method
+        error = np.sqrt(f_variance_delta(S=S, z=z, Om=Om, w=w))
+    else:
+        # custom error calculator
+        error = error_calculator(S, z)
+    
+    ## Cosmic calculation    
+    DM_th = dispersion_measure(z=z, H0=H0, Om=Om, w=w, alpha=f_diff_alpha, f_IGM_0 = f_diff)
+    #DM_diff_HOF_fast(z=z, H0_O_b_f_IGM=HOf, Om=Om, w=w)
+    sigma=f_sigma_error(error)
+    
+    C_0=f_C0_sigma(sigma)
+    A = f_A_sigma(sigma)
+
+    ## integration
+    if (space=='Delta'):
+        
+        ## variable=Delta
+        varable_array = np.linspace(0, DM_ext / DM_th, int_N)
+
+        ## Cosmic calculation
+        p_cosmic = pdf_DM_cosmo(varable_array, C_0=C_0, A=A, sigma=sigma)
+    
+        # print([f_sqrtvar_delta(F,z),sigma,C_0, A])
+    
+        ## Host calculation
+        p_host = pdf_DM_host((1+z)*(DM_ext - DM_th * varable_array), e_mu, sigma_host)
+        
+        ## factor
+        factor=1+z
+        
+    elif (space=='DM'):
+        ## variable=DM
+        varable_array = np.linspace(0, DM_ext * (1+z), int_N)
+        
+        ## Cosmic calculation
+        Deltas = (DM_ext-varable_array/(1+z))/DM_th
+        p_cosmic = pdf_DM_cosmo(Deltas, C_0=C_0, A=A, sigma=sigma)
+    
+        # print([f_sqrtvar_delta(F,z),sigma,C_0, A])
+    
+        ## Host calculation
+        p_host = pdf_DM_host(varable_array, e_mu, sigma_host)
+        
+        ## factor
+        factor=1.0/DM_th
+        
+    else:
+        raise ValueError("Invalid space parameter. Choose 'Delta' or 'DM'.")
+    
+    if (dropna==True):
+        p_host[np.isnan(p_host)] = 0
+        p_cosmic[np.isnan(p_cosmic)] = 0
+        
+    ## Combine together    
+    prob = np.trapz(p_host*p_cosmic, x=varable_array)
+    
+    return prob*factor
 
 def DM_ext_sampling(z, # redshift
                      S, HOF, EXP_MU, SIGMA_HOST, # FRB fitting results

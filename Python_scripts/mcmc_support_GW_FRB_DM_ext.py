@@ -92,7 +92,7 @@ def log_likelihood(theta, data):
     Returns:
         Log likelihood
     """
-    hubble, omega, w = theta
+    hubble, e_mu, sigma_host = theta
 
     log_like = 0.0
 
@@ -105,35 +105,27 @@ def log_likelihood(theta, data):
             
             ######## p_DM(z) and p_dL(z) ########
             
-            lum_distance=luminosity_distance(z=z_array, H0=hubble, Om=omega, w=w)
-            DM_th_array=dispersion_measure(z=z_array, H0=hubble, Om=omega, w=w, alpha=0, f_IGM_0 = 0.84)
-            Delta_array = row['DM_obs']/ DM_th_array
+            lum_distance=luminosity_distance(z=z_array, H0=hubble, Om=OMEGA_MATTER, w=W_LAMBDA)
+            DM_th_array=e_mu+dispersion_measure(z=z_array, H0=hubble, Om=OMEGA_MATTER, w=W_LAMBDA, alpha=0, f_IGM_0 = 0.84)
             
             p_DM=np.zeros_like(z_array)
             
-            for idx, (z_val, Delta, DM_th) in enumerate(zip(z_array, Delta_array, DM_th_array)):
-                error=f_variance_delta(S=S, z=z_val, Om=omega, w=w)
-
-                sigma_diff=sigma_error_inter(error)
-                C0=C0_sigma_inter(sigma_diff)
-                A=A_sigma_inter(sigma_diff)
-                
-                if (np.isnan([error,C0,A,sigma_diff]).any()):
-                    p_DM[idx]=0.0
-                    # print(f'NaN found for error at z={z_val}, H0={hubble}, Om={omega}, w={w} for error={error}, C0={C0}, A={A}, sigma_diff={sigma_diff}')
-                else:
-                    p_DM[idx]=pdf_DM_cosmo(Delta=Delta, C_0=C0, A=A, sigma=sigma_diff, alpha=3, beta=3)/DM_th
+            for idx, (z_val, DM_th) in enumerate(zip(z_array, DM_th_array)):
+                p_DM[idx]=p_dm_ext_fast(DM_ext=DM_th, z=z_val, 
+                                        S=S, e_mu=e_mu, sigma_host=sigma_host, 
+                                        f_sigma_error=sigma_error_inter, 
+                                        f_C0_sigma=C0_sigma_inter, f_A_sigma=A_sigma_inter, 
+                                        space='Delta', 
+                                        dropna=False, # drop nan value
+                                        error_calculator=None, 
+                                        H0=HUBBLE, f_diff=0.84, f_diff_alpha=0, # FRB standard parameters
+                                        Om=OMEGA_MATTER, w=W_LAMBDA, 
+                                        int_N=1000 
+                                        )
             
             p_DM=normalise(p_DM)
             p_dL=normalise(GW_dL_kde(lum_distance))
             prob = np.trapz(p_selection*p_dL*p_DM, z_array)
-            
-            """ if (np.isnan(p_DM).any()):
-                print(f'NaN found for p_DM at H0={hubble}, Om={omega}, w={w} for p_DM(z)')
-            if (np.isnan(p_dL).any()):
-                print(f'NaN found for p_DM at H0={hubble}, Om={omega}, w={w} for p_dL(z)')
-            if (np.isnan(p_selection).any()):
-                print(f'NaN found for p_DM at H0={hubble}, Om={omega}, w={w} for p_selection(z)') """
 
             if prob > 0:
                 log_like += np.log(prob)
@@ -156,17 +148,17 @@ def log_prior(theta):
     Returns:
         Log prior probability
     """
-    hubble, omega, w = theta
+    hubble, e_mu, sigma_host = theta
 
     # Define your prior ranges here
     hubble_min, hubble_max = 40, 100 #0.016 # 0.2 # 2.0 #0.2 # Example range, adjust based on your model
-    omega_min, omega_max = 0.0, 1.0  # Example range, adjust based on your model
-    w_min, w_max = -3.0, 0.0  # Example range
+    e_mu_min, e_mu_max = 10, 250  # Example range, adjust based on your model
+    sigma_host_min, sigma_host_max = 0.01, 1.5  # Example range
 
     # Check if parameters are within prior ranges
     if (hubble_min <= hubble <= hubble_max and 
-        omega_min <= omega <= omega_max and 
-        w_min <= w <= w_max ):
+        e_mu_min <= e_mu <= e_mu_max and 
+        sigma_host_min <= sigma_host <= sigma_host_max ):
         return 0.0  # Log(1) = 0, flat prior
     else:
         return -np.inf  # Log(0) = -inf, outside prior range       
