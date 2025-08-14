@@ -118,7 +118,7 @@ def log_likelihood(theta, data):
                                         space='Delta', 
                                         dropna=False, # drop nan value
                                         error_calculator=None, 
-                                        H0=HUBBLE, f_diff=0.84, f_diff_alpha=0, # FRB standard parameters
+                                        H0=hubble, f_diff=0.84, f_diff_alpha=0, # FRB standard parameters
                                         Om=OMEGA_MATTER, w=W_LAMBDA, 
                                         int_N=1000 
                                         )
