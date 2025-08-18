@@ -19,4 +19,4 @@ module load cpu/0.17.3b
 source ~/miniconda3/etc/profile.d/conda.sh
 conda activate py310
 
-python3 -W ignore::DeprecationWarning Comsmo_constraints_DM_ext_MCMC.py
+python3 -W ignore::DeprecationWarning Cosmo_constraints_DM_ext_MCMC.py
