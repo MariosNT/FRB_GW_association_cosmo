@@ -152,7 +152,7 @@ def log_prior(theta):
 
     # Define your prior ranges here
     hubble_min, hubble_max = 40, 100 #0.016 # 0.2 # 2.0 #0.2 # Example range, adjust based on your model
-    e_mu_min, e_mu_max = 10, 250  # Example range, adjust based on your model
+    e_mu_min, e_mu_max = 50, 250  # Example range, adjust based on your model
     sigma_host_min, sigma_host_max = 0.01, 1.5  # Example range
 
     # Check if parameters are within prior ranges

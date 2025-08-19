@@ -26,7 +26,7 @@ sigma_host0 = 0.5
 # MCMC parameters
 N_WALKERS = 64
 HEATING = 50
-N_STEPS = 500
+N_STEPS = 5000
 
 # Find use quadratic function may get negative error in some large redshift
 
