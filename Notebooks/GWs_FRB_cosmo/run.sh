@@ -4,7 +4,7 @@
 #SBATCH --partition=compute
 #SBATCH --nodes=1
 #SBATCH --account=unv114
-#SBATCH --ntasks-per-node=32
+#SBATCH --ntasks-per-node=48
 #SBATCH -t 48:00:00
 #SBATCH --mem=0
 #SBATCH --constraint="lustre"

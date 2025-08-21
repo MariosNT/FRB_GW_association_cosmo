@@ -63,7 +63,7 @@ HOF=2.813
 ## Random choice of redshift
 REDSHIFT_METHOD = 'rates'  # choose from 'rates', 'uniform', 'gaussian', 'lognormal' and 'powerlaw'
 
-N_EVENTS = 20
+N_EVENTS = 30
 
 z_range = np.linspace(0.2, 2.0, 500)
 z_centre = draw_redshift_distribution(z_range, H0=HUBBLE, Omega_m=OMEGA_MATTER, N_draws=N_EVENTS, method=REDSHIFT_METHOD)
@@ -153,7 +153,7 @@ def log_prior(theta):
     # Define your prior ranges here
     hubble_min, hubble_max = 40, 100 #0.016 # 0.2 # 2.0 #0.2 # Example range, adjust based on your model
     e_mu_min, e_mu_max = 50, 250  # Example range, adjust based on your model
-    sigma_host_min, sigma_host_max = 0.01, 1.5  # Example range
+    sigma_host_min, sigma_host_max = 0.2, 1.0  # Example range
 
     # Check if parameters are within prior ranges
     if (hubble_min <= hubble <= hubble_max and 
