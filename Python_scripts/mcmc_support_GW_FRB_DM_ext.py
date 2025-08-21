@@ -100,13 +100,13 @@ def log_likelihood(theta, data):
         for _, row in data.iterrows():
             ####### dL kde ######
             dL_gaussian = np.random.normal(row['dL_obs'], row['s_dL'], 1000)
-            dL_gaussian[dL_gaussian<0]=0
+            dL_gaussian = np.maximum(dL_gaussian, 0)
             GW_dL_kde = gaussian_kde(dL_gaussian)
             
             ######## p_DM(z) and p_dL(z) ########
             
-            lum_distance=luminosity_distance(z=z_array, H0=hubble, Om=OMEGA_MATTER, w=W_LAMBDA)
-            DM_th_array=e_mu+dispersion_measure(z=z_array, H0=hubble, Om=OMEGA_MATTER, w=W_LAMBDA, alpha=0, f_IGM_0 = 0.84)
+            lum_distance = luminosity_distance(z=z_array, H0=hubble, Om=OMEGA_MATTER, w=W_LAMBDA)
+            DM_th_array = e_mu + np.exp(sigma_host**2/2) + dispersion_measure(z=z_array, H0=hubble, Om=OMEGA_MATTER, w=W_LAMBDA, alpha=0, f_IGM_0 = 0.84)
             
             p_DM=np.zeros_like(z_array)
             
