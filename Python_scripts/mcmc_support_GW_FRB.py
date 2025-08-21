@@ -82,16 +82,16 @@ z_array=np.linspace(0.2, 3.0, 500)
 p_selection = redshift_distribution(z_array=z_array, H0=HUBBLE, Omega_m=OMEGA_MATTER, method=REDSHIFT_METHOD)
 
 def log_likelihood(theta, data):
-    """
-    Calculate the log likelihood for a set of parameters given the data.
+    # 
+    # Calculate the log likelihood for a set of parameters given the data.
 
-    Args:
-        theta: Array of parameters [F, HOf, sigma_host, e_mu]
-        data: Pandas DataFrame containing FRB data
+    # Args:
+    #     theta: Array of parameters [F, HOf, sigma_host, e_mu]
+    #    data: Pandas DataFrame containing FRB data
 
-    Returns:
-        Log likelihood
-    """
+    # Returns:
+    #   Log likelihood
+    # 
     hubble, omega, w = theta
 
     log_like = 0.0
@@ -100,7 +100,7 @@ def log_likelihood(theta, data):
         for _, row in data.iterrows():
             ####### dL kde ######
             dL_gaussian = np.random.normal(row['dL_obs'], row['s_dL'], 1000)
-            dL_gaussian[dL_gaussian<0]=0
+            dL_gaussian = np.maximum(dL_gaussian, 0)
             GW_dL_kde = gaussian_kde(dL_gaussian)
             
             ######## p_DM(z) and p_dL(z) ########
@@ -127,13 +127,6 @@ def log_likelihood(theta, data):
             p_DM=normalise(p_DM)
             p_dL=normalise(GW_dL_kde(lum_distance))
             prob = np.trapz(p_selection*p_dL*p_DM, z_array)
-            
-            """ if (np.isnan(p_DM).any()):
-                print(f'NaN found for p_DM at H0={hubble}, Om={omega}, w={w} for p_DM(z)')
-            if (np.isnan(p_dL).any()):
-                print(f'NaN found for p_DM at H0={hubble}, Om={omega}, w={w} for p_dL(z)')
-            if (np.isnan(p_selection).any()):
-                print(f'NaN found for p_DM at H0={hubble}, Om={omega}, w={w} for p_selection(z)') """
 
             if prob > 0:
                 log_like += np.log(prob)
