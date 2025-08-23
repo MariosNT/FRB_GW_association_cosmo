@@ -65,7 +65,7 @@ REDSHIFT_METHOD = 'rates'  # choose from 'rates', 'uniform', 'gaussian', 'lognor
 
 N_EVENTS = 30
 
-z_range = np.linspace(0.2, 2.0, 500)
+z_range = np.linspace(0.2, 2.0, 1000)
 z_centre = draw_redshift_distribution(z_range, H0=HUBBLE, Omega_m=OMEGA_MATTER, N_draws=N_EVENTS, method=REDSHIFT_METHOD)
 
 # Theoretical dL, fiducial cosmo
@@ -77,7 +77,7 @@ DM_centre = dispersion_measure(z_centre, H0=HUBBLE, Om=OMEGA_MATTER)
 ### MCMC Analysis functions ###
 ###############################
 
-z_array=np.linspace(0.2, 3.0, 500)
+z_array=np.linspace(0.2, 3.0, 1000)
 
 p_selection = redshift_distribution(z_array=z_array, H0=HUBBLE, Omega_m=OMEGA_MATTER, method=REDSHIFT_METHOD)
 
@@ -106,12 +106,12 @@ def log_likelihood(theta, data):
             ######## p_DM(z) and p_dL(z) ########
             
             lum_distance = luminosity_distance(z=z_array, H0=hubble, Om=OMEGA_MATTER, w=W_LAMBDA)
-            DM_th_array = e_mu + np.exp(sigma_host**2/2) + dispersion_measure(z=z_array, H0=hubble, Om=OMEGA_MATTER, w=W_LAMBDA, alpha=0, f_IGM_0 = 0.84)
+            # DM_th_array = e_mu + np.exp(sigma_host**2/2) + dispersion_measure(z=z_array, H0=hubble, Om=OMEGA_MATTER, w=W_LAMBDA, alpha=0, f_IGM_0 = 0.84)
             
             p_DM=np.zeros_like(z_array)
             
-            for idx, (z_val, DM_th) in enumerate(zip(z_array, DM_th_array)):
-                p_DM[idx]=p_dm_ext_fast(DM_ext=DM_th, z=z_val, 
+            for idx, z_val in enumerate(z_array):
+                p_DM[idx]=p_dm_ext_fast(DM_ext=row['DM_obs'], z=z_val, 
                                         S=S, e_mu=e_mu, sigma_host=sigma_host, 
                                         f_sigma_error=sigma_error_inter, 
                                         f_C0_sigma=C0_sigma_inter, f_A_sigma=A_sigma_inter, 

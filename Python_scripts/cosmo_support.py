@@ -274,7 +274,7 @@ def dispersion_measure(z, H0, Om, w=W_LAMBDA, alpha=0, f_IGM_0 = f_IGM):
     factor = 3*C_LIGHT*(H0*KM_2_MPC)*OMEGA_BARYONS/(8*PI*G_NEWTON*M_PROTON)*(7/8)
     unit_transform = DM_2_PCCM3
     for i, z_val in enumerate(z_array):
-        integral = integral = quad(dDM_integrand_w, 0, z_val, args=(Om, w, alpha, f_IGM_0))[0]
+        integral = quad(dDM_integrand_w, 0, z_val, args=(Om, w, alpha, f_IGM_0))[0]
         DM[i] = unit_transform*factor*integral
     
     # Return scalar if input was scalar, otherwise return array
@@ -1088,17 +1088,16 @@ def calculate_dm_probability_num_HOf(DM_frb_max, z, # Data
 
 ########## Fast version ##########
 
-def DM_diff_HOF_fast(z, H0_O_b_f_IGM, Om=OMEGA_MATTER, w=W_LAMBDA):
+def DM_diff_HOF_fast(z, H0_O_b_f_IGM, Om=OMEGA_MATTER, w=W_LAMBDA, int_N=4000):
     
     def integrand(z, Om, w):
         return (1+z)/np.sqrt(Om*(1+z)**3+(1-Om)*(1+z)**(3*(1+w)))
 
     factor = 3*C_LIGHT*H0_O_b_f_IGM/(8*PI*G_NEWTON*M_PROTON)*(7/8)
-    
-    z_array = np.linspace(0, z, 4000)
-    integral = np.trapz(integrand(z_array, Om, w), x=z_array)
-    
     unit_transform = DM_2_PCCM3*KM_2_MPC
+    
+    z_array = np.linspace(0, z, int_N)
+    integral = np.trapz(integrand(z_array, Om, w), x=z_array)
     
     DM = unit_transform*factor*integral
     
