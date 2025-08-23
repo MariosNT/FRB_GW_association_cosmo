@@ -24,9 +24,9 @@ e_mu0 = 150
 sigma_host0 = 0.5
 
 # MCMC parameters
-N_WALKERS = 96
+N_WALKERS = 64
 HEATING = 50
-N_STEPS = 5000
+N_STEPS = 4000
 
 # Find use quadratic function may get negative error in some large redshift
 
@@ -78,7 +78,7 @@ for idx, z_val in enumerate(z_centre):
                                                        Om=OMEGA_MATTER, w=W_LAMBDA, N_draws=1, int_N=1000
                                                        )
 
-events=pd.DataFrame({
+""" events=pd.DataFrame({
     'z': z_centre,
     'dL': dL_centre,
     'dL_obs': dL_obs_centre,
@@ -86,13 +86,15 @@ events=pd.DataFrame({
     'DM': DM_centre,
     'DM_obs': DM_obs_centre,
     's_DM': s_DM_obs
-})
+}) """
 
 # Define initial parameters: [F, HOf, sigma_host, e_mu]
 initial_params = np.array([Hubble0, e_mu0, sigma_host0])
 
 # Run MCMC
-sampler = run_mcmc(events, initial_params, nwalkers=N_WALKERS, heating=HEATING, nsteps=N_STEPS)
+sampler = run_mcmc(initial_params, 
+                   zs=z_centre, dLs=dL_obs_centre, s_dLs=sigma_dL, DMs=DM_obs_centre, s_DMs=s_DM_obs, 
+                   nwalkers=N_WALKERS, heating=HEATING, nsteps=N_STEPS)
     
 # Analyze results
 samples, params_median, params_errors = mcmc_analyze_results(sampler, burn_in=HEATING)

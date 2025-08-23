@@ -81,7 +81,7 @@ z_array=np.linspace(0.2, 3.0, 1000)
 
 p_selection = redshift_distribution(z_array=z_array, H0=HUBBLE, Omega_m=OMEGA_MATTER, method=REDSHIFT_METHOD)
 
-def log_likelihood(theta, data):
+def log_likelihood(theta, zs, dLs, s_dLs, DMs, s_DMs):
     """
     Calculate the log likelihood for a set of parameters given the data.
 
@@ -97,9 +97,9 @@ def log_likelihood(theta, data):
     log_like = 0.0
 
     try:
-        for _, row in data.iterrows():
+        for idx, (z, dL_obs, s_dL, DM_obs, s_DM) in enumerate(zip(zs, dLs, s_dLs, DMs, s_DMs)):
             ####### dL kde ######
-            dL_gaussian = np.random.normal(row['dL_obs'], row['s_dL'], 1000)
+            dL_gaussian = np.random.normal(dL_obs, s_dL, 1000)
             dL_gaussian = np.maximum(dL_gaussian, 0)
             GW_dL_kde = gaussian_kde(dL_gaussian)
             
@@ -110,8 +110,7 @@ def log_likelihood(theta, data):
             
             p_DM=np.zeros_like(z_array)
             
-            for idx, z_val in enumerate(z_array):
-                p_DM[idx]=p_dm_ext_fast(DM_ext=row['DM_obs'], z=z_val, 
+            for idx, z_val in enumerate(z_array):                p_DM[idx]=p_dm_ext_fast(DM_ext=DM_obs, z=z_val, 
                                         S=S, e_mu=e_mu, sigma_host=sigma_host, 
                                         f_sigma_error=sigma_error_inter, 
                                         f_C0_sigma=C0_sigma_inter, f_A_sigma=A_sigma_inter, 
@@ -163,7 +162,7 @@ def log_prior(theta):
     else:
         return -np.inf  # Log(0) = -inf, outside prior range       
 
-def log_probability(theta, data):
+def log_probability(theta, zs, dLs, s_dLs, DMs, s_DMs):
     """
     Calculate the log probability (posterior) for a set of parameters.
 
@@ -178,13 +177,13 @@ def log_probability(theta, data):
     if not np.isfinite(lp):
         return -np.inf
 
-    ll = log_likelihood(theta, data)
+    ll = log_likelihood(theta, zs, dLs, s_dLs, DMs, s_DMs)
     if not np.isfinite(ll):
         return -np.inf
 
     return lp + ll
 
-def run_mcmc(data, initial_params, nwalkers=32, heating=10, nsteps=10000):
+def run_mcmc(initial_params, zs, dLs, s_dLs, DMs, s_DMs, nwalkers=32, heating=10, nsteps=10000):
     """
     Run the MCMC analysis.
 
@@ -213,7 +212,7 @@ def run_mcmc(data, initial_params, nwalkers=32, heating=10, nsteps=10000):
     with Pool() as pool:
         sampler = emcee.EnsembleSampler(
             nwalkers, ndim, log_probability, 
-            args=(data,), pool=pool,
+            args=(zs, dLs, s_dLs, DMs, s_DMs,), pool=pool,
             moves=[(emcee.moves.DEMove(), 0.8),
                    (emcee.moves.DESnookerMove(), 0.2)]
         )
