@@ -110,7 +110,8 @@ def log_likelihood(theta, zs, dLs, s_dLs, DMs, s_DMs):
             
             p_DM=np.zeros_like(z_array)
             
-            for idx, z_val in enumerate(z_array):                p_DM[idx]=p_dm_ext_fast(DM_ext=DM_obs, z=z_val, 
+            for idx, z_val in enumerate(z_array):                
+                p_DM[idx]=p_dm_ext_fast(DM_ext=DM_obs, z=z_val, 
                                         S=S, e_mu=e_mu, sigma_host=sigma_host, 
                                         f_sigma_error=sigma_error_inter, 
                                         f_C0_sigma=C0_sigma_inter, f_A_sigma=A_sigma_inter, 
