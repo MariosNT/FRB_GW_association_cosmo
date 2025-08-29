@@ -24,9 +24,9 @@ e_mu0 = 150
 sigma_host0 = 0.5
 
 # MCMC parameters
-N_WALKERS = 108
+N_WALKERS = 64
 HEATING = 50
-N_STEPS = 3000
+N_STEPS = 2000
 
 # Find use quadratic function may get negative error in some large redshift
 
@@ -75,7 +75,7 @@ for idx, z_val in enumerate(z_centre):
                                                        sigma_error_inter=sigma_error_inter,
                                                        C0_sigma_inter=C0_sigma_inter,
                                                        A_sigma_inter=A_sigma_inter,
-                                                       Om=OMEGA_MATTER, w=W_LAMBDA, N_draws=1, int_N=1000
+                                                       Om=OMEGA_MATTER, w=W_LAMBDA, N_draws=1, int_N=500
                                                        )
 
 """ events=pd.DataFrame({
