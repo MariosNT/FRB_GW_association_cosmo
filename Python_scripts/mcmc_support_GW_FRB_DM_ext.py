@@ -63,7 +63,7 @@ HOF=2.813
 ## Random choice of redshift
 REDSHIFT_METHOD = 'rates'  # choose from 'rates', 'uniform', 'gaussian', 'lognormal' and 'powerlaw'
 
-N_EVENTS = 30
+N_EVENTS = 50
 
 z_range = np.linspace(0.2, 2.0, 1000)
 z_centre = draw_redshift_distribution(z_range, H0=HUBBLE, Omega_m=OMEGA_MATTER, N_draws=N_EVENTS, method=REDSHIFT_METHOD)
@@ -115,7 +115,7 @@ def log_likelihood(theta, zs, dLs, s_dLs, DMs, s_DMs):
                                         S=S, e_mu=e_mu, sigma_host=sigma_host, 
                                         f_sigma_error=sigma_error_inter, 
                                         f_C0_sigma=C0_sigma_inter, f_A_sigma=A_sigma_inter, 
-                                        space='Delta', 
+                                        space='Delta',
                                         dropna=False, # drop nan value
                                         error_calculator=None, 
                                         H0=hubble, f_diff=0.84, f_diff_alpha=0, # FRB standard parameters
@@ -253,6 +253,215 @@ def run_mcmc(initial_params, zs, dLs, s_dLs, DMs, s_DMs, nwalkers=32, heating=10
     if final_acc_frac < 0.01:
         print("warning: acceptance fraction too low，reset parameters or resun MCMC")
 
+    return sampler
+
+
+### checkpoint ###
+
+import pickle
+import os
+from datetime import datetime
+
+def save_checkpoint(sampler, step, state, filename="mcmc_checkpoint.pkl"):
+    """
+    Save MCMC checkpoint to file.
+    
+    Args:
+        sampler: emcee sampler object
+        step: Current step number
+        state: Current state of the sampler
+        filename: Checkpoint filename
+    """
+    checkpoint = {
+        'step': step,
+        'chain': sampler.chain,
+        'log_prob': sampler.lnprobability,
+        'acceptance_fraction': sampler.acceptance_fraction,
+        'state_coords': state.coords if state is not None else None,
+        'state_log_prob': state.log_prob if state is not None else None,
+        'state_blobs': state.blobs if state is not None else None,
+        'state_random_state': state.random_state if state is not None else None,
+        'timestamp': datetime.now().isoformat()
+    }
+    
+    # Save to temporary file first, then rename (atomic operation)
+    temp_filename = filename + ".tmp"
+    with open(temp_filename, 'wb') as f:
+        pickle.dump(checkpoint, f)
+    os.rename(temp_filename, filename)
+    print(f"Checkpoint saved at step {step}")
+
+
+def load_checkpoint(filename="mcmc_checkpoint.pkl"):
+    """
+    Load MCMC checkpoint from file.
+    
+    Args:
+        filename: Checkpoint filename
+        
+    Returns:
+        checkpoint dict or None if file doesn't exist
+    """
+    if os.path.exists(filename):
+        with open(filename, 'rb') as f:
+            checkpoint = pickle.load(f)
+        print(f"Checkpoint loaded from step {checkpoint['step']}")
+        print(f"Saved at: {checkpoint['timestamp']}")
+        return checkpoint
+    return None
+
+
+def run_mcmc_checkpoint(initial_params, zs, dLs, s_dLs, DMs, s_DMs, 
+             nwalkers=32, heating=10, nsteps=10000, 
+             checkpoint_interval=100, checkpoint_file="mcmc_checkpoint.pkl",
+             resume=True):
+    """
+    Run the MCMC analysis with checkpoint support.
+
+    Args:
+        initial_params: Initial parameter values [F, HOf, sigma_host, e_mu]
+        zs, dLs, s_dLs, DMs, s_DMs: Data arrays
+        nwalkers: Number of walkers
+        heating: Number of heating steps
+        nsteps: Number of steps per walker
+        checkpoint_interval: Save checkpoint every N steps
+        checkpoint_file: Checkpoint filename
+        resume: If True, try to resume from checkpoint
+
+    Returns:
+        sampler: emcee sampler object with results
+    """
+
+    ndim = len(initial_params)
+    
+    # Try to load checkpoint if resume=True
+    checkpoint = None
+    if resume:
+        checkpoint = load_checkpoint(checkpoint_file)
+    
+    # Initialize or resume
+    if checkpoint is not None:
+        # Resume from checkpoint
+        start_step = checkpoint['step']
+        
+        # Recreate sampler and restore state
+        with Pool() as pool:
+            sampler = emcee.EnsembleSampler(
+                nwalkers, ndim, log_probability, 
+                args=(zs, dLs, s_dLs, DMs, s_DMs,), pool=pool,
+                moves=[(emcee.moves.DEMove(), 0.8),
+                       (emcee.moves.DESnookerMove(), 0.2)]
+            )
+            
+            # Restore chain history
+            sampler._chain = checkpoint['chain']
+            sampler._lnprob = checkpoint['log_prob']
+            sampler._acceptance_fraction = checkpoint['acceptance_fraction']
+            
+            # Recreate state object
+            from emcee.state import State
+            state = State(
+                checkpoint['state_coords'],
+                log_prob=checkpoint['state_log_prob'],
+                blobs=checkpoint['state_blobs'],
+                random_state=checkpoint['state_random_state']
+            )
+            
+            remaining_steps = nsteps - start_step
+            
+            if remaining_steps <= 0:
+                print("MCMC already completed!")
+                return sampler
+                
+            print(f"Resuming from step {start_step}, {remaining_steps} steps remaining")
+            
+            # Continue main running
+            print("Continuing main running...")
+            with tqdm(initial=start_step, total=nsteps) as pbar:
+                for i, result in enumerate(sampler.sample(state.coords, 
+                                                         iterations=remaining_steps,
+                                                         store=True)):
+                    current_step = start_step + i + 1
+                    pbar.update(1)
+                    state = result
+                    
+                    # Save checkpoint
+                    if current_step % checkpoint_interval == 0:
+                        save_checkpoint(sampler, current_step, state, checkpoint_file)
+                    
+                    # Check acceptance fraction
+                    if i % 100 == 0:
+                        acc_frac = np.mean(sampler.acceptance_fraction)
+                        pbar.set_description(f"Acceptance fraction: {acc_frac:.3f}")
+                        
+                        if i > 500 and acc_frac < 0.001:
+                            print("Warning: acceptance fraction too low")
+    
+    else:
+        # Start from beginning
+        print("Starting new MCMC run...")
+        
+        # Set initial positions with small random offsets
+        pos = initial_params + 0.1 * np.random.randn(nwalkers, ndim)
+        
+        for i in range(nwalkers):
+            while log_prior(pos[i]) == -np.inf:
+                pos[i] = initial_params + 0.01 * np.random.randn(ndim)
+        
+        with Pool() as pool:
+            sampler = emcee.EnsembleSampler(
+                nwalkers, ndim, log_probability, 
+                args=(zs, dLs, s_dLs, DMs, s_DMs,), pool=pool,
+                moves=[(emcee.moves.DEMove(), 0.8),
+                       (emcee.moves.DESnookerMove(), 0.2)]
+            )
+            
+            # Heating phase
+            print("Heating...")
+            state = None
+            with tqdm(total=heating) as pbar:
+                for i, result in enumerate(sampler.sample(pos, iterations=heating)):
+                    pbar.update(1)
+                    state = result
+                    if i % 100 == 0:
+                        acc_frac = np.mean(sampler.acceptance_fraction)
+                        pbar.set_description(f"Acceptance fraction: {acc_frac:.3f}")
+            
+            # Reset sampler after heating
+            sampler.reset()
+            
+            # Main running phase
+            print("Main running...")
+            with tqdm(total=nsteps) as pbar:
+                for i, result in enumerate(sampler.sample(state.coords, 
+                                                         iterations=nsteps,
+                                                         store=True)):
+                    pbar.update(1)
+                    state = result
+                    current_step = i + 1
+                    
+                    # Save checkpoint
+                    if current_step % checkpoint_interval == 0:
+                        save_checkpoint(sampler, current_step, state, checkpoint_file)
+                    
+                    # Check acceptance fraction
+                    if i % 100 == 0:
+                        acc_frac = np.mean(sampler.acceptance_fraction)
+                        pbar.set_description(f"Acceptance fraction: {acc_frac:.3f}")
+                        
+                        if i > 500 and acc_frac < 0.001:
+                            print("Warning: acceptance fraction too low")
+    
+    # Final save
+    save_checkpoint(sampler, nsteps, state, checkpoint_file)
+    
+    # Check final acceptance fraction
+    final_acc_frac = np.mean(sampler.acceptance_fraction)
+    print(f"Final acceptance fraction: {final_acc_frac:.3f}")
+    
+    if final_acc_frac < 0.01:
+        print("Warning: acceptance fraction too low")
+    
     return sampler
 
 

@@ -70,13 +70,14 @@ DM_obs_centre=np.zeros_like(z_centre)
 s_DM_obs = np.zeros_like(z_centre)
 
 for idx, z_val in enumerate(z_centre):
-    DM_obs_centre[idx], s_DM_obs[idx] = DM_ext_sampling(z=z_val, 
-                                                       S=S, HOF=HOF, SIGMA_HOST=SIGMA_HOST, EXP_MU=EXP_MU,
-                                                       sigma_error_inter=sigma_error_inter,
-                                                       C0_sigma_inter=C0_sigma_inter,
-                                                       A_sigma_inter=A_sigma_inter,
-                                                       Om=OMEGA_MATTER, w=W_LAMBDA, N_draws=1, int_N=500
-                                                       )
+    DM_obs_centre[idx], s_DM_obs[idx] = \
+        DM_ext_sampling(z=z_val, 
+                        S=S, HOF=HOF, SIGMA_HOST=SIGMA_HOST, EXP_MU=EXP_MU,
+                        sigma_error_inter=sigma_error_inter,
+                        C0_sigma_inter=C0_sigma_inter,
+                        A_sigma_inter=A_sigma_inter,
+                        Om=OMEGA_MATTER, w=W_LAMBDA, N_draws=1, int_N=500
+                    )
 
 """ events=pd.DataFrame({
     'z': z_centre,
@@ -92,9 +93,13 @@ for idx, z_val in enumerate(z_centre):
 initial_params = np.array([Hubble0, e_mu0, sigma_host0])
 
 # Run MCMC
-sampler = run_mcmc(initial_params, 
+""" sampler = run_mcmc(initial_params, 
                    zs=z_centre, dLs=dL_obs_centre, s_dLs=sigma_dL, DMs=DM_obs_centre, s_DMs=s_DM_obs, 
-                   nwalkers=N_WALKERS, heating=HEATING, nsteps=N_STEPS)
+                   nwalkers=N_WALKERS, heating=HEATING, nsteps=N_STEPS) """
+sampler = run_mcmc_checkpoint(initial_params, 
+                   zs=z_centre, dLs=dL_obs_centre, s_dLs=sigma_dL, DMs=DM_obs_centre, s_DMs=s_DM_obs, 
+                   nwalkers=N_WALKERS, heating=HEATING, nsteps=N_STEPS,
+                   checkpoint_interval=100, checkpoint_file="mcmc_checkpoint.pkl",resume=True)
     
 # Analyze results
 samples, params_median, params_errors = mcmc_analyze_results(sampler, burn_in=HEATING)
