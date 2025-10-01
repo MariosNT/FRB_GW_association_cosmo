@@ -98,18 +98,56 @@ def log_likelihood(theta, data):
     except Exception as e:
         print(f"Error in log_likelihood: {e} with parameters {theta}")
         return -np.inf
-    
-    
-def log_prior(theta):
+
+prior_ranges = {
+        'F': (0.01, 1.2),
+        'HOf': (1.0, 5.0),
+        'sigma_host': (0.2, 1.4),
+        'e_mu': (10, 300)
+    }
+
+def log_prior(theta, prior_ranges=prior_ranges):
     """
     Calculate the log of the prior probability for a set of parameters.
-    
+
     Args:
-        theta: Array of parameters [F, HOf, sigma_host, e_mu]
-    
+        theta: Array of parameters [S, HOf, sigma_host, e_mu]
+        prior_ranges: Dictionary with parameter ranges, e.g.:
+                     {'F': (0.01, 1.2),
+                      'HOf': (1.0, 5.0),
+                      'sigma_host': (0.2, 1.4),
+                      'e_mu': (10, 300)}
+
     Returns:
         Log prior probability
     """
+    F, HOf, sigma_host, e_mu = theta
+    
+    # Extract ranges from dictionary
+    F_min, F_max = prior_ranges['F']
+    HOf_min, HOf_max = prior_ranges['HOf']
+    sigma_host_min, sigma_host_max = prior_ranges['sigma_host']
+    e_mu_min, e_mu_max = prior_ranges['e_mu']
+
+    # Check if parameters are within prior ranges
+    if (F_min <= F <= F_max and 
+        HOf_min <= HOf <= HOf_max and 
+        sigma_host_min <= sigma_host <= sigma_host_max and 
+        e_mu_min <= e_mu <= e_mu_max):
+        return 0.0  # Log(1) = 0, flat prior
+    else:
+        return -np.inf  # Log(0) = -inf, outside prior range
+
+""" def log_prior(theta):
+
+    #Calculate the log of the prior probability for a set of parameters.
+    
+    #Args:
+    #    theta: Array of parameters [F, HOf, sigma_host, e_mu]
+    
+    #Returns:
+    #    Log prior probability
+
     F, HOf, sigma_host, e_mu = theta
     
     # Define your prior ranges here
@@ -125,7 +163,7 @@ def log_prior(theta):
         e_mu_min <= e_mu <= e_mu_max):
         return 0.0  # Log(1) = 0, flat prior
     else:
-        return -np.inf  # Log(0) = -inf, outside prior range
+        return -np.inf  # Log(0) = -inf, outside prior range """
     
 
 def log_probability(theta, data):
@@ -257,27 +295,56 @@ def mcmc_analyze_results(sampler, burn_in=10, thin=15, target_prob=0.6827):
     
     return flat_samples, params_median, params_errors
 
-def mcmc_plot_results(samples, param_names, savetitle=None, bins=30, target_prob=0.6827):
+
+def mcmc_plot_results(samples, param_names, savetitle=None, bins=30, 
+                     target_prob=0.6827, plot_ranges=None, param_keys=None):
     """
     Plot the MCMC results.
     
     Args:
         samples: MCMC samples
-        param_names: Names of the parameters
+        param_names: Names of the parameters for display (can be LaTeX format)
+                    e.g., ['S', r'$H_0 \Omega_b f_{\rm diff}
     """
     
-    # Create corner plot
+    # Prepare range argument for corner plot
+    range_list = None
+    if plot_ranges is not None:
+        # If param_keys not provided, use plot_ranges keys in order
+        if param_keys is None:
+            param_keys = list(plot_ranges.keys())
+        
+        # Convert plot_ranges dict to list format expected by corner
+        # Order should match param_keys/samples columns
+        range_list = []
+        all_ranges_present = True
+        for key in param_keys:
+            if key in plot_ranges:
+                range_list.append(plot_ranges[key])
+            else:
+                all_ranges_present = False
+                break
+        
+        # If not all parameters have ranges, let corner determine ranges automatically
+        if not all_ranges_present:
+            range_list = None
     
+    # Enable LaTeX rendering
+    plt.rcParams['text.usetex'] = False  # Set to True if you have LaTeX installed
+    plt.rcParams['mathtext.fontset'] = 'stix'  # Use STIX fonts for math
+    
+    # Create corner plot
     fig = corner.corner(
         samples, 
         labels=param_names,
-        quantiles=[0.5-target_prob/2, 0.5, 0.5+target_prob/2], # [0.16, 0.5, 0.84],
+        quantiles=[0.5-target_prob/2, 0.5, 0.5+target_prob/2],
         show_titles=True,
         title_kwargs={"fontsize": 12},
         title_fmt='.3f',
         bins=bins,
         smooth=True,
-        color='tab:blue'
+        color='tab:blue',
+        range=range_list  # Set axis ranges based on plot_ranges
     )
     
     if savetitle is not None:
@@ -286,13 +353,27 @@ def mcmc_plot_results(samples, param_names, savetitle=None, bins=30, target_prob
     plt.close()
     
     # Plot chains for each parameter
-    fig, axes = plt.subplots(4, 1, figsize=(10, 8), sharex=True)
+    n_params = len(param_names)
+    fig, axes = plt.subplots(n_params, 1, figsize=(10, 2*n_params), sharex=True)
+    
+    # Handle case of single parameter
+    if n_params == 1:
+        axes = [axes]
     
     for i, (ax, name) in enumerate(zip(axes, param_names)):
         ax.plot(samples[:, i], 'k-', alpha=0.3)
-        ax.set_ylabel(name)
-        if i == 3:
-            ax.set_xlabel("Sample Number")
+        ax.set_ylabel(name, fontsize=12)
+        
+        # Set y-axis limits based on plot_ranges if provided
+        if plot_ranges is not None and param_keys is not None:
+            if i < len(param_keys) and param_keys[i] in plot_ranges:
+                y_min, y_max = plot_ranges[param_keys[i]]
+                # Add small padding
+                padding = (y_max - y_min) * 0.05
+                ax.set_ylim(y_min - padding, y_max + padding)
+        
+        if i == n_params - 1:
+            ax.set_xlabel("Sample Number", fontsize=12)
     
     plt.tight_layout()
     if savetitle is not None:
