@@ -40,6 +40,9 @@ RESUME = True
 SAVE_FILE = './DM_ext_checkpoint/simulation_data.pkl'
 MCMC_FILE = './DM_ext_checkpoint/mcmc_checkpoint.pkl'
 
+N_EVENTS = 50
+REDSHIFT_METHOD = 'rates'  # choose from 'rates', 'uniform', 'gaussian', 'lognormal' and 'powerlaw'
+
 ########################################
 ### Load standard parameters for pdf ###
 ########################################
@@ -80,9 +83,6 @@ def reload_with_path(path):
 #######################
 ### Generate events ###
 #######################
-
-N_EVENTS = 50
-REDSHIFT_METHOD = 'rates'  # choose from 'rates', 'uniform', 'gaussian', 'lognormal' and 'powerlaw'
 
 if RESUME and os.path.exists(SAVE_FILE):
     # Load previously saved data
@@ -205,7 +205,7 @@ for idx, z_val in enumerate(z_centre):
     's_DM': s_DM_obs
 }) """
 
-z_array=np.linspace(0.2, 3.0, 1000)
+z_array=np.linspace(0.2, 3.0, 2000)
 
 p_selection = redshift_distribution(z_array=z_array, H0=HUBBLE, Omega_m=OMEGA_MATTER, method=REDSHIFT_METHOD)
 
@@ -231,7 +231,7 @@ def log_likelihood(theta, zs, dLs, s_dLs, DMs, s_DMs):
     try:
         for idx, (z, dL_obs, s_dL, DM_obs, s_DM) in enumerate(zip(zs, dLs, s_dLs, DMs, s_DMs)):
             ####### dL kde ######
-            dL_gaussian = np.random.normal(dL_obs, s_dL, 1000)
+            dL_gaussian = np.random.normal(dL_obs, s_dL, 2000)
             dL_gaussian = np.maximum(dL_gaussian, 0)
             GW_dL_kde = gaussian_kde(dL_gaussian)
             
@@ -252,7 +252,7 @@ def log_likelihood(theta, zs, dLs, s_dLs, DMs, s_DMs):
                                         error_calculator=None, 
                                         H0=hubble, f_diff=0.84, f_diff_alpha=0, # FRB standard parameters
                                         Om=OMEGA_MATTER, w=W_LAMBDA, 
-                                        int_N=1000 
+                                        int_N=2000 
                                         )
             
             p_DM=normalise(p_DM)
@@ -285,7 +285,7 @@ def log_prior(theta):
     # Define your prior ranges here
     hubble_min, hubble_max = 40, 100 #0.016 # 0.2 # 2.0 #0.2 # Example range, adjust based on your model
     e_mu_min, e_mu_max = 50, 250  # Example range, adjust based on your model
-    sigma_host_min, sigma_host_max = 0.2, 1.0  # Example range
+    sigma_host_min, sigma_host_max = 0.01, 2.0  # Example range
 
     # Check if parameters are within prior ranges
     if (hubble_min <= hubble <= hubble_max and 
