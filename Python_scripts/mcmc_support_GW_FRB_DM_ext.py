@@ -65,7 +65,7 @@ REDSHIFT_METHOD = 'rates'  # choose from 'rates', 'uniform', 'gaussian', 'lognor
 
 N_EVENTS = 50
 
-z_range = np.linspace(0.2, 2.0, 1000)
+z_range = np.linspace(0.25, 2.0, 1000)
 z_centre = draw_redshift_distribution(z_range, H0=HUBBLE, Omega_m=OMEGA_MATTER, N_draws=N_EVENTS, method=REDSHIFT_METHOD)
 
 # Theoretical dL, fiducial cosmo
@@ -77,7 +77,7 @@ DM_centre = dispersion_measure(z_centre, H0=HUBBLE, Om=OMEGA_MATTER)
 ### MCMC Analysis functions ###
 ###############################
 
-z_array=np.linspace(0.2, 3.0, 1000)
+z_array=np.linspace(0.25, 3.0, 1000)
 
 p_selection = redshift_distribution(z_array=z_array, H0=HUBBLE, Omega_m=OMEGA_MATTER, method=REDSHIFT_METHOD)
 
