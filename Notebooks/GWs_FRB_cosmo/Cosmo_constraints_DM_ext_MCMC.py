@@ -79,6 +79,51 @@ def reload_with_path(path):
     global DATA_PATH, Sigmas, Errors, C0s, As, sigma_error_inter, C0_sigma_inter, A_sigma_inter
     DATA_PATH = path
     Sigmas, Errors, C0s, As, sigma_error_inter, C0_sigma_inter, A_sigma_inter = _load_and_create_interpolators()
+    
+#######################
+### DL error model ###
+#######################
+
+interpolations = np.load(f'../Realistic_sources/std_linear_interpolations.npz')
+
+LVK_linear = interpolations['LVK_interpolation']
+CE_linear = interpolations['CE_interpolation']
+
+# Find use quadratic function may get negative error in some large redshift
+
+def func_lin(x, a0, a1):
+    return a0+a1*x
+
+
+def GW_error_LVK(z, H0, Om, w=-1, order=1):
+    if (order==1):
+        sigma_ratio = func_lin(z, *LVK_linear)/100
+        dL=luminosity_distance(z, H0, Om, w)
+        return sigma_ratio*dL
+    elif (order==2):
+        a0=17.015
+        a1=131.750
+        a2=-174.911
+        dL=luminosity_distance(z, H0, Om, w)
+        return (a2*z*z+a1*z+a0)*dL
+    else:
+        print('Choose order from 1 or 2. Use default instead')
+        return sigma_dL(z_val, H0, Om, w=w, method='Wei')
+    
+def GW_error_CE(z, H0, Om, w=-1, order=1):
+    if (order==1):
+        sigma_ratio = func_lin(z, *CE_linear)/100
+        dL=luminosity_distance(z, H0, Om, w)
+        return sigma_ratio*dL
+    elif (order==2):
+        a0=7.649
+        a1=18.581
+        a2=-4.559
+        dL=luminosity_distance(z, H0, Om, w)
+        return (a2*z*z+a1*z+a0)*dL
+    else:
+        print('Choose order from 1 or 2. Use default instead')
+        return sigma_dL(z_val, H0, Om, w=w, method='Wei')
 
 #######################
 ### Generate events ###
@@ -114,7 +159,7 @@ else:
     # Generate new data
     print("Generating new simulation data...")
     
-    z_range = np.linspace(0.2, 2.0, 1000)
+    z_range = np.linspace(0.25, 2.0, 1000)
     z_centre = draw_redshift_distribution(z_range, H0=HUBBLE, Omega_m=OMEGA_MATTER, 
                                           N_draws=N_EVENTS, method=REDSHIFT_METHOD)
 
@@ -124,7 +169,12 @@ else:
     DM_centre = dispersion_measure(z_centre, H0=HUBBLE, Om=OMEGA_MATTER)
 
     ## Choice of observed luminosity distance
-    sigma_dL = 0.1*dL_centre
+    # Use this for fixed error/redshift
+    # sigma_dL = 0.1*dL_centre
+
+    # Use this for redshift dependent errors
+    sigma_dL = GW_error_CE(z_centre, H0=HUBBLE, Om=OMEGA_MATTER)
+
     dL_obs_centre = np.random.normal(dL_centre, sigma_dL)
 
     DM_obs_centre = np.zeros_like(z_centre)
@@ -205,7 +255,7 @@ for idx, z_val in enumerate(z_centre):
     's_DM': s_DM_obs
 }) """
 
-z_array=np.linspace(0.2, 3.0, 2000)
+z_array=np.linspace(0.25, 3.0, 2000)
 
 p_selection = redshift_distribution(z_array=z_array, H0=HUBBLE, Omega_m=OMEGA_MATTER, method=REDSHIFT_METHOD)
 
