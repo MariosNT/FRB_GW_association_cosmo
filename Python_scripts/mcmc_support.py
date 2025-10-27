@@ -133,7 +133,7 @@ class StandardCosmologyLikelihood(LikelihoodFunction):
                     else:
                         p_DM[idx] = pdf_DM_cosmo(Delta=Delta, C_0=C0, A=A, sigma=sigma_diff, alpha=3, beta=3) / DM_th
                 
-                p_dL = normalise(GW_dL_kde(lum_distance))
+                p_dL = normalise(GW_dL_kde(lum_distance), x_array=z_array)
                 prob = np.trapz(p_selection * p_dL * p_DM, z_array)
                 
                 if prob > 0:

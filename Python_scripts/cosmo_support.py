@@ -35,7 +35,7 @@ def distribution_redshift_Gaussian(z, epi=-7.553):
     f=(1+z)**(3.879*epi)+((1+z)/73.5)**(-0.4901*epi)+((1+z)/3.672)**(-5.691*epi)+((1+z)/3.411)**(-11.46*epi)+((1+z)/3.546)**(-16.38*epi)+((1+z)/3.716)**(-20.66*epi)
     f=f**(1/epi)
     
-    return normalise(f)
+    return f
 
 
 def distribution_redshift_LogNormal(z, epi=-5.51):
@@ -47,7 +47,7 @@ def distribution_redshift_LogNormal(z, epi=-5.51):
     f=(1+z)**(4.131*epi)+((1+z)/22.37)**(-0.5789*epi)+((1+z)/2.978)**(-4.735*epi)+((1+z)/2.749)**(-10.77*epi)+((1+z)/2.867)**(-17.51*epi)+((1+z)/3.04)**(-(0.08148+z**0.574/0.08682)*epi)
     f=f**(1/epi)
     
-    return normalise(f)
+    return f
 
 
 def distribution_redshift_Power(z, epi=-8.161):
@@ -59,7 +59,7 @@ def distribution_redshift_Power(z, epi=-8.161):
     f=(1+z)**(1.895*epi)+((1+z)/5.722)**(-3.759*epi)+((1+z)/11.55)**(-0.7426*epi)
     f=f**(1/epi)
     
-    return normalise(f)
+    return f
 
 
 def redshift_distribution(z_array, H0=HUBBLE, Omega_m=OMEGA_MATTER, method='rates'):
@@ -86,19 +86,22 @@ def redshift_distribution(z_array, H0=HUBBLE, Omega_m=OMEGA_MATTER, method='rate
         rate = rate_function(z_array)
         Hz = Hubble_function(z_array, H0, Omega_m)
 
-        pdf = normalise(4*np.pi*Dc_squared*rate/(Hz*(1+z_array)))
+        pdf = normalise(4*np.pi*Dc_squared*rate/(Hz*(1+z_array)), z_array)
         
     elif method == 'uniform':
         pdf = None
     
     elif method == 'gaussian':
         pdf = distribution_redshift_Gaussian(z_array)
+        pdf = normalise(pdf, z_array)
         
     elif method == 'lognormal':
         pdf = distribution_redshift_LogNormal(z_array)
+        pdf = normalise(pdf, z_array)
         
     elif method == 'powerlaw':
-        pdf = distribution_redshift_Power(z_array)     
+        pdf = distribution_redshift_Power(z_array) 
+        pdf = normalise(pdf, z_array)    
         
     else:
         raise Exception("Wrong method chosen! Choose between 'rates', 'uniform', 'gaussian', 'lognormal' and 'powerlaw'.")
@@ -1304,7 +1307,7 @@ def DM_diff_sampling(z, # redshift
         pdf_DM_cosmo(Delta=dm/DM_th, C_0=C0, A=A, sigma=sigma_diff, alpha=3, beta=3)/DM_th
         for dm in dm_range]
     
-    p_range=normalise(p_range)
+    p_range=normalise(p_range, dm_range)
     
     dm_diff_obs = np.random.choice(dm_range, size=N_draws, replace=True,\
             p=p_range
@@ -1410,7 +1413,7 @@ def DM_ext_sampling(z, # redshift
         f_sigma_error=sigma_error_inter,f_C0_sigma=C0_sigma_inter,f_A_sigma=A_sigma_inter
         ) for dm in dm_range]
     
-    p_range=normalise(p_range)
+    p_range=normalise(p_range, dm_range)
     
     dm_ext_obs = np.random.choice(dm_range, size=N_draws, replace=True,\
             p=p_range

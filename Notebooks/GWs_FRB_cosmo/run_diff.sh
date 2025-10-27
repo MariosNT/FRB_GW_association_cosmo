@@ -1,12 +1,12 @@
 #!/bin/bash
-#SBATCH --job-name="MCMC_all"
-#SBATCH --output="%j.MCMC_all.out"
+#SBATCH --job-name="DM_diff"
+#SBATCH --output="%j.DM_diff.out"
 #SBATCH --partition=compute
 #SBATCH --nodes=1
 #SBATCH --account=unv116
 #SBATCH --ntasks-per-node=96
 #SBATCH -t 48:00:00
-#SBATCH --mem=6G
+#SBATCH --mem=15G
 #SBATCH --constraint="lustre"
 
 module purge
@@ -17,11 +17,10 @@ module load cpu/0.17.3b
 source ~/miniconda3/etc/profile.d/conda.sh
 conda activate py310
 
-# 内存监控脚本 - 定期打印峰值
 monitor_memory() {
     local pid=$1
-    local interval=1800  # 每600秒（10分钟）报告一次
-    local sample_rate=600  # 每5秒采样一次
+    local interval=1800
+    local sample_rate=600
     local max_mem=0
     local max_vms=0
     local sample_count=0
@@ -34,7 +33,6 @@ monitor_memory() {
     local last_report_time=$(date +%s)
     
     while kill -0 $pid 2>/dev/null; do
-        # 获取当前内存使用
         mem_info=$(ps -p $pid -o rss=,vsz= 2>/dev/null)
         if [ -n "$mem_info" ]; then
             rss=$(echo $mem_info | awk '{print $1}')
@@ -42,7 +40,6 @@ monitor_memory() {
             rss_mb=$((rss / 1024))
             vms_mb=$((vms / 1024))
             
-            # 更新峰值
             if [ $rss_mb -gt $max_mem ]; then
                 max_mem=$rss_mb
             fi
@@ -53,7 +50,6 @@ monitor_memory() {
             sample_count=$((sample_count + 1))
         fi
         
-        # 检查是否到了报告时间
         current_time=$(date +%s)
         elapsed=$((current_time - last_report_time))
         
@@ -69,8 +65,7 @@ monitor_memory() {
         
         sleep $sample_rate
     done
-    
-    # 最终报告
+
     echo ""
     echo "========================================="
     echo "FINAL Memory Report at $(date)"
@@ -80,17 +75,14 @@ monitor_memory() {
     echo "========================================="
 }
 
-# 启动主程序
 echo "Starting Python script at $(date)"
-python3 -W ignore::DeprecationWarning Cosmo_constraints_DM_ext_MCMC.py &
+python3 -W ignore::DeprecationWarning Cosmo_constraints_DM_diff_MCMC.py &
 PYTHON_PID=$!
 
 echo "Python PID: $PYTHON_PID"
 
-# 后台启动内存监控
 monitor_memory $PYTHON_PID
 
-# 等待主程序完成
 wait $PYTHON_PID
 EXIT_CODE=$?
 

@@ -255,7 +255,7 @@ for idx, z_val in enumerate(z_centre):
     's_DM': s_DM_obs
 }) """
 
-z_array=np.linspace(0.25, 3.0, 2000)
+z_array=np.linspace(0.25, 4.0, 2000)
 
 p_selection = redshift_distribution(z_array=z_array, H0=HUBBLE, Omega_m=OMEGA_MATTER, method=REDSHIFT_METHOD)
 
@@ -305,8 +305,8 @@ def log_likelihood(theta, zs, dLs, s_dLs, DMs, s_DMs):
                                         int_N=2000 
                                         )
             
-            p_DM=normalise(p_DM)
-            p_dL=normalise(GW_dL_kde(lum_distance))
+            p_DM=normalise(p_DM, x_array=z_array)
+            p_dL=normalise(GW_dL_kde(lum_distance), x_array=z_array)
             prob = np.trapz(p_selection*p_dL*p_DM, z_array)
 
             if prob > 0:

@@ -123,8 +123,8 @@ def log_likelihood(theta, zs, dLs, s_dLs, DMs, s_DMs):
                                         int_N=1000 
                                         )
             
-            p_DM=normalise(p_DM)
-            p_dL=normalise(GW_dL_kde(lum_distance))
+            p_DM=normalise(p_DM, x_array=z_array)
+            p_dL=normalise(GW_dL_kde(lum_distance), x_array=z_array)
             prob = np.trapz(p_selection*p_dL*p_DM, z_array)
 
             if prob > 0:

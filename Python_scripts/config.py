@@ -18,6 +18,7 @@ from scipy.integrate import quad_vec
 from scipy.stats import gaussian_kde
 from scipy.optimize import curve_fit
 from scipy.optimize import root_scalar, minimize
+from scipy.integrate import trapz
 
 ### Astropy package
 import astropy.units as u
@@ -35,6 +36,7 @@ from matplotlib import cm, ticker
 import corner
 
 from tqdm import tqdm
+import warnings
 
 ### Constants and Parameters
 

@@ -1,4 +1,4 @@
-# A .py version of Cosmo_constraints_Ddiff_MCMC.ipynb for running in the cluster
+# A .py version of Cosmo_constraints_DM_diff_MCMC.ipynb for running in the cluster
 
 import sys
 sys.path.append('../../Python_scripts')
@@ -27,12 +27,12 @@ from mcmc_support_GW_FRB_DM_ext import *"""
 
 # initial parameters
 Hubble0 = 70
-e_mu0 = 150
-sigma_host0 = 0.5
+Omega0 = 0.3
+w0 = -1.0
 
 # MCMC parameters
 N_WALKERS = 64
-HEATING = 50
+HEATING = 100
 N_STEPS = 2000
 
 # checkpoint
@@ -257,7 +257,7 @@ for idx, z_val in enumerate(z_centre):
     's_DM': s_DM_obs
 }) """
 
-z_array=np.linspace(0.25, 3.0, 2000)
+z_array=np.linspace(0.25, 4.0, 2000)
 
 p_selection = redshift_distribution(z_array=z_array, H0=HUBBLE, Omega_m=OMEGA_MATTER, method=REDSHIFT_METHOD)
 
@@ -308,8 +308,8 @@ def log_likelihood(theta, zs, dLs, s_dLs, DMs, s_DMs):
                 else:
                     p_DM[idx]=pdf_DM_cosmo(Delta=Delta, C_0=C0, A=A, sigma=sigma_diff, alpha=3, beta=3)/DM_th
             
-            p_DM=normalise(p_DM)
-            p_dL=normalise(GW_dL_kde(lum_distance))
+            p_DM=normalise(p_DM, x_array=z_array)
+            p_dL=normalise(GW_dL_kde(lum_distance), x_array=z_array)
             prob = np.trapz(p_selection*p_dL*p_DM, z_array)
 
             if prob > 0:
@@ -655,7 +655,7 @@ def mcmc_plot_results(samples, param_names, savetitle=None, bins=30, target_prob
     plt.close()
 
 # Define initial parameters: [F, HOf, sigma_host, e_mu]
-initial_params = np.array([Hubble0, e_mu0, sigma_host0])
+initial_params = np.array([Hubble0, Omega0, w0])
 
 # Run MCMC
 """ sampler = run_mcmc(initial_params, 

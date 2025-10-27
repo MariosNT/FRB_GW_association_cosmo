@@ -20,8 +20,8 @@ def int_limit(fun, init=1e6, error=1e-6, limit='upper', loop_num=10000, step=100
             print(f'Reach to the loop limit while x={x}\n')
             
         return x
-
-def normalise(lista):
+        
+def normalise(lista, x_array):
     """
     Function that normalises a list of data.
     
@@ -35,10 +35,25 @@ def normalise(lista):
     i.e. sum(array) = 1.
     """
     
-    lista = np.array(lista)
+    if x_array is not None:
+        lista = np.array(lista)
+        integral = trapz(lista, x_array)
     
-    return lista/np.sum(lista)
-
+        normalised = lista / integral
+        normalised = normalised / np.sum(normalised)
+    else:
+        warnings.warn(
+            "Normalizing without x_array: using discrete sum normalization (sum=1). "
+            "If this is a continuous PDF on a grid, you must provide z_array "
+            "or manually account for dz in subsequent calculations to avoid "
+            "grid-spacing-dependent results.",
+            UserWarning,
+            stacklevel=2
+        )
+        lista = np.array(lista)
+        normalised = lista / np.sum(lista)
+    
+    return normalised
 
 
 def Gaussian(x, x0, s0):
