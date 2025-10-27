@@ -21,7 +21,7 @@ def int_limit(fun, init=1e6, error=1e-6, limit='upper', loop_num=10000, step=100
             
         return x
         
-def normalise(lista, x_array):
+def normalise(lista, x_array=None):
     """
     Function that normalises a list of data.
     
