@@ -33,7 +33,7 @@ w0 = -1.0
 # MCMC parameters
 N_WALKERS = 64
 HEATING = 100
-N_STEPS = 2000
+N_STEPS = 3000
 
 # checkpoint
 RESUME = True
@@ -209,54 +209,6 @@ else:
     
     print(f"Data saved to {SAVE_FILE}")
 
-""" ## Random choice of redshift
-REDSHIFT_METHOD = 'rates'  # choose from 'rates', 'uniform', 'gaussian', 'lognormal' and 'powerlaw'
-
-N_EVENTS = 50
-
-z_range = np.linspace(0.2, 2.0, 1000)
-z_centre = draw_redshift_distribution(z_range, H0=HUBBLE, Omega_m=OMEGA_MATTER, N_draws=N_EVENTS, method=REDSHIFT_METHOD)
-
-# Theoretical dL, fiducial cosmo
-dL_centre = luminosity_distance(z=z_centre, H0=HUBBLE, Om=OMEGA_MATTER, w=W_LAMBDA)
-# Theoretical DM, fiducial cosmo
-DM_centre = dispersion_measure(z_centre, H0=HUBBLE, Om=OMEGA_MATTER)
-
-###############################
-### MCMC Analysis functions ###
-###############################
-
-z_array=np.linspace(0.2, 3.0, 1000)
-
-p_selection = redshift_distribution(z_array=z_array, H0=HUBBLE, Omega_m=OMEGA_MATTER, method=REDSHIFT_METHOD)
-
-## Choice of observed luminosity distance
-sigma_dL = 0.1*dL_centre
-dL_obs_centre = np.random.normal(dL_centre, sigma_dL)
-
-DM_obs_centre=np.zeros_like(z_centre)
-s_DM_obs = np.zeros_like(z_centre)
-
-for idx, z_val in enumerate(z_centre):
-    DM_obs_centre[idx], s_DM_obs[idx] = \
-        DM_ext_sampling(z=z_val, 
-                        S=S, HOF=HOF, SIGMA_HOST=SIGMA_HOST, EXP_MU=EXP_MU,
-                        sigma_error_inter=sigma_error_inter,
-                        C0_sigma_inter=C0_sigma_inter,
-                        A_sigma_inter=A_sigma_inter,
-                        Om=OMEGA_MATTER, w=W_LAMBDA, N_draws=1, int_N=500
-                    ) """
-
-""" events=pd.DataFrame({
-    'z': z_centre,
-    'dL': dL_centre,
-    'dL_obs': dL_obs_centre,
-    's_dL': sigma_dL,
-    'DM': DM_centre,
-    'DM_obs': DM_obs_centre,
-    's_DM': s_DM_obs
-}) """
-
 z_array=np.linspace(0.25, 4.0, 2000)
 
 p_selection = redshift_distribution(z_array=z_array, H0=HUBBLE, Omega_m=OMEGA_MATTER, method=REDSHIFT_METHOD)
@@ -291,7 +243,7 @@ def log_likelihood(theta, zs, dLs, s_dLs, DMs, s_DMs):
             
             lum_distance=luminosity_distance(z=z_array, H0=hubble, Om=omega, w=w)
             DM_th_array=dispersion_measure(z=z_array, H0=hubble, Om=omega, w=w, alpha=0, f_IGM_0 = 0.84)
-            Delta_array = row['DM_obs']/ DM_th_array
+            Delta_array = DM_obs/ DM_th_array
             
             p_DM=np.zeros_like(z_array)
             
