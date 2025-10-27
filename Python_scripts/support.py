@@ -37,7 +37,7 @@ def normalise(lista, x_array=None):
     
     if x_array is not None:
         lista = np.array(lista)
-        integral = trapz(lista, x_array)
+        integral = np.trapz(lista, x_array)
     
         normalised = lista / integral
         normalised = normalised / np.sum(normalised)

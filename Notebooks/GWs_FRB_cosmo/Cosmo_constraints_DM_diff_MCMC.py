@@ -33,7 +33,7 @@ w0 = -1.0
 # MCMC parameters
 N_WALKERS = 64
 HEATING = 100
-N_STEPS = 2000
+N_STEPS = 3000
 
 # checkpoint
 RESUME = True
