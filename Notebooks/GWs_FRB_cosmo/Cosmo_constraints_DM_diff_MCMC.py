@@ -16,15 +16,6 @@ from datetime import datetime
 import emcee
 from multiprocessing import Pool, cpu_count
 
-### MCMCM packages
-path='../FRB_cosmo/interpolation/095_C0mean.npz' # './interpolation/StandardD_C0mean.npz' 
-
-""" import mcmc_support_GW_FRB_DM_ext
-mcmc_support_GW_FRB_DM_ext.DATA_PATH = path
-mcmc_support_GW_FRB_DM_ext.reload_with_path(path) 
-from mcmc_support_GW_FRB_DM_ext import *"""
-
-
 # initial parameters
 Hubble0 = 70
 Omega0 = 0.3
@@ -39,6 +30,9 @@ N_STEPS = 3000
 RESUME = True
 SAVE_FILE = './DM_diff_checkpoint/simulation_data.pkl'
 MCMC_FILE = './DM_diff_checkpoint/mcmc_checkpoint.pkl'
+
+DATA_PATH = '../FRB_cosmo/interpolation/095_C0mean.npz'
+interpolations = np.load(f'../Realistic_sources/quantile_linear_interpolations.npz')
 
 N_EVENTS = 50
 REDSHIFT_METHOD = 'rates'  # choose from 'rates', 'uniform', 'gaussian', 'lognormal' and 'powerlaw'
@@ -57,8 +51,6 @@ HOF=2.813
 ### Load interpolations for pdf ###
 ###################################
 
-DATA_PATH = '../FRB_cosmo/interpolation/095_C0mean.npz'
-
 def _load_and_create_interpolators():
     load_arrays = np.load(DATA_PATH)
     Sigmas = load_arrays['a']
@@ -73,18 +65,10 @@ def _load_and_create_interpolators():
     return Sigmas, Errors, C0s, As, sigma_error_inter, C0_sigma_inter, A_sigma_inter
 
 Sigmas, Errors, C0s, As, sigma_error_inter, C0_sigma_inter, A_sigma_inter = _load_and_create_interpolators()
-
-def reload_with_path(path):
-    ### reload
-    global DATA_PATH, Sigmas, Errors, C0s, As, sigma_error_inter, C0_sigma_inter, A_sigma_inter
-    DATA_PATH = path
-    Sigmas, Errors, C0s, As, sigma_error_inter, C0_sigma_inter, A_sigma_inter = _load_and_create_interpolators()
     
 #######################
 ### DL error model ###
 #######################
-
-interpolations = np.load(f'../Realistic_sources/std_linear_interpolations.npz')
 
 LVK_linear = interpolations['LVK_interpolation']
 CE_linear = interpolations['CE_interpolation']
