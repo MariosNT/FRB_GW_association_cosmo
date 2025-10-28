@@ -70,8 +70,6 @@ Sigmas, Errors, C0s, As, sigma_error_inter, C0_sigma_inter, A_sigma_inter = _loa
 ### DL error model ###
 #######################
 
-interpolations = np.load(f'../Realistic_sources/quantile_linear_interpolations.npz')
-
 LVK_linear = interpolations['LVK_interpolation']
 CE_linear = interpolations['CE_interpolation']
 
@@ -640,28 +638,29 @@ def mcmc_plot_results(samples, param_names, savetitle=None, bins=30, target_prob
     plt.show()
     plt.close()
 
-# Define initial parameters: [F, HOf, sigma_host, e_mu]
-initial_params = np.array([Hubble0, e_mu0, sigma_host0])
+if __name__ == '__main__':
+    # Define initial parameters: [F, HOf, sigma_host, e_mu]
+    initial_params = np.array([Hubble0, e_mu0, sigma_host0])
 
-# Run MCMC
+    # Run MCMC
 """ sampler = run_mcmc(initial_params, 
                    zs=z_centre, dLs=dL_obs_centre, s_dLs=sigma_dL, DMs=DM_obs_centre, s_DMs=s_DM_obs, 
                    nwalkers=N_WALKERS, heating=HEATING, nsteps=N_STEPS) """
-sampler = run_mcmc_checkpoint(initial_params, 
+    sampler = run_mcmc_checkpoint(initial_params, 
                    zs=z_centre, dLs=dL_obs_centre, s_dLs=sigma_dL, DMs=DM_obs_centre, s_DMs=s_DM_obs, 
                    nwalkers=N_WALKERS, heating=HEATING, nsteps=N_STEPS,
                    checkpoint_interval=100, checkpoint_file=MCMC_FILE,resume=RESUME)
     
-# Analyze results
-samples, params_median, params_errors = mcmc_analyze_results(sampler, burn_in=HEATING)
+    # Analyze results
+    samples, params_median, params_errors = mcmc_analyze_results(sampler, burn_in=HEATING)
 
-# Print results
-param_names = [r'$ H_0$ ', r'$ exp(\mu)$ ', r'$ \sigma_{\rm host}$ ']
-print("MCMC Results:")
-for i, name in enumerate(param_names):
-    print(f"{name} = {params_median[i]:.3f} ± {params_errors[i]:.3f}")
+    # Print results
+    param_names = [r'$ H_0$ ', r'$ exp(\mu)$ ', r'$ \sigma_{\rm host}$ ']
+    print("MCMC Results:")
+    for i, name in enumerate(param_names):
+        print(f"{name} = {params_median[i]:.3f} ± {params_errors[i]:.3f}")
 
-# Save samples to file for later analysis if needed
-np.save('./posterior/GW_FRB_MCMC_DM_ext.npy', samples)
+    # Save samples to file for later analysis if needed
+    np.save('./posterior/GW_FRB_MCMC_DM_ext.npy', samples)
 
-mcmc_plot_results(samples, param_names, savetitle='MCMC_DM_ext')
+    mcmc_plot_results(samples, param_names, savetitle='MCMC_DM_ext')
