@@ -202,6 +202,9 @@ else:
         'DM_centre': DM_centre
     }
     
+    directory = os.path.dirname(SAVE_FILE)
+    if directory:
+        os.makedirs(directory, exist_ok=True)
     with open(SAVE_FILE, 'wb') as f:
         pickle.dump(save_data, f)
     
