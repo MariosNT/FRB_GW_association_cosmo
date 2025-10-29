@@ -264,11 +264,13 @@ def log_likelihood(theta, zs, dLs, s_dLs, DMs, s_DMs):
                 C0=C0_sigma_inter(sigma_diff)
                 A=A_sigma_inter(sigma_diff)
                 
-                if (np.isnan([error,C0,A,sigma_diff]).any()):
+                p_DM[idx]=pdf_DM_cosmo(Delta=Delta, C_0=C0, A=A, sigma=sigma_diff, alpha=3, beta=3)/DM_th
+                
+                """ if (np.isnan([error,C0,A,sigma_diff]).any()):
                     p_DM[idx]=0.0
                     # print(f'NaN found for error at z={z_val}, H0={hubble}, Om={omega}, w={w} for error={error}, C0={C0}, A={A}, sigma_diff={sigma_diff}')
                 else:
-                    p_DM[idx]=pdf_DM_cosmo(Delta=Delta, C_0=C0, A=A, sigma=sigma_diff, alpha=3, beta=3)/DM_th
+                    p_DM[idx]=pdf_DM_cosmo(Delta=Delta, C_0=C0, A=A, sigma=sigma_diff, alpha=3, beta=3)/DM_th """
             
             p_DM=normalise(p_DM, x_array=z_array)
             # p_dL=normalise(GW_dL_kde(lum_distance), x_array=z_array)
