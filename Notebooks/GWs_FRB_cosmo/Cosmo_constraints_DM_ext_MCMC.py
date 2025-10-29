@@ -34,6 +34,7 @@ N_STEPS = 2000
 
 # checkpoint
 RESUME = True
+CKP_INTERVAL = 50
 SAVE_FILE = './DM_ext_checkpoint/simulation_data.pkl'
 MCMC_FILE = './DM_ext_checkpoint/mcmc_checkpoint.pkl'
 
@@ -83,7 +84,7 @@ def initialize_globals():
     
     if sigma_error_inter is None:
         Sigmas, Errors, C0s, As, sigma_error_inter, C0_sigma_inter, A_sigma_inter = _load_and_create_interpolators()
-        z_array = np.linspace(0.25, 4.0, 2000)
+        z_array = np.linspace(0.25, 4.0, 1000)
         p_selection = redshift_distribution(z_array=z_array, H0=HUBBLE, 
                                            Omega_m=OMEGA_MATTER, method=REDSHIFT_METHOD)
     
@@ -263,7 +264,7 @@ def log_likelihood(theta, zs, dLs, s_dLs, DMs, s_DMs):
                                         error_calculator=None, 
                                         H0=hubble, f_diff=0.84, f_diff_alpha=0, # FRB standard parameters
                                         Om=OMEGA_MATTER, w=W_LAMBDA, 
-                                        int_N=2000 
+                                        int_N=1000 
                                         )
             
             p_DM=normalise(p_DM, x_array=z_array)
@@ -381,8 +382,8 @@ def load_checkpoint(filename="mcmc_checkpoint.pkl"):
 
 
 def run_mcmc_checkpoint(initial_params, zs, dLs, s_dLs, DMs, s_DMs, 
-             nwalkers=32, heating=10, nsteps=10000, 
-             checkpoint_interval=100, checkpoint_file=MCMC_FILE,
+             nwalkers=32, heating=10, nsteps=2000, 
+             checkpoint_interval=50, checkpoint_file=MCMC_FILE,
              resume=RESUME):
     """
     Run the MCMC analysis with checkpoint support.
@@ -624,7 +625,7 @@ if __name__ == '__main__':
     sampler = run_mcmc_checkpoint(initial_params, 
                    zs=z_centre, dLs=dL_obs_centre, s_dLs=sigma_dL, DMs=DM_obs_centre, s_DMs=s_DM_obs, 
                    nwalkers=N_WALKERS, heating=HEATING, nsteps=N_STEPS,
-                   checkpoint_interval=100, checkpoint_file=MCMC_FILE,resume=RESUME)
+                   checkpoint_interval=CKP_INTERVAL, checkpoint_file=MCMC_FILE,resume=RESUME)
     
     # Analyze results
     samples, params_median, params_errors = mcmc_analyze_results(sampler, burn_in=HEATING)
