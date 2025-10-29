@@ -77,7 +77,7 @@ DM_centre = dispersion_measure(z_centre, H0=HUBBLE, Om=OMEGA_MATTER)
 ### MCMC Analysis functions ###
 ###############################
 
-z_array=np.linspace(0.25, 4.0, 8000)
+z_array=np.linspace(0.25, 4.0, 1000)
 
 p_selection = redshift_distribution(z_array=z_array, H0=HUBBLE, Omega_m=OMEGA_MATTER, method=REDSHIFT_METHOD)
 p_selection=normalise(p_selection, x_array=z_array)
@@ -100,13 +100,15 @@ def log_likelihood(theta, data):
     try:
         for _, row in data.iterrows():
             ####### dL kde ######
-            dL_gaussian = np.random.normal(row['dL_obs'], row['s_dL'], 1000)
-            dL_gaussian = np.maximum(dL_gaussian, 0)
-            GW_dL_kde = gaussian_kde(dL_gaussian)
+            # dL_gaussian = np.random.normal(row['dL_obs'], row['s_dL'], 1000)
+            # dL_gaussian = np.maximum(dL_gaussian, 0)
+            # GW_dL_kde = gaussian_kde(dL_gaussian)
             
             ######## p_DM(z) and p_dL(z) ########
             
             lum_distance=luminosity_distance(z=z_array, H0=hubble, Om=omega, w=w)
+            p_dL = gaussian_pdf(lum_distance, row['dL_obs'], row['s_dL'])
+            
             DM_th_array=dispersion_measure(z=z_array, H0=hubble, Om=omega, w=w, alpha=0, f_IGM_0 = 0.84)
             Delta_array = row['DM_obs']/ DM_th_array
             
@@ -126,7 +128,8 @@ def log_likelihood(theta, data):
                     p_DM[idx]=pdf_DM_cosmo(Delta=Delta, C_0=C0, A=A, sigma=sigma_diff, alpha=3, beta=3)/DM_th
             
             p_DM=normalise(p_DM, z_array)
-            p_dL=normalise(GW_dL_kde(lum_distance), z_array)
+            # p_dL=normalise(GW_dL_kde(lum_distance), z_array)
+            p_dL=normalise(p_dL, x_array=z_array)
             prob = np.trapz(p_selection*p_dL*p_DM, z_array)
 
             if prob > 0:

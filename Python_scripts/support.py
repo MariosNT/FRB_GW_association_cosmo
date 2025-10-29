@@ -82,3 +82,6 @@ def posterior_contour_2D(posterior_2D_norm, n=1000):
     integral_post = ((posterior_2D_norm > t_post[:, None, None]) * posterior_2D_norm).sum(axis=(1, 2))
     f_post = interpolate.interp1d(integral_post, t_post)
     return f_post(np.array([0.99, 0.95, 0.68]))
+
+def gaussian_pdf(x, mu, sigma):
+    return np.exp(-0.5 * ((x - mu) / sigma)**2) / (sigma * np.sqrt(2 * np.pi))

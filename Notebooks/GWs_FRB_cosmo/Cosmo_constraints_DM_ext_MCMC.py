@@ -1,5 +1,11 @@
 # A .py version of Cosmo_constraints_DM_ext_MCMC.ipynb for running in the cluster
 
+sigma_error_inter = None
+C0_sigma_inter = None
+A_sigma_inter = None
+z_array = None
+p_selection = None
+
 import sys
 sys.path.append('../../Python_scripts')
 sys.path.append('../FRB_cosmo/FRB_cosmo/interpolation')
@@ -22,8 +28,8 @@ e_mu0 = 150
 sigma_host0 = 0.5
 
 # MCMC parameters
-N_WALKERS = 64
-HEATING = 50
+N_WALKERS = 96
+HEATING = 100
 N_STEPS = 2000
 
 # checkpoint
@@ -65,6 +71,21 @@ def _load_and_create_interpolators():
     return Sigmas, Errors, C0s, As, sigma_error_inter, C0_sigma_inter, A_sigma_inter
 
 Sigmas, Errors, C0s, As, sigma_error_inter, C0_sigma_inter, A_sigma_inter = _load_and_create_interpolators()
+
+z_array=np.linspace(0.25, 4.0, 1000)
+
+p_selection = redshift_distribution(z_array=z_array, H0=HUBBLE, Omega_m=OMEGA_MATTER, method=REDSHIFT_METHOD)
+
+def initialize_globals():
+    """Initialize global variables for worker processes"""
+    global sigma_error_inter, C0_sigma_inter, A_sigma_inter
+    global z_array, p_selection
+    
+    if sigma_error_inter is None:
+        Sigmas, Errors, C0s, As, sigma_error_inter, C0_sigma_inter, A_sigma_inter = _load_and_create_interpolators()
+        z_array = np.linspace(0.25, 4.0, 2000)
+        p_selection = redshift_distribution(z_array=z_array, H0=HUBBLE, 
+                                           Omega_m=OMEGA_MATTER, method=REDSHIFT_METHOD)
     
 #######################
 ### DL error model ###
@@ -194,58 +215,6 @@ else:
     
     print(f"Data saved to {SAVE_FILE}")
 
-""" ## Random choice of redshift
-REDSHIFT_METHOD = 'rates'  # choose from 'rates', 'uniform', 'gaussian', 'lognormal' and 'powerlaw'
-
-N_EVENTS = 50
-
-z_range = np.linspace(0.2, 2.0, 1000)
-z_centre = draw_redshift_distribution(z_range, H0=HUBBLE, Omega_m=OMEGA_MATTER, N_draws=N_EVENTS, method=REDSHIFT_METHOD)
-
-# Theoretical dL, fiducial cosmo
-dL_centre = luminosity_distance(z=z_centre, H0=HUBBLE, Om=OMEGA_MATTER, w=W_LAMBDA)
-# Theoretical DM, fiducial cosmo
-DM_centre = dispersion_measure(z_centre, H0=HUBBLE, Om=OMEGA_MATTER)
-
-###############################
-### MCMC Analysis functions ###
-###############################
-
-z_array=np.linspace(0.2, 3.0, 1000)
-
-p_selection = redshift_distribution(z_array=z_array, H0=HUBBLE, Omega_m=OMEGA_MATTER, method=REDSHIFT_METHOD)
-
-## Choice of observed luminosity distance
-sigma_dL = 0.1*dL_centre
-dL_obs_centre = np.random.normal(dL_centre, sigma_dL)
-
-DM_obs_centre=np.zeros_like(z_centre)
-s_DM_obs = np.zeros_like(z_centre)
-
-for idx, z_val in enumerate(z_centre):
-    DM_obs_centre[idx], s_DM_obs[idx] = \
-        DM_ext_sampling(z=z_val, 
-                        S=S, HOF=HOF, SIGMA_HOST=SIGMA_HOST, EXP_MU=EXP_MU,
-                        sigma_error_inter=sigma_error_inter,
-                        C0_sigma_inter=C0_sigma_inter,
-                        A_sigma_inter=A_sigma_inter,
-                        Om=OMEGA_MATTER, w=W_LAMBDA, N_draws=1, int_N=500
-                    ) """
-
-""" events=pd.DataFrame({
-    'z': z_centre,
-    'dL': dL_centre,
-    'dL_obs': dL_obs_centre,
-    's_dL': sigma_dL,
-    'DM': DM_centre,
-    'DM_obs': DM_obs_centre,
-    's_DM': s_DM_obs
-}) """
-
-z_array=np.linspace(0.25, 4.0, 2000)
-
-p_selection = redshift_distribution(z_array=z_array, H0=HUBBLE, Omega_m=OMEGA_MATTER, method=REDSHIFT_METHOD)
-
 #######################
 ### MCMC Analysis ###
 #######################
@@ -261,6 +230,9 @@ def log_likelihood(theta, zs, dLs, s_dLs, DMs, s_DMs):
     Returns:
         Log likelihood
     """
+    
+    initialize_globals()
+    
     hubble, e_mu, sigma_host = theta
 
     log_like = 0.0
@@ -268,13 +240,15 @@ def log_likelihood(theta, zs, dLs, s_dLs, DMs, s_DMs):
     try:
         for idx, (z, dL_obs, s_dL, DM_obs, s_DM) in enumerate(zip(zs, dLs, s_dLs, DMs, s_DMs)):
             ####### dL kde ######
-            dL_gaussian = np.random.normal(dL_obs, s_dL, 2000)
-            dL_gaussian = np.maximum(dL_gaussian, 0)
-            GW_dL_kde = gaussian_kde(dL_gaussian)
+            # dL_gaussian = np.random.normal(dL_obs, s_dL, 2000)
+            # dL_gaussian = np.maximum(dL_gaussian, 0)
+            # GW_dL_kde = gaussian_kde(dL_gaussian)
             
             ######## p_DM(z) and p_dL(z) ########
             
             lum_distance = luminosity_distance(z=z_array, H0=hubble, Om=OMEGA_MATTER, w=W_LAMBDA)
+            p_dL = gaussian_pdf(lum_distance, dL_obs, s_dL)
+            
             # DM_th_array = e_mu + np.exp(sigma_host**2/2) + dispersion_measure(z=z_array, H0=hubble, Om=OMEGA_MATTER, w=W_LAMBDA, alpha=0, f_IGM_0 = 0.84)
             
             p_DM=np.zeros_like(z_array)
@@ -293,7 +267,8 @@ def log_likelihood(theta, zs, dLs, s_dLs, DMs, s_DMs):
                                         )
             
             p_DM=normalise(p_DM, x_array=z_array)
-            p_dL=normalise(GW_dL_kde(lum_distance), x_array=z_array)
+            # p_dL=normalise(GW_dL_kde(lum_distance), x_array=z_array)
+            p_dL=normalise(p_dL, x_array=z_array)
             prob = np.trapz(p_selection*p_dL*p_DM, z_array)
 
             if prob > 0:
