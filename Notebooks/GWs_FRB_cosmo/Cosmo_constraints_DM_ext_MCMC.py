@@ -643,7 +643,7 @@ if __name__ == '__main__':
     initial_params = np.array([Hubble0, e_mu0, sigma_host0])
 
     # Run MCMC
-""" sampler = run_mcmc(initial_params, 
+    """ sampler = run_mcmc(initial_params, 
                    zs=z_centre, dLs=dL_obs_centre, s_dLs=sigma_dL, DMs=DM_obs_centre, s_DMs=s_DM_obs, 
                    nwalkers=N_WALKERS, heating=HEATING, nsteps=N_STEPS) """
     sampler = run_mcmc_checkpoint(initial_params, 
