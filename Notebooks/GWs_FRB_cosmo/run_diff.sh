@@ -5,8 +5,8 @@
 #SBATCH --nodes=1
 #SBATCH --account=unv116
 #SBATCH --ntasks-per-node=96
-#SBATCH -t 48:00:00
-#SBATCH --mem=20G
+#SBATCH -t 24:00:00
+#SBATCH --mem=50G
 #SBATCH --constraint="lustre"
 
 module purge
@@ -18,3 +18,5 @@ source ~/miniconda3/etc/profile.d/conda.sh
 conda activate py310
 
 python3 -W ignore::DeprecationWarning Cosmo_constraints_DM_diff_MCMC.py
+
+python3 ../../../automail.py -task 'DM_diff'
