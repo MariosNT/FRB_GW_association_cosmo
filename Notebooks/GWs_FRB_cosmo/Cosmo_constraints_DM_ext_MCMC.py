@@ -30,7 +30,7 @@ sigma_host0 = 0.5
 # MCMC parameters
 N_WALKERS = 96
 HEATING = 100
-N_STEPS = 2000
+N_STEPS = 4000
 
 # checkpoint
 RESUME = True
