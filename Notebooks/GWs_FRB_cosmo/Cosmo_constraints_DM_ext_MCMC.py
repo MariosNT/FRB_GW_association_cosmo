@@ -254,8 +254,8 @@ def log_likelihood(theta, zs, dLs, s_dLs, DMs, s_DMs):
             
             p_DM=np.zeros_like(z_array)
             
-            for idx, z_val in enumerate(z_array):                
-                p_DM[idx]=p_dm_ext_fast(DM_ext=DM_obs, z=z_val, 
+            for idx_z, z_val in enumerate(z_array):                
+                p_DM[idx_z]=p_dm_ext_fast(DM_ext=DM_obs, z=z_val, 
                                         S=S, e_mu=e_mu, sigma_host=sigma_host, 
                                         f_sigma_error=sigma_error_inter, 
                                         f_C0_sigma=C0_sigma_inter, f_A_sigma=A_sigma_inter, 
@@ -270,16 +270,22 @@ def log_likelihood(theta, zs, dLs, s_dLs, DMs, s_DMs):
             p_DM=normalise(p_DM, x_array=z_array)
             # p_dL=normalise(GW_dL_kde(lum_distance), x_array=z_array)
             p_dL=normalise(p_dL, x_array=z_array)
-            prob = np.trapz(p_selection*p_dL*p_DM, z_array)
-
-            if prob > 0:
+            # prob = np.trapz(p_selection*p_dL*p_DM, z_array)
+            integrand = p_selection * p_dL * p_DM
+            prob = np.trapz(integrand, z_array)
+            
+            if prob > 1e-300:
                 log_like += np.log(prob)
             else:
+                print(f"Warning: prob={prob:.2e} for event {idx}, theta={theta}")
                 return -np.inf
 
         return log_like
+
     except Exception as e:
         print(f"Error in log_likelihood: {e} with parameters {theta}")
+        import traceback
+        traceback.print_exc()
         return -np.inf
 
 
@@ -511,8 +517,9 @@ def run_mcmc_checkpoint(initial_params, zs, dLs, s_dLs, DMs, s_DMs,
                     current_step = i + 1
                     
                     # Save checkpoint
-                    if current_step % checkpoint_interval == 0:
-                        save_checkpoint(sampler, current_step, state, checkpoint_file)
+                    if resume:
+                        if current_step % checkpoint_interval == 0:
+                            save_checkpoint(sampler, current_step, state, checkpoint_file)
                     
                     # Check acceptance fraction
                     if i % 100 == 0:
@@ -523,7 +530,8 @@ def run_mcmc_checkpoint(initial_params, zs, dLs, s_dLs, DMs, s_DMs,
                             print("Warning: acceptance fraction too low")
     
     # Final save
-    save_checkpoint(sampler, nsteps, state, checkpoint_file)
+    if resume:
+        save_checkpoint(sampler, nsteps, state, checkpoint_file)
     
     # Check final acceptance fraction
     final_acc_frac = np.mean(sampler.acceptance_fraction)
@@ -631,7 +639,7 @@ if __name__ == '__main__':
     samples, params_median, params_errors = mcmc_analyze_results(sampler, burn_in=HEATING)
 
     # Print results
-    param_names = [r'$ H_0$ ', r'$ exp(\mu)$ ', r'$ \sigma_{\rm host}$ ']
+    param_names = [r'$ H_0$ ', r'$ \Omega_m$ ', r'$ w$ ']
     print("MCMC Results:")
     for i, name in enumerate(param_names):
         print(f"{name} = {params_median[i]:.3f} ± {params_errors[i]:.3f}")

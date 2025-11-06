@@ -257,34 +257,40 @@ def log_likelihood(theta, zs, dLs, s_dLs, DMs, s_DMs):
             
             p_DM=np.zeros_like(z_array)
             
-            for idx, (z_val, Delta, DM_th) in enumerate(zip(z_array, Delta_array, DM_th_array)):
+            for idx_z, (z_val, Delta, DM_th) in enumerate(zip(z_array, Delta_array, DM_th_array)):
                 error=f_variance_delta(S=S, z=z_val, Om=omega, w=w)
 
                 sigma_diff=sigma_error_inter(error)
                 C0=C0_sigma_inter(sigma_diff)
                 A=A_sigma_inter(sigma_diff)
                 
-                p_DM[idx]=pdf_DM_cosmo(Delta=Delta, C_0=C0, A=A, sigma=sigma_diff, alpha=3, beta=3)/DM_th
+                p_DM[idx_z]=pdf_DM_cosmo(Delta=Delta, C_0=C0, A=A, sigma=sigma_diff, alpha=3, beta=3)/DM_th
                 
                 """ if (np.isnan([error,C0,A,sigma_diff]).any()):
-                    p_DM[idx]=0.0
+                    p_DM[idx_z]=0.0
                     # print(f'NaN found for error at z={z_val}, H0={hubble}, Om={omega}, w={w} for error={error}, C0={C0}, A={A}, sigma_diff={sigma_diff}')
                 else:
-                    p_DM[idx]=pdf_DM_cosmo(Delta=Delta, C_0=C0, A=A, sigma=sigma_diff, alpha=3, beta=3)/DM_th """
+                    p_DM[idx_z]=pdf_DM_cosmo(Delta=Delta, C_0=C0, A=A, sigma=sigma_diff, alpha=3, beta=3)/DM_th """
             
             p_DM=normalise(p_DM, x_array=z_array)
             # p_dL=normalise(GW_dL_kde(lum_distance), x_array=z_array)
             p_dL=normalise(p_dL, x_array=z_array)
-            prob = np.trapz(p_selection*p_dL*p_DM, z_array)
-
-            if prob > 0:
+            # prob = np.trapz(p_selection*p_dL*p_DM, z_array)
+            integrand = p_selection * p_dL * p_DM
+            prob = np.trapz(integrand, z_array)
+            
+            if prob > 1e-300:
                 log_like += np.log(prob)
             else:
+                print(f"Warning: prob={prob:.2e} for event {idx}, theta={theta}")
                 return -np.inf
 
         return log_like
+    
     except Exception as e:
         print(f"Error in log_likelihood: {e} with parameters {theta}")
+        import traceback
+        traceback.print_exc()
         return -np.inf
 
 
@@ -516,8 +522,9 @@ def run_mcmc_checkpoint(initial_params, zs, dLs, s_dLs, DMs, s_DMs,
                     current_step = i + 1
                     
                     # Save checkpoint
-                    if current_step % checkpoint_interval == 0:
-                        save_checkpoint(sampler, current_step, state, checkpoint_file)
+                    if resume:
+                        if current_step % checkpoint_interval == 0:
+                            save_checkpoint(sampler, current_step, state, checkpoint_file)
                     
                     # Check acceptance fraction
                     if i % 100 == 0:
@@ -528,7 +535,8 @@ def run_mcmc_checkpoint(initial_params, zs, dLs, s_dLs, DMs, s_DMs,
                             print("Warning: acceptance fraction too low")
     
     # Final save
-    save_checkpoint(sampler, nsteps, state, checkpoint_file)
+    if resume:
+        save_checkpoint(sampler, nsteps, state, checkpoint_file)
     
     # Check final acceptance fraction
     final_acc_frac = np.mean(sampler.acceptance_fraction)
