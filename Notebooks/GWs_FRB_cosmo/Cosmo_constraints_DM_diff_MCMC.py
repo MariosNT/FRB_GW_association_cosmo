@@ -234,8 +234,6 @@ def log_likelihood(theta, zs, dLs, s_dLs, DMs, s_DMs):
         Log likelihood
     """
     
-    initialize_globals()
-    
     hubble, omega, w = theta
 
     log_like = 0.0
@@ -426,7 +424,7 @@ def run_mcmc_checkpoint(initial_params, zs, dLs, s_dLs, DMs, s_DMs,
         start_step = checkpoint['step']
         
         # Recreate sampler and restore state
-        with Pool() as pool:
+        with Pool(initializer=initialize_globals) as pool:
             sampler = emcee.EnsembleSampler(
                 nwalkers, ndim, log_probability, 
                 args=(zs, dLs, s_dLs, DMs, s_DMs,), pool=pool,
@@ -644,7 +642,7 @@ if __name__ == '__main__':
     samples, params_median, params_errors = mcmc_analyze_results(sampler, burn_in=HEATING)
 
     # Print results
-    param_names = [r'$ H_0$ ', r'$ exp(\mu)$ ', r'$ \sigma_{\rm host}$ ']
+    param_names = [r'$ H_0$ ', r'$ \Omega_m$ ', r'$ w$ ']
     print("MCMC Results:")
     for i, name in enumerate(param_names):
         print(f"{name} = {params_median[i]:.3f} ± {params_errors[i]:.3f}")
