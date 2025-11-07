@@ -1292,7 +1292,7 @@ def DM_diff_sampling(z, # redshift
     else:
         if (HOF is None):
             raise ValueError("HOF must be provided when not using standard mode.")
-        DM_th=DM_diff_HOf(z, HOF, Om=Om, w=w)
+        DM_th=DM_diff_HOf_fast(z, HOF, Om=Om, w=w)
         
     error=f_variance_delta(S=S, z=z, Om=Om, w=w)
     s_DM_obs = error*DM_th
@@ -1301,7 +1301,7 @@ def DM_diff_sampling(z, # redshift
     C0=C0_sigma_inter(sigma_diff)
     A=A_sigma_inter(sigma_diff)
     
-    dm_range=np.linspace(0.01, 200+2*DM_th, int_N)
+    dm_range=np.linspace(0.25*DM_th, 500+2.0*DM_th, int_N)
     
     p_range=[
         pdf_DM_cosmo(Delta=dm/DM_th, C_0=C0, A=A, sigma=sigma_diff, alpha=3, beta=3)/DM_th
