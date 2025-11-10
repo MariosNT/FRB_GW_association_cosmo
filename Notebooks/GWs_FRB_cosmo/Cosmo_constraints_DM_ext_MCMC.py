@@ -20,7 +20,7 @@ import os
 from datetime import datetime
 
 import emcee
-from multiprocessing import Pool, cpu_count
+from multiprocess import Pool, cpu_count
 
 # initial parameters
 Hubble0 = 70
