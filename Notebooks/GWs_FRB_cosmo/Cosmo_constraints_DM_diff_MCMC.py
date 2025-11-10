@@ -21,6 +21,7 @@ from datetime import datetime
 
 import emcee
 from multiprocess import Pool, cpu_count
+from pathlib import Path
 
 # initial parameters
 Hubble0 = 70
@@ -233,6 +234,7 @@ ax2.errorbar(z_centre, DM_obs_centre, yerr=s_DM_obs, marker='o', ls='', ms=3, c=
 ax2.set_ylabel(r'$DM_{\rm diff}$ [pc/cm$^3$]')
 ax2.set_xlabel(r'$z$')
 
+Path('./plot').mkdir(parents=True, exist_ok=True)
 plt.savefig('./plot/data_cluster_DM_diff.png')
 # plt.tight_layout()
 
