@@ -30,7 +30,7 @@ w0 = -1.0
 # MCMC parameters
 N_WALKERS = 96
 HEATING = 100
-N_STEPS = 2000
+N_STEPS = 4000
 
 # checkpoint
 RESUME = True
@@ -218,6 +218,24 @@ else:
     
     print(f"Data saved to {SAVE_FILE}")
 
+fig = plt.figure(figsize=(11, 5))
+ax1 = fig.add_subplot(121)
+ax2 = fig.add_subplot(122)
+
+ax1.plot(np.sort(z_centre), np.sort(dL_centre))
+ax1.errorbar(z_centre, dL_obs_centre, yerr=sigma_dL, marker='o', ls='', ms=3, c='r', label=f'N={len(z_centre)}')
+ax1.set_ylabel(r'$d_{L}$ [Mpc]')
+ax1.set_xlabel(r'$z$')
+ax1.legend(loc='upper left')
+
+ax2.plot(np.sort(z_centre), np.sort(DM_centre))
+ax2.errorbar(z_centre, DM_obs_centre, yerr=s_DM_obs, marker='o', ls='', ms=3, c='r')
+ax2.set_ylabel(r'$DM_{\rm diff}$ [pc/cm$^3$]')
+ax2.set_xlabel(r'$z$')
+
+plt.savefig('./plot/data_cluster_DM_diff.png')
+# plt.tight_layout()
+
 #######################
 ### MCMC Analysis ###
 #######################
@@ -270,11 +288,12 @@ def log_likelihood(theta, zs, dLs, s_dLs, DMs, s_DMs):
                 else:
                     p_DM[idx_z]=pdf_DM_cosmo(Delta=Delta, C_0=C0, A=A, sigma=sigma_diff, alpha=3, beta=3)/DM_th """
             
-            p_DM=normalise(p_DM, x_array=z_array)
+            # p_DM=normalise(p_DM, x_array=z_array)
             # p_dL=normalise(GW_dL_kde(lum_distance), x_array=z_array)
-            p_dL=normalise(p_dL, x_array=z_array)
+            # p_dL=normalise(p_dL, x_array=z_array)
             # prob = np.trapz(p_selection*p_dL*p_DM, z_array)
-            integrand = p_selection * p_dL * p_DM
+            p_event = normalise(p_dL * p_DM, z_array)
+            integrand = p_selection * p_event
             prob = np.trapz(integrand, z_array)
             
             if prob > 1e-300:
@@ -650,4 +669,4 @@ if __name__ == '__main__':
     # Save samples to file for later analysis if needed
     np.save('./posterior/GW_FRB_MCMC_DM_diff.npy', samples)
 
-    mcmc_plot_results(samples, param_names, savetitle='MCMC_DM_diff')
+    mcmc_plot_results(samples, param_names, savetitle='./plot/MCMC_cluster_DM_diff')
