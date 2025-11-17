@@ -5,7 +5,7 @@
 #SBATCH --nodes=1
 #SBATCH --account=unv116
 #SBATCH --ntasks-per-node=96
-#SBATCH -t 24:00:00
+#SBATCH -t 48:00:00
 #SBATCH --mem=50G
 #SBATCH --constraint="lustre"
 
@@ -19,4 +19,4 @@ conda activate py310
 
 python3 -W ignore::DeprecationWarning Cosmo_constraints_DM_ext_MCMC.py
 
-python3 ../../../automail.py -task 'DM_diff'
+python3 ../../../automail.py -task 'DM_ext'
