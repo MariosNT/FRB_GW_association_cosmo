@@ -8,11 +8,11 @@ from support import normalise
 
 ###############################################
 
-def Hubble_function(z, H0, Omega_m):
+def Hubble_function(z, H0, Omega_m, w):
     """
     Hubble function
     """
-    return np.sqrt(H0**2*(Omega_m*(1+z)**3+(1-Omega_m)))
+    return np.sqrt(H0**2*(Omega_m*(1+z)**3+(1-Omega_m)*(1+z)**(3*(1+w))))
 
 
 def rate_function(z):
@@ -20,8 +20,9 @@ def rate_function(z):
     
     return rate
 
-def D_comoving(z, H0, Omega_m):
-    return FlatLambdaCDM(H0, Omega_m).comoving_distance(z).value
+def D_comoving(z, H0, Omega_m, w):
+    return wCDM(H0=H0, Om0=Omega_m, Ode0=1-Omega_m, w0=w).comoving_distance(z).value
+    # return FlatLambdaCDM(H0, Omega_m).comoving_distance(z).value
 
 
 ###############################################
@@ -62,7 +63,7 @@ def distribution_redshift_Power(z, epi=-8.161):
     return f
 
 
-def redshift_distribution(z_array, H0=HUBBLE, Omega_m=OMEGA_MATTER, method='rates'):
+def redshift_distribution(z_array, H0=HUBBLE, Omega_m=OMEGA_MATTER, w=W_LAMBDA, method='rates'):
     """
     Function that generates random redshifts for our GWs/FRB events.
 
@@ -82,33 +83,33 @@ def redshift_distribution(z_array, H0=HUBBLE, Omega_m=OMEGA_MATTER, method='rate
     """
     
     if method == 'rates':
-        Dc_squared = D_comoving(z_array, H0, Omega_m)**2
+        Dc_squared = D_comoving(z_array, H0, Omega_m, w)**2
         rate = rate_function(z_array)
-        Hz = Hubble_function(z_array, H0, Omega_m)
+        Hz = Hubble_function(z_array, H0, Omega_m, w)
 
-        pdf = normalise(4*np.pi*Dc_squared*rate/(Hz*(1+z_array)), z_array)
+        pdf = normalise(4*np.pi*Dc_squared*rate/(Hz*(1+z_array)))
         
     elif method == 'uniform':
         pdf = None
     
     elif method == 'gaussian':
         pdf = distribution_redshift_Gaussian(z_array)
-        pdf = normalise(pdf, z_array)
+        pdf = normalise(pdf)
         
     elif method == 'lognormal':
         pdf = distribution_redshift_LogNormal(z_array)
-        pdf = normalise(pdf, z_array)
+        pdf = normalise(pdf)
         
     elif method == 'powerlaw':
         pdf = distribution_redshift_Power(z_array) 
-        pdf = normalise(pdf, z_array)    
+        pdf = normalise(pdf)    
         
     else:
         raise Exception("Wrong method chosen! Choose between 'rates', 'uniform', 'gaussian', 'lognormal' and 'powerlaw'.")
     
     return pdf
 
-def draw_redshift_distribution(z_array, H0=HUBBLE, Omega_m=OMEGA_MATTER, N_draws=50, method='rates'):
+def draw_redshift_distribution(z_array, H0=HUBBLE, Omega_m=OMEGA_MATTER, w=W_LAMBDA, N_draws=50, method='rates'):
     """
     Function that generates random redshifts for our GWs/FRB events.
 
@@ -129,7 +130,7 @@ def draw_redshift_distribution(z_array, H0=HUBBLE, Omega_m=OMEGA_MATTER, N_draws
     redshift_draws : Mock redshift observations
     """
     
-    pdf=redshift_distribution(z_array, H0, Omega_m, method)
+    pdf=redshift_distribution(z_array, H0, Omega_m, w, method)
     
     redshift_draws = np.random.choice(z_array, p=pdf, replace=True, size=N_draws)
         
@@ -1307,7 +1308,7 @@ def DM_diff_sampling(z, # redshift
         pdf_DM_cosmo(Delta=dm/DM_th, C_0=C0, A=A, sigma=sigma_diff, alpha=3, beta=3)/DM_th
         for dm in dm_range]
     
-    p_range=normalise(p_range, dm_range)
+    p_range=normalise(p_range)
     
     dm_diff_obs = np.random.choice(dm_range, size=N_draws, replace=True,\
             p=p_range
@@ -1414,7 +1415,7 @@ def DM_ext_sampling(z, # redshift
         f_sigma_error=sigma_error_inter,f_C0_sigma=C0_sigma_inter,f_A_sigma=A_sigma_inter
         ) for dm in dm_range]
     
-    p_range=normalise(p_range, dm_range)
+    p_range=normalise(p_range)
     
     dm_ext_obs = np.random.choice(dm_range, size=N_draws, replace=True,\
             p=p_range

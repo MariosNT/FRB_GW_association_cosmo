@@ -23,7 +23,7 @@ def int_limit(fun, init=1e6, error=1e-6, limit='upper', loop_num=10000, step=100
         
 def normalise(lista, x_array=None):
     """
-    Function that normalises a list of data.
+    Function that normalises a list of data. For Continuous probability distribution (x_array != None), we take pdf = pdf / np.trapz(pdf, x_array). For Discrete probability distribution (x_array == None), we take pdf = pdf / np.sum(pdf).
     
     Parameters
     ----------
@@ -40,16 +40,7 @@ def normalise(lista, x_array=None):
         integral = np.trapz(lista, x_array)
     
         normalised = lista / integral
-        normalised = normalised / np.sum(normalised)
     else:
-        warnings.warn(
-            "Normalizing without x_array: using discrete sum normalization (sum=1). "
-            "If this is a continuous PDF on a grid, you must provide z_array "
-            "or manually account for dz in subsequent calculations to avoid "
-            "grid-spacing-dependent results.",
-            UserWarning,
-            stacklevel=2
-        )
         lista = np.array(lista)
         normalised = lista / np.sum(lista)
     

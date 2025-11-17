@@ -26,6 +26,7 @@ from astropy.cosmology import z_at_value
 import astropy.constants as astc
 from astropy.cosmology import Planck18
 from astropy.coordinates import SkyCoord
+from astropy.cosmology import wCDM
 
 ### Plotting
 import matplotlib.pyplot as plt

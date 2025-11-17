@@ -4,7 +4,6 @@ sigma_error_inter = None
 C0_sigma_inter = None
 A_sigma_inter = None
 z_array = None
-p_selection = None
 
 import sys
 sys.path.append('../../Python_scripts')
@@ -30,8 +29,8 @@ sigma_host0 = 0.5
 
 # MCMC parameters
 N_WALKERS = 96
-HEATING = 100
-N_STEPS = 4000
+HEATING = 10
+N_STEPS = 2000
 
 # checkpoint
 RESUME = True
@@ -42,7 +41,7 @@ MCMC_FILE = './DM_ext_checkpoint/mcmc_checkpoint.pkl'
 DATA_PATH = '../FRB_cosmo/interpolation/095_C0mean.npz'
 interpolations = np.load(f'../Realistic_sources/quantile_linear_interpolations.npz')
 
-N_EVENTS = 50
+N_EVENTS = 25
 REDSHIFT_METHOD = 'rates'  # choose from 'rates', 'uniform', 'gaussian', 'lognormal' and 'powerlaw'
 
 ########################################
@@ -76,8 +75,6 @@ Sigmas, Errors, C0s, As, sigma_error_inter, C0_sigma_inter, A_sigma_inter = _loa
 
 z_array=np.linspace(0.25, 4.0, 1000)
 
-p_selection = redshift_distribution(z_array=z_array, H0=HUBBLE, Omega_m=OMEGA_MATTER, method=REDSHIFT_METHOD)
-
 def initialize_globals():
     """Initialize global variables for worker processes"""
     global sigma_error_inter, C0_sigma_inter, A_sigma_inter
@@ -86,8 +83,6 @@ def initialize_globals():
     if sigma_error_inter is None:
         Sigmas, Errors, C0s, As, sigma_error_inter, C0_sigma_inter, A_sigma_inter = _load_and_create_interpolators()
         z_array = np.linspace(0.25, 4.0, 1000)
-        p_selection = redshift_distribution(z_array=z_array, H0=HUBBLE, 
-                                           Omega_m=OMEGA_MATTER, method=REDSHIFT_METHOD)
     
 #######################
 ### DL error model ###
@@ -289,7 +284,10 @@ def log_likelihood(theta, zs, dLs, s_dLs, DMs, s_DMs):
             # p_dL=normalise(GW_dL_kde(lum_distance), x_array=z_array)
             # p_dL=normalise(p_dL, x_array=z_array)
             # prob = np.trapz(p_selection*p_dL*p_DM, z_array)
-            p_event = normalise(p_dL * p_DM, z_array)
+            p_selection = redshift_distribution(z_array=z_array, H0=hubble, Omega_m=OMEGA_MATTER, w=W_LAMBDA, method=REDSHIFT_METHOD)
+            p_selection = normalise(p_selection, z_array)
+            
+            p_event = p_dL * p_DM
             integrand = p_selection * p_event
             prob = np.trapz(integrand, z_array)
             
@@ -440,12 +438,13 @@ def run_mcmc_checkpoint(initial_params, zs, dLs, s_dLs, DMs, s_DMs,
         start_step = checkpoint['step']
         
         # Recreate sampler and restore state
-        with Pool() as pool:
+        with Pool(initializer=initialize_globals) as pool:
             sampler = emcee.EnsembleSampler(
                 nwalkers, ndim, log_probability, 
                 args=(zs, dLs, s_dLs, DMs, s_DMs,), pool=pool,
-                moves=[(emcee.moves.DEMove(), 0.8),
-                       (emcee.moves.DESnookerMove(), 0.2)]
+                moves=[(emcee.moves.DEMove(), 0.5),
+                    (emcee.moves.DESnookerMove(), 0.3),
+                    (emcee.moves.StretchMove(), 0.2)]
             )
             
             # Restore chain history
@@ -507,8 +506,9 @@ def run_mcmc_checkpoint(initial_params, zs, dLs, s_dLs, DMs, s_DMs,
             sampler = emcee.EnsembleSampler(
                 nwalkers, ndim, log_probability, 
                 args=(zs, dLs, s_dLs, DMs, s_DMs,), pool=pool,
-                moves=[(emcee.moves.DEMove(), 0.8),
-                       (emcee.moves.DESnookerMove(), 0.2)]
+                moves=[(emcee.moves.DEMove(), 0.5),
+                    (emcee.moves.DESnookerMove(), 0.3),
+                    (emcee.moves.StretchMove(), 0.2)]
             )
             
             # Heating phase
@@ -664,6 +664,6 @@ if __name__ == '__main__':
         print(f"{name} = {params_median[i]:.3f} ± {params_errors[i]:.3f}")
 
     # Save samples to file for later analysis if needed
-    np.save('./posterior/GW_FRB_MCMC_DM_ext.npy', samples)
+    np.save('./posterior/cluster_MCMC_DM_ext.npy', samples)
 
     mcmc_plot_results(samples, param_names, savetitle='./plot/MCMC_cluster_DM_ext')
