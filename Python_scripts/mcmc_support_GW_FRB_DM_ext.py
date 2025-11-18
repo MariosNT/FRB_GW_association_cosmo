@@ -125,10 +125,12 @@ def log_likelihood(theta, zs, dLs, s_dLs, DMs, s_DMs):
                                         int_N=1000 
                                         )
             
-            p_DM=normalise(p_DM, x_array=z_array)
-            # p_dL=normalise(GW_dL_kde(lum_distance), x_array=z_array)
-            p_dL=normalise(p_dL, x_array=z_array)
-            prob = np.trapz(p_selection*p_dL*p_DM, z_array)
+            p_selection = redshift_distribution(z_array=z_array, H0=hubble, Omega_m=OMEGA_MATTER, w=W_LAMBDA, method=REDSHIFT_METHOD)
+            p_selection = normalise(p_selection, z_array)
+            
+            p_event = p_dL * p_DM
+            integrand = p_selection * p_event
+            prob = np.trapz(integrand, z_array)
 
             if prob > 0:
                 log_like += np.log(prob)

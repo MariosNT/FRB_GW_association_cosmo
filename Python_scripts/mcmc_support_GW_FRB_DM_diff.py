@@ -79,9 +79,6 @@ DM_centre = dispersion_measure(z_centre, H0=HUBBLE, Om=OMEGA_MATTER)
 
 z_array=np.linspace(0.25, 4.0, 1000)
 
-p_selection = redshift_distribution(z_array=z_array, H0=HUBBLE, Omega_m=OMEGA_MATTER, method=REDSHIFT_METHOD)
-p_selection=normalise(p_selection, x_array=z_array)
-
 def log_likelihood(theta, data):
     # 
     # Calculate the log likelihood for a set of parameters given the data.
@@ -127,10 +124,12 @@ def log_likelihood(theta, data):
                 else:
                     p_DM[idx]=pdf_DM_cosmo(Delta=Delta, C_0=C0, A=A, sigma=sigma_diff, alpha=3, beta=3)/DM_th
             
-            p_DM=normalise(p_DM, z_array)
-            # p_dL=normalise(GW_dL_kde(lum_distance), z_array)
-            p_dL=normalise(p_dL, x_array=z_array)
-            prob = np.trapz(p_selection*p_dL*p_DM, z_array)
+            p_selection = redshift_distribution(z_array=z_array, H0=hubble, Omega_m=omega, w=w, method=REDSHIFT_METHOD)
+            p_selection = normalise(p_selection, z_array)
+            
+            p_event = p_dL * p_DM
+            integrand = p_selection * p_event
+            prob = np.trapz(integrand, z_array)
 
             if prob > 0:
                 log_like += np.log(prob)
