@@ -41,7 +41,7 @@ MCMC_FILE = './DM_ext_checkpoint/mcmc_checkpoint.pkl'
 DATA_PATH = '../FRB_cosmo/interpolation/095_C0mean.npz'
 interpolations = np.load(f'../Realistic_sources/quantile_linear_interpolations.npz')
 
-N_EVENTS = 25
+N_EVENTS = 50
 REDSHIFT_METHOD = 'rates'  # choose from 'rates', 'uniform', 'gaussian', 'lognormal' and 'powerlaw'
 
 ########################################
