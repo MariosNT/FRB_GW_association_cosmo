@@ -30,7 +30,7 @@ sigma_host0 = 0.5
 # MCMC parameters
 N_WALKERS = 96
 HEATING = 10
-N_STEPS = 2000
+N_STEPS = 1000
 
 # checkpoint
 RESUME = True
@@ -41,7 +41,7 @@ MCMC_FILE = './DM_ext_checkpoint/mcmc_checkpoint.pkl'
 DATA_PATH = '../FRB_cosmo/interpolation/095_C0mean.npz'
 interpolations = np.load(f'../Realistic_sources/quantile_linear_interpolations.npz')
 
-N_EVENTS = 50
+N_EVENTS = 30
 REDSHIFT_METHOD = 'rates'  # choose from 'rates', 'uniform', 'gaussian', 'lognormal' and 'powerlaw'
 
 ########################################
@@ -73,7 +73,7 @@ def _load_and_create_interpolators():
 
 Sigmas, Errors, C0s, As, sigma_error_inter, C0_sigma_inter, A_sigma_inter = _load_and_create_interpolators()
 
-z_array=np.linspace(0.25, 4.0, 1000)
+z_array=np.linspace(0.25, 2.0, 1000)
 
 def initialize_globals():
     """Initialize global variables for worker processes"""
@@ -82,7 +82,7 @@ def initialize_globals():
     
     if sigma_error_inter is None:
         Sigmas, Errors, C0s, As, sigma_error_inter, C0_sigma_inter, A_sigma_inter = _load_and_create_interpolators()
-        z_array = np.linspace(0.25, 4.0, 1000)
+        z_array = np.linspace(0.25, 2.0, 1000)
     
 #######################
 ### DL error model ###
