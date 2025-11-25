@@ -24,8 +24,8 @@ from pathlib import Path
 
 # initial parameters
 Hubble0 = 70
-Omega0 = 0.3
-w0 = -1.0
+e_mu0 = 150
+sigma_host0 = 0.5
 
 # MCMC parameters
 N_WALKERS = 96
@@ -35,13 +35,13 @@ N_STEPS = 1000
 # checkpoint
 RESUME = True
 CKP_INTERVAL = 50
-SAVE_FILE = './DM_ext_checkpoint/simulation_data.pkl'
-MCMC_FILE = './DM_ext_checkpoint/mcmc_checkpoint.pkl'
+SAVE_FILE = './DM_ext_FRB_checkpoint/simulation_data.pkl'
+MCMC_FILE = './DM_ext_FRB_checkpoint/mcmc_checkpoint.pkl'
 
 DATA_PATH = '../FRB_cosmo/interpolation/095_C0mean.npz'
 interpolations = np.load(f'../Realistic_sources/quantile_linear_interpolations.npz')
 
-N_EVENTS = 30
+N_EVENTS = 100
 REDSHIFT_METHOD = 'rates'  # choose from 'rates', 'uniform', 'gaussian', 'lognormal' and 'powerlaw'
 
 ########################################
@@ -228,7 +228,7 @@ ax2.set_ylabel(r'DM$_{\rm ext}$ [pc/cm$^3$]')
 ax2.set_xlabel(r'$z$')
 
 Path('./plot').mkdir(parents=True, exist_ok=True)
-plt.savefig('./plot/data_cluster_DM_ext.pdf')
+plt.savefig('./plot/data_cluster_DM_ext_FRB.pdf')
 # plt.tight_layout()
 
 #######################
@@ -247,30 +247,36 @@ def log_likelihood(theta, zs, dLs, s_dLs, DMs, s_DMs):
         Log likelihood
     """
     
-    hubble, omega, w = theta
+    hubble, e_mu, sigma_host = theta
 
     log_like = 0.0
 
     try:
         for idx, (z, dL_obs, s_dL, DM_obs, s_DM) in enumerate(zip(zs, dLs, s_dLs, DMs, s_DMs)):
+            ####### dL kde ######
+            # dL_gaussian = np.random.normal(dL_obs, s_dL, 2000)
+            # dL_gaussian = np.maximum(dL_gaussian, 0)
+            # GW_dL_kde = gaussian_kde(dL_gaussian)
             
             ######## p_DM(z) and p_dL(z) ########
             
-            lum_distance = luminosity_distance(z=z_array, H0=hubble, Om=omega, w=w)
+            lum_distance = luminosity_distance(z=z_array, H0=hubble, Om=OMEGA_MATTER, w=W_LAMBDA)
             p_dL = gaussian_pdf(lum_distance, dL_obs, s_dL)
+            
+            # DM_th_array = e_mu + np.exp(sigma_host**2/2) + dispersion_measure(z=z_array, H0=hubble, Om=OMEGA_MATTER, w=W_LAMBDA, alpha=0, f_IGM_0 = 0.84)
             
             p_DM=np.zeros_like(z_array)
             
             for idx_z, z_val in enumerate(z_array):                
                 p_DM[idx_z]=p_dm_ext_fast(DM_ext=DM_obs, z=z_val, 
-                                        S=S, e_mu=EXP_MU, sigma_host=SIGMA_HOST, 
+                                        S=S, e_mu=e_mu, sigma_host=sigma_host, 
                                         f_sigma_error=sigma_error_inter, 
                                         f_C0_sigma=C0_sigma_inter, f_A_sigma=A_sigma_inter, 
                                         space='Delta',
                                         dropna=False, # drop nan value
                                         error_calculator=None, 
                                         H0=hubble, f_diff=0.84, f_diff_alpha=0, # FRB standard parameters
-                                        Om=omega, w=w, 
+                                        Om=OMEGA_MATTER, w=W_LAMBDA, 
                                         int_N=1000 
                                         )
             
@@ -278,7 +284,7 @@ def log_likelihood(theta, zs, dLs, s_dLs, DMs, s_DMs):
             # p_dL=normalise(GW_dL_kde(lum_distance), x_array=z_array)
             # p_dL=normalise(p_dL, x_array=z_array)
             # prob = np.trapz(p_selection*p_dL*p_DM, z_array)
-            p_selection = redshift_distribution(z_array=z_array, H0=hubble, Omega_m=omega, w=w, method=REDSHIFT_METHOD)
+            p_selection = redshift_distribution(z_array=z_array, H0=hubble, Omega_m=OMEGA_MATTER, w=W_LAMBDA, method=REDSHIFT_METHOD)
             p_selection = normalise(p_selection, z_array)
             
             p_event = p_dL * p_DM
@@ -310,20 +316,20 @@ def log_prior(theta):
     Returns:
         Log prior probability
     """
-    hubble, omega, w = theta
+    hubble, e_mu, sigma_host = theta
 
     # Define your prior ranges here
     hubble_min, hubble_max = 40, 100 #0.016 # 0.2 # 2.0 #0.2 # Example range, adjust based on your model
-    omega_min, omega_max = 0.0, 1.0  # Example range, adjust based on your model
-    w_min, w_max = -3.0, 0.0  # Example range
+    e_mu_min, e_mu_max = 50, 250  # Example range, adjust based on your model
+    sigma_host_min, sigma_host_max = 0.01, 2.0  # Example range
 
     # Check if parameters are within prior ranges
     if (hubble_min <= hubble <= hubble_max and 
-        omega_min <= omega <= omega_max and 
-        w_min <= w <= w_max ):
+        e_mu_min <= e_mu <= e_mu_max and 
+        sigma_host_min <= sigma_host <= sigma_host_max ):
         return 0.0  # Log(1) = 0, flat prior
     else:
-        return -np.inf          
+        return -np.inf  # Log(0) = -inf, outside prior range       
 
 def log_probability(theta, zs, dLs, s_dLs, DMs, s_DMs):
     """
@@ -637,7 +643,7 @@ def mcmc_plot_results(samples, param_names, savetitle=None, bins=30, target_prob
 
 if __name__ == '__main__':
     # Define initial parameters: [F, HOf, sigma_host, e_mu]
-    initial_params = np.array([Hubble0, Omega0, w0])
+    initial_params = np.array([Hubble0, e_mu0, sigma_host0])
 
     # Run MCMC
     """ sampler = run_mcmc(initial_params, 
@@ -652,12 +658,12 @@ if __name__ == '__main__':
     samples, params_median, params_errors = mcmc_analyze_results(sampler, burn_in=HEATING)
 
     # Print results
-    param_names = [r'$ H_0$ ', r'$ \Omega_m$ ', r'$ w$ ']
+    param_names = [r'$ H_0$ ', r'$ exp(\mu)$ ', r'$ \sigma_{\rm host}$ ']
     print("MCMC Results:")
     for i, name in enumerate(param_names):
         print(f"{name} = {params_median[i]:.3f} ± {params_errors[i]:.3f}")
 
     # Save samples to file for later analysis if needed
-    np.save('./posterior/cluster_MCMC_DM_ext.npy', samples)
+    np.save('./posterior/cluster_MCMC_DM_ext_FRB.npy', samples)
 
-    mcmc_plot_results(samples, param_names, savetitle='./plot/MCMC_cluster_DM_ext')
+    mcmc_plot_results(samples, param_names, savetitle='./plot/MCMC_cluster_DM_ext_FRB')
