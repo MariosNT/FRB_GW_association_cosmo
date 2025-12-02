@@ -261,6 +261,8 @@ def log_likelihood(theta, zs, dLs, s_dLs, DMs, s_DMs):
             
             p_DM=np.zeros_like(z_array)
             
+            
+            
             for idx_z, z_val in enumerate(z_array):                
                 p_DM[idx_z]=p_dm_ext_fast(DM_ext=DM_obs, z=z_val, 
                                         S=S, e_mu=EXP_MU, sigma_host=SIGMA_HOST, 
@@ -660,4 +662,4 @@ if __name__ == '__main__':
     # Save samples to file for later analysis if needed
     np.save('./posterior/cluster_MCMC_DM_ext.npy', samples)
 
-    mcmc_plot_results(samples, param_names, savetitle='./plot/MCMC_cluster_DM_ext')
+    mcmc_plot_results(samples, param_names, savetitle='./plot/MCMC_cluster_DM_ext_norm_later')

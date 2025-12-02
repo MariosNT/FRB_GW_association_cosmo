@@ -38,6 +38,10 @@ CKP_INTERVAL = 50
 SAVE_FILE = './DM_ext_FRB_checkpoint/simulation_data.pkl'
 MCMC_FILE = './DM_ext_FRB_checkpoint/mcmc_checkpoint.pkl'
 
+# savefile
+SAVE_RESULT='./posterior/cluster_MCMC_DM_ext_FRB_z_later.npy'
+SAVE_FIG='./plot/MCMC_cluster_DM_ext_FRB_z_later'
+
 DATA_PATH = '../FRB_cosmo/interpolation/095_C0mean.npz'
 interpolations = np.load(f'../Realistic_sources/quantile_linear_interpolations.npz')
 
@@ -250,6 +254,8 @@ def log_likelihood(theta, zs, dLs, s_dLs, DMs, s_DMs):
     hubble, e_mu, sigma_host = theta
 
     log_like = 0.0
+    
+    p_event=np.zeros_like(z_array)+1.0 ############
 
     try:
         for idx, (z, dL_obs, s_dL, DM_obs, s_DM) in enumerate(zip(zs, dLs, s_dLs, DMs, s_DMs)):
@@ -284,18 +290,31 @@ def log_likelihood(theta, zs, dLs, s_dLs, DMs, s_DMs):
             # p_dL=normalise(GW_dL_kde(lum_distance), x_array=z_array)
             # p_dL=normalise(p_dL, x_array=z_array)
             # prob = np.trapz(p_selection*p_dL*p_DM, z_array)
-            p_selection = redshift_distribution(z_array=z_array, H0=hubble, Omega_m=OMEGA_MATTER, w=W_LAMBDA, method=REDSHIFT_METHOD)
+            """ p_selection = redshift_distribution(z_array=z_array, H0=hubble, Omega_m=OMEGA_MATTER, w=W_LAMBDA, method=REDSHIFT_METHOD)
             p_selection = normalise(p_selection, z_array)
             
             p_event = p_dL * p_DM
             integrand = p_selection * p_event
-            prob = np.trapz(integrand, z_array)
+            prob = np.trapz(integrand, z_array) """
             
-            if prob > 1e-300:
+            p_event = p_event * p_dL * p_DM ################
+            
+            """ if prob > 1e-300:
                 log_like += np.log(prob)
             else:
                 print(f"Warning: prob={prob:.2e} for event {idx}, theta={theta}")
-                return -np.inf
+                return -np.inf """
+            
+        p_selection = redshift_distribution(z_array=z_array, H0=hubble, Omega_m=omega, w=w, method=REDSHIFT_METHOD) ############
+        p_selection = normalise(p_selection, z_array)###########
+        integrand = p_selection * p_event############
+        prob = np.trapz(integrand, z_array)###############
+        
+        if prob > 1e-300:
+            log_like += np.log(prob)
+        else:
+            print(f"Warning: prob={prob:.2e} for event {idx}, theta={theta}")
+            return -np.inf
 
         return log_like
 
@@ -664,6 +683,6 @@ if __name__ == '__main__':
         print(f"{name} = {params_median[i]:.3f} ± {params_errors[i]:.3f}")
 
     # Save samples to file for later analysis if needed
-    np.save('./posterior/cluster_MCMC_DM_ext_FRB.npy', samples)
+    np.save(SAVE_RESULT, samples)
 
-    mcmc_plot_results(samples, param_names, savetitle='./plot/MCMC_cluster_DM_ext_FRB')
+    mcmc_plot_results(samples, param_names, savetitle=SAVE_FIG)
