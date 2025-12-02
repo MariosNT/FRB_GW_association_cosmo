@@ -35,10 +35,11 @@ N_STEPS = 1000
 # checkpoint
 RESUME = True
 CKP_INTERVAL = 50
-SAVE_FILE = './DM_ext_FRB_checkpoint/simulation_data.pkl'
-MCMC_FILE = './DM_ext_FRB_checkpoint/mcmc_checkpoint.pkl'
+DATA_FILE = './DM_ext_FRB_checkpoint/simulation_data.pkl'
+MCMC_FILE = './DM_ext_FRB_checkpoint/mcmc_checkpoint_z_later.pkl'
 
 # savefile
+DATA_FIG='./plot/data_cluster_DM_ext_FRB_z_later.pdf'
 SAVE_RESULT='./posterior/cluster_MCMC_DM_ext_FRB_z_later.npy'
 SAVE_FIG='./plot/MCMC_cluster_DM_ext_FRB_z_later'
 
@@ -135,10 +136,10 @@ def GW_error_CE(z, H0, Om, w=-1, order=1):
 ### Generate events ###
 #######################
 
-if RESUME and os.path.exists(SAVE_FILE):
+if RESUME and os.path.exists(DATA_FILE):
     # Load previously saved data
-    print(f"Loading data from {SAVE_FILE}...")
-    with open(SAVE_FILE, 'rb') as f:
+    print(f"Loading data from {DATA_FILE}...")
+    with open(DATA_FILE, 'rb') as f:
         saved_data = pickle.load(f)
     
     z_centre = saved_data['z_centre']
@@ -154,9 +155,9 @@ if RESUME and os.path.exists(SAVE_FILE):
     print(f"Successfully loaded {len(z_centre)} events from saved data.")
     
 else:
-    if not RESUME and os.path.exists(SAVE_FILE):
-        print(f"RESUME=False: Removing old save data {SAVE_FILE}...")
-        os.remove(SAVE_FILE)
+    if not RESUME and os.path.exists(DATA_FILE):
+        print(f"RESUME=False: Removing old save data {DATA_FILE}...")
+        os.remove(DATA_FILE)
     
     if not RESUME and os.path.exists(MCMC_FILE):
         print(f"RESUME=False: Removing old save MCMC checkpoint {MCMC_FILE}...")
@@ -208,13 +209,13 @@ else:
         'DM_centre': DM_centre
     }
     
-    directory = os.path.dirname(SAVE_FILE)
+    directory = os.path.dirname(DATA_FILE)
     if directory:
         os.makedirs(directory, exist_ok=True)
-    with open(SAVE_FILE, 'wb') as f:
+    with open(DATA_FILE, 'wb') as f:
         pickle.dump(save_data, f)
     
-    print(f"Data saved to {SAVE_FILE}")
+    print(f"Data saved to {DATA_FILE}")
 
 fig = plt.figure(figsize=(11, 5))
 ax1 = fig.add_subplot(121)
@@ -232,7 +233,7 @@ ax2.set_ylabel(r'DM$_{\rm ext}$ [pc/cm$^3$]')
 ax2.set_xlabel(r'$z$')
 
 Path('./plot').mkdir(parents=True, exist_ok=True)
-plt.savefig('./plot/data_cluster_DM_ext_FRB.pdf')
+plt.savefig(DATA_FIG)
 # plt.tight_layout()
 
 #######################
@@ -295,15 +296,15 @@ def log_likelihood(theta, zs, dLs, s_dLs, DMs, s_DMs):
             
             p_event = p_dL * p_DM
             integrand = p_selection * p_event
-            prob = np.trapz(integrand, z_array) """
+            prob = np.trapz(integrand, z_array)
             
-            p_event = p_event * p_dL * p_DM ################
-            
-            """ if prob > 1e-300:
+            if prob > 1e-300:
                 log_like += np.log(prob)
             else:
                 print(f"Warning: prob={prob:.2e} for event {idx}, theta={theta}")
                 return -np.inf """
+                
+            p_event = p_event * p_dL * p_DM ################
             
         p_selection = redshift_distribution(z_array=z_array, H0=hubble, Omega_m=omega, w=w, method=REDSHIFT_METHOD) ############
         p_selection = normalise(p_selection, z_array)###########
