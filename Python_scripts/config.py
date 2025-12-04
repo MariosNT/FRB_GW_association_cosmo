@@ -2,7 +2,6 @@
 ### PACKAGES ###
 ################
 
-
 ### Arrays, vectorisation & special functions ###
 import numpy as np
 from numpy import linalg as LA
@@ -32,16 +31,19 @@ from astropy.cosmology import wCDM
 import matplotlib.pyplot as plt
 from matplotlib import rcParams
 from matplotlib import cm, ticker
-# import seaborn as sns
 import corner
 
+### MCMC and loops
 from tqdm import tqdm
 import warnings
 
-### Constants and Parameters
 
-## Defining useful constants (SI)
-## Updated values according to Planck18
+################################
+### CONSTANTS and PARAMETERS ###
+################################
+
+### Defining useful constants (SI)
+### Updated values according to Planck18
 OMEGA_MATTER = 0.30966 
 W_LAMBDA = -1
 HUBBLE = 67.66
@@ -59,6 +61,8 @@ HUBBLE_TIME = HUBBLE*KM_2_MPC  # Hubble in 1/seconds
 DM_2_PCCM3 = 3.240779e-23  # Multiply with this to get from the SI result (1/m**2) to pc/cm^3
 MPC_2_M = 3.085678e+22  
 
+
+## GWs and FRB errors - used only for test cases
 SNR_GW = 8
 DL_ERROR_PERC = 10
 SIGMA_DM = 105

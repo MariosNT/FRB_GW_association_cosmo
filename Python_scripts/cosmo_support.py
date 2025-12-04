@@ -17,8 +17,8 @@ def Hubble_function(z, H0, Omega_m, w):
 
 def rate_function(z):
     rate = (1+2*z)*(z<=1)+3/4*(5-z)*(z>1)*(z<5)
-    
     return rate
+
 
 def D_comoving(z, H0, Omega_m, w):
     return wCDM(H0=H0, Om0=Omega_m, Ode0=1-Omega_m, w0=w).comoving_distance(z).value

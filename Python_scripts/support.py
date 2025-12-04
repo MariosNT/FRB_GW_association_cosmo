@@ -4,6 +4,7 @@
 
 from config import *
 
+
 def int_limit(fun, init=1e6, error=1e-6, limit='upper', loop_num=10000, step=100, *args, **kwargs):
         
         # find integration limitation for exact function
@@ -20,10 +21,13 @@ def int_limit(fun, init=1e6, error=1e-6, limit='upper', loop_num=10000, step=100
             print(f'Reach to the loop limit while x={x}\n')
             
         return x
-        
+
+
+
 def normalise(lista, x_array=None):
     """
-    Function that normalises a list of data. For Continuous probability distribution (x_array != None), we take pdf = pdf / np.trapz(pdf, x_array). For Discrete probability distribution (x_array == None), we take pdf = pdf / np.sum(pdf).
+    Function that normalises a list of data. For Continuous probability distribution (x_array != None), we take pdf = pdf / 
+    np.trapz(pdf, x_array). For Discrete probability distribution (x_array == None), we take pdf = pdf / np.sum(pdf).
     
     Parameters
     ----------
@@ -47,7 +51,8 @@ def normalise(lista, x_array=None):
     return normalised
 
 
-def Gaussian(x, x0, s0):
+
+def gaussian_pdf(x, x0, s0):
     """
     Function that defines a normalised Gaussian with mean x0 and std s0.
     """
@@ -73,6 +78,3 @@ def posterior_contour_2D(posterior_2D_norm, n=1000):
     integral_post = ((posterior_2D_norm > t_post[:, None, None]) * posterior_2D_norm).sum(axis=(1, 2))
     f_post = interpolate.interp1d(integral_post, t_post)
     return f_post(np.array([0.99, 0.95, 0.68]))
-
-def gaussian_pdf(x, mu, sigma):
-    return np.exp(-0.5 * ((x - mu) / sigma)**2) / (sigma * np.sqrt(2 * np.pi))
