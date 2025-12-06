@@ -1,4 +1,4 @@
-# A .py version of Cosmo_constraints_DM_diff_MCMC.ipynb for running in the cluster
+# A .py version of Cosmo_constraints_DM_ext_MCMC.ipynb for running in the cluster, all parameters (cosmological parameters + DM_host parameters)
 
 sigma_error_inter = None
 C0_sigma_inter = None
@@ -26,6 +26,8 @@ from pathlib import Path
 Hubble0 = 70
 Omega0 = 0.3
 w0 = -1.0
+e_mu0 = 150
+sigma_host0 = 0.5
 
 # MCMC parameters
 N_WALKERS = 96
@@ -35,18 +37,18 @@ N_STEPS = 1000
 # checkpoint
 RESUME = True
 CKP_INTERVAL = 50
-DATA_FILE = './DM_diff_checkpoint/simulation_data.pkl'
-MCMC_FILE = './DM_diff_checkpoint/mcmc_checkpoint.pkl'
+DATA_FILE = './DM_ext_all_checkpoint/simulation_data.pkl'
+MCMC_FILE = './DM_ext_all_checkpoint/mcmc_checkpoint.pkl'
 
 # savefile
-DATA_FIG='./plot/data_cluster_DM_diff.pdf'
-SAVE_RESULT='./posterior/cluster_MCMC_DM_diff.npy'
-SAVE_FIG='./plot/MCMC_cluster_DM_diff'
+DATA_FIG='./plot/data_cluster_DM_ext_all.pdf'
+SAVE_RESULT='./posterior/cluster_MCMC_DM_ext_all.npy'
+SAVE_FIG='./plot/MCMC_cluster_DM_ext_all'
 
 DATA_PATH = '../FRB_cosmo/interpolation/095_C0mean.npz'
 interpolations = np.load(f'../Realistic_sources/quantile_linear_interpolations.npz')
 
-N_EVENTS = 30
+N_EVENTS = 50
 REDSHIFT_METHOD = 'rates'  # choose from 'rates', 'uniform', 'gaussian', 'lognormal' and 'powerlaw'
 
 ########################################
@@ -83,7 +85,7 @@ z_array=np.linspace(0.25, 2.0, 1000)
 def initialize_globals():
     """Initialize global variables for worker processes"""
     global sigma_error_inter, C0_sigma_inter, A_sigma_inter
-    global z_array
+    global z_array, p_selection
     
     if sigma_error_inter is None:
         Sigmas, Errors, C0s, As, sigma_error_inter, C0_sigma_inter, A_sigma_inter = _load_and_create_interpolators()
@@ -190,15 +192,13 @@ else:
     for idx, z_val in enumerate(z_centre):
         print(f"Processing event {idx+1}/{N_EVENTS}...")
         DM_obs_centre[idx], s_DM_obs[idx] = \
-            DM_diff_sampling(z=z_val, 
-                            S=S, HOF=HOF,
+            DM_ext_sampling(z=z_val, 
+                            S=S, HOF=HOF, SIGMA_HOST=SIGMA_HOST, EXP_MU=EXP_MU,
                             sigma_error_inter=sigma_error_inter,
                             C0_sigma_inter=C0_sigma_inter,
                             A_sigma_inter=A_sigma_inter,
-                            H0=HUBBLE, f_diff=0.84, f_diff_alpha=0,
-                            Om=OMEGA_MATTER, w=W_LAMBDA, N_draws=1,
-                            mode=None #'standard'
-                            )
+                            Om=OMEGA_MATTER, w=W_LAMBDA, N_draws=1, int_N=1000
+                        )
     
     # Save the generated data
     save_data = {
@@ -229,9 +229,9 @@ ax1.set_ylabel(r'$d_{L}$ [Mpc]')
 ax1.set_xlabel(r'$z$')
 ax1.legend(loc='upper left')
 
-ax2.plot(np.sort(z_centre), np.sort(DM_centre))
+ax2.plot(np.sort(z_centre), np.sort(DM_centre)+100)
 ax2.errorbar(z_centre, DM_obs_centre, yerr=s_DM_obs, marker='o', ls='', ms=3, c='r')
-ax2.set_ylabel(r'$DM_{\rm diff}$ [pc/cm$^3$]')
+ax2.set_ylabel(r'DM$_{\rm ext}$ [pc/cm$^3$]')
 ax2.set_xlabel(r'$z$')
 
 Path('./plot').mkdir(parents=True, exist_ok=True)
@@ -254,9 +254,9 @@ def log_likelihood(theta, zs, dLs, s_dLs, DMs, s_DMs):
         Log likelihood
     """
     
-    hubble, omega, w = theta
+    hubble, omega, w, e_mu, sigma_host = theta
 
-    log_like = 0
+    log_like = 0.0
     
     p_event=np.zeros_like(z_array)+1.0 ############
 
@@ -269,29 +269,26 @@ def log_likelihood(theta, zs, dLs, s_dLs, DMs, s_DMs):
             
             ######## p_DM(z) and p_dL(z) ########
             
-            lum_distance=luminosity_distance(z=z_array, H0=hubble, Om=omega, w=w)
+            lum_distance = luminosity_distance(z=z_array, H0=hubble, Om=omega, w=w)
             p_dL = gaussian_pdf(lum_distance, dL_obs, s_dL)
             
-            DM_th_array=dispersion_measure(z=z_array, H0=hubble, Om=omega, w=w, alpha=0, f_IGM_0 = 0.84)
-            Delta_array = DM_obs/ DM_th_array
+            # DM_th_array = e_mu + np.exp(sigma_host**2/2) + dispersion_measure(z=z_array, H0=hubble, Om=OMEGA_MATTER, w=W_LAMBDA, alpha=0, f_IGM_0 = 0.84)
             
             p_DM=np.zeros_like(z_array)
             
-            for idx_z, (z_val, Delta, DM_th) in enumerate(zip(z_array, Delta_array, DM_th_array)):
-                error=f_variance_delta(S=S, z=z_val, Om=omega, w=w)
-
-                sigma_diff=sigma_error_inter(error)
-                C0=C0_sigma_inter(sigma_diff)
-                A=A_sigma_inter(sigma_diff)
-                
-                p_DM[idx_z]=pdf_DM_cosmo(Delta=Delta, C_0=C0, A=A, sigma=sigma_diff, alpha=3, beta=3)/DM_th
-                
-                """ if (np.isnan([error,C0,A,sigma_diff]).any()):
-                    p_DM[idx_z]=0.0
-                    # print(f'NaN found for error at z={z_val}, H0={hubble}, Om={omega}, w={w} for error={error}, C0={C0}, A={A}, sigma_diff={sigma_diff}')
-                else:
-                    p_DM[idx_z]=pdf_DM_cosmo(Delta=Delta, C_0=C0, A=A, sigma=sigma_diff, alpha=3, beta=3)/DM_th """
-                    
+            for idx_z, z_val in enumerate(z_array):                
+                p_DM[idx_z]=p_dm_ext_fast(DM_ext=DM_obs, z=z_val, 
+                                        S=S, e_mu=e_mu, sigma_host=sigma_host, 
+                                        f_sigma_error=sigma_error_inter, 
+                                        f_C0_sigma=C0_sigma_inter, f_A_sigma=A_sigma_inter, 
+                                        space='Delta',
+                                        dropna=False, # drop nan value
+                                        error_calculator=None, 
+                                        H0=hubble, f_diff=0.84, f_diff_alpha=0, # FRB standard parameters
+                                        Om=omega, w=w, 
+                                        int_N=1000 
+                                        )
+            
             p_selection = redshift_distribution(z_array=z_array, H0=hubble, Omega_m=omega, w=w, method=REDSHIFT_METHOD)
             p_selection = normalise(p_selection, z_array)
             
@@ -304,9 +301,11 @@ def log_likelihood(theta, zs, dLs, s_dLs, DMs, s_DMs):
             else:
                 print(f"Warning: prob={prob:.2e} for event {idx}, theta={theta}")
                 return -np.inf
-        
+                
+            p_event = p_event * p_dL * p_DM ################
+
         return log_like
-    
+
     except Exception as e:
         print(f"Error in log_likelihood: {e} with parameters {theta}")
         import traceback
@@ -324,20 +323,24 @@ def log_prior(theta):
     Returns:
         Log prior probability
     """
-    hubble, omega, w = theta
+    hubble, omega, w, e_mu, sigma_host = theta
 
     # Define your prior ranges here
     hubble_min, hubble_max = 40, 100 #0.016 # 0.2 # 2.0 #0.2 
-    omega_min, omega_max = 0.0, 1.0  
-    w_min, w_max = -3.0, 0.0 
+    omega_min, omega_max = 0.0, 1.0
+    w_min, w_max = -3.0, 0.0
+    e_mu_min, e_mu_max = 10, 300
+    sigma_host_min, sigma_host_max = 0.2, 1.4
 
     # Check if parameters are within prior ranges
     if (hubble_min <= hubble <= hubble_max and 
         omega_min <= omega <= omega_max and 
-        w_min <= w <= w_max ):
+        w_min <= w <= w_max and
+        e_mu_min <= e_mu <= e_mu_max and 
+        sigma_host_min <= sigma_host <= sigma_host_max ):
         return 0.0  # Log(1) = 0, flat prior
     else:
-        return -np.inf     
+        return -np.inf  # Log(0) = -inf, outside prior range       
 
 def log_probability(theta, zs, dLs, s_dLs, DMs, s_DMs):
     """
@@ -393,7 +396,7 @@ def save_checkpoint(sampler, step, state, filename="mcmc_checkpoint.pkl"):
     print(f"Checkpoint saved at step {step}")
 
 
-def load_checkpoint(filename="DM_diff_checkpoint.pkl"):
+def load_checkpoint(filename="mcmc_checkpoint.pkl"):
     """
     Load MCMC checkpoint from file.
     
@@ -651,7 +654,7 @@ def mcmc_plot_results(samples, param_names, savetitle=None, bins=30, target_prob
 
 if __name__ == '__main__':
     # Define initial parameters: [F, HOf, sigma_host, e_mu]
-    initial_params = np.array([Hubble0, Omega0, w0])
+    initial_params = np.array([Hubble0, Omega0, w0, e_mu0, sigma_host0])
 
     # Run MCMC
     """ sampler = run_mcmc(initial_params, 
@@ -666,7 +669,7 @@ if __name__ == '__main__':
     samples, params_median, params_errors = mcmc_analyze_results(sampler, burn_in=HEATING)
 
     # Print results
-    param_names = [r'$ H_0$ ', r'$ \Omega_m$ ', r'$ w$ ']
+    param_names = [r'$ H_0$ ', r'$ \Omega_m$ ', r'$ w$ ', r'$ exp(\mu)$ ', r'$ \sigma_{\rm host}$ ']
     print("MCMC Results:")
     for i, name in enumerate(param_names):
         print(f"{name} = {params_median[i]:.3f} ± {params_errors[i]:.3f}")

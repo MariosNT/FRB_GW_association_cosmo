@@ -1,4 +1,4 @@
-# A .py version of Cosmo_constraints_DM_ext_MCMC.ipynb for running in the cluster
+# A .py version of Cosmo_constraints_DM_ext_MCMC.ipynb for running in the cluster, only cosmological parameters
 
 sigma_error_inter = None
 C0_sigma_inter = None
@@ -36,12 +36,12 @@ N_STEPS = 1000
 RESUME = True
 CKP_INTERVAL = 50
 DATA_FILE = './DM_ext_checkpoint/simulation_data.pkl'
-MCMC_FILE = './DM_ext_checkpoint/mcmc_checkpoint_z_later.pkl'
+MCMC_FILE = './DM_ext_checkpoint/mcmc_checkpoint.pkl'
 
 # savefile
-DATA_FIG='./plot/data_cluster_DM_ext_z_later.pdf'
-SAVE_RESULT='./posterior/cluster_MCMC_DM_ext_z_later.npy'
-SAVE_FIG='./plot/MCMC_cluster_DM_ext_z_later'
+DATA_FIG='./plot/data_cluster_DM_ext.pdf'
+SAVE_RESULT='./posterior/cluster_MCMC_DM_ext.npy'
+SAVE_FIG='./plot/MCMC_cluster_DM_ext'
 
 DATA_PATH = '../FRB_cosmo/interpolation/095_C0mean.npz'
 interpolations = np.load(f'../Realistic_sources/quantile_linear_interpolations.npz')
@@ -280,12 +280,8 @@ def log_likelihood(theta, zs, dLs, s_dLs, DMs, s_DMs):
                                         Om=omega, w=w, 
                                         int_N=1000 
                                         )
-            
-            # p_DM=normalise(p_DM, x_array=z_array)
-            # p_dL=normalise(GW_dL_kde(lum_distance), x_array=z_array)
-            # p_dL=normalise(p_dL, x_array=z_array)
-            # prob = np.trapz(p_selection*p_dL*p_DM, z_array)
-            """ p_selection = redshift_distribution(z_array=z_array, H0=hubble, Omega_m=omega, w=w, method=REDSHIFT_METHOD)
+        
+            p_selection = redshift_distribution(z_array=z_array, H0=hubble, Omega_m=omega, w=w, method=REDSHIFT_METHOD)
             p_selection = normalise(p_selection, z_array)
             
             p_event = p_dL * p_DM
@@ -296,20 +292,7 @@ def log_likelihood(theta, zs, dLs, s_dLs, DMs, s_DMs):
                 log_like += np.log(prob)
             else:
                 print(f"Warning: prob={prob:.2e} for event {idx}, theta={theta}")
-                return -np.inf """
-                
-            p_event = p_event * p_dL * p_DM ################
-
-        p_selection = redshift_distribution(z_array=z_array, H0=hubble, Omega_m=omega, w=w, method=REDSHIFT_METHOD) ############
-        p_selection = normalise(p_selection, z_array)###########
-        integrand = p_selection * p_event############
-        prob = np.trapz(integrand, z_array)###############
-        
-        if prob > 1e-300:
-            log_like += np.log(prob)
-        else:
-            print(f"Warning: prob={prob:.2e} for event {idx}, theta={theta}")
-            return -np.inf
+                return -np.inf
 
         return log_like
 
@@ -333,9 +316,9 @@ def log_prior(theta):
     hubble, omega, w = theta
 
     # Define your prior ranges here
-    hubble_min, hubble_max = 40, 100 #0.016 # 0.2 # 2.0 #0.2 # Example range, adjust based on your model
-    omega_min, omega_max = 0.0, 1.0  # Example range, adjust based on your model
-    w_min, w_max = -3.0, 0.0  # Example range
+    hubble_min, hubble_max = 40, 100 #0.016 # 0.2 # 2.0 #0.2 
+    omega_min, omega_max = 0.0, 1.0
+    w_min, w_max = -3.0, 0.0
 
     # Check if parameters are within prior ranges
     if (hubble_min <= hubble <= hubble_max and 
