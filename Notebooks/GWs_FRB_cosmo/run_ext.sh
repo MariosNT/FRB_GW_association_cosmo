@@ -4,8 +4,8 @@
 #SBATCH --partition=compute
 #SBATCH --nodes=1
 #SBATCH --account=unv116
-#SBATCH --ntasks-per-node=96
-#SBATCH -t 48:00:00
+#SBATCH --ntasks-per-node=48
+#SBATCH -t 24:00:00
 #SBATCH --mem=50G
 #SBATCH --constraint="lustre"
 
@@ -17,6 +17,8 @@ module load cpu/0.17.3b
 source ~/miniconda3/etc/profile.d/conda.sh
 conda activate py310
 
-python3 -W ignore::DeprecationWarning Cosmo_constraints_DM_ext_MCMC.py
+# python3 -W ignore::DeprecationWarning Cosmo_constraints_DM_ext_MCMC.py
+# python3 -W ignore::DeprecationWarning Cosmo_constraints_DM_ext_MCMC_FRB.py
+python3 -W ignore::DeprecationWarning Cosmo_constraints_DM_ext_MCMC_all.py
 
 python3 ../../../automail.py -task 'DM_ext'
