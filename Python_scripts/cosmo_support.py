@@ -1119,6 +1119,7 @@ def calculate_dm_probability_num_HOf_fast(DM_frb_max, z, # Data
                                      # f_sqrtvar_delta~F/sqrt(z)
                                      Om=OMEGA_MATTER, w=W_LAMBDA, # other cosmology parameters
                                      int_N=5000, # number of integration points
+                                     Error_factor = 1.0
                                      ):
     '''
     ######### Interpolation version, make sure already do the interpolation #######
@@ -1144,10 +1145,10 @@ A_sigma_inter = interpolate.interp1d(Sigmas, As, kind=1,bounds_error=False,
     
     if error_calculator is None:
         # Our method
-        error = np.sqrt(f_variance_delta(S, z, Om=Om, w=w))
+        error = Error_factor * np.sqrt(f_variance_delta(S, z, Om=Om, w=w))
     else:
         # custom error calculator
-        error = error_calculator(S, z)
+        error = Error_factor * error_calculator(S, z)
     
     ## Cosmic calculation    
     DM_th = DM_diff_HOF_fast(z=z, H0_O_b_f_IGM=HOf, Om=Om, w=w)
@@ -1284,6 +1285,7 @@ def DM_diff_sampling(z, # redshift
                      Om=OMEGA_MATTER, w=W_LAMBDA, # other cosmology parameters
                      N_draws=1, int_N=2000, # sampling settings
                      mode='standard', # generate events from standard cosmology parameters, else from FRB MCMC fitting results
+                     Error_factor = 1.0
                      ):
     """
     Sampling DM_diff for a given redshift and cosmology.
@@ -1295,7 +1297,7 @@ def DM_diff_sampling(z, # redshift
             raise ValueError("HOF must be provided when not using standard mode.")
         DM_th=DM_diff_HOf(z, HOF, Om=Om, w=w)
         
-    error=f_variance_delta(S=S, z=z, Om=Om, w=w)
+    error=Error_factor * f_variance_delta(S=S, z=z, Om=Om, w=w)
     s_DM_obs = error*DM_th
     
     sigma_diff=sigma_error_inter(error)
@@ -1395,7 +1397,8 @@ def DM_ext_sampling(z, # redshift
                      sigma_error_inter, C0_sigma_inter, A_sigma_inter, # interpolation functions functions
                      # H0=HUBBLE, f_diff=0.84, f_diff_alpha=0, # FRB standard parameters
                      Om=OMEGA_MATTER, w=W_LAMBDA, # cosmology parameters
-                     N_draws=1, int_N=4000 # sampling settings,
+                     N_draws=1, int_N=4000, # sampling settings,
+                     Error_factor = 1.0
                      ):
     """
     Sampling DM_ext for a given redshift and cosmology.
@@ -1412,7 +1415,8 @@ def DM_ext_sampling(z, # redshift
         HOf=HOF,
         sigma_host=SIGMA_HOST,
         e_mu=EXP_MU,
-        f_sigma_error=sigma_error_inter,f_C0_sigma=C0_sigma_inter,f_A_sigma=A_sigma_inter
+        f_sigma_error=sigma_error_inter,f_C0_sigma=C0_sigma_inter,f_A_sigma=A_sigma_inter,
+        Error_factor = Error_factor
         ) for dm in dm_range]
     
     p_range=normalise(p_range)
