@@ -35,19 +35,21 @@ N_STEPS = 1000
 # checkpoint
 RESUME = True
 CKP_INTERVAL = 50
-DATA_FILE = './DM_diff_checkpoint/simulation_data.pkl'
-MCMC_FILE = './DM_diff_checkpoint/mcmc_checkpoint.pkl'
+DATA_FILE = './DM_diff_checkpoint/simulation_data_smallError.pkl'
+MCMC_FILE = './DM_diff_checkpoint/mcmc_checkpoint_smallError.pkl'
 
 # savefile
-DATA_FIG='./plot/data_cluster_DM_diff.pdf'
-SAVE_RESULT='./posterior/cluster_MCMC_DM_diff.npy'
-SAVE_FIG='./plot/MCMC_cluster_DM_diff'
+DATA_FIG='./plot/data_cluster_DM_diff_smallError.pdf'
+SAVE_RESULT='./posterior/cluster_MCMC_DM_diff_smallError.npy'
+SAVE_FIG='./plot/MCMC_cluster_DM_diff_smallError'
 
 DATA_PATH = '../FRB_cosmo/interpolation/095_C0mean.npz'
 interpolations = np.load(f'../Realistic_sources/quantile_linear_interpolations.npz')
 
-N_EVENTS = 30
+N_EVENTS = 50
 REDSHIFT_METHOD = 'rates'  # choose from 'rates', 'uniform', 'gaussian', 'lognormal' and 'powerlaw'
+
+Error_factor = 0.1 # times the error in event generation, =1, set other value for test
 
 ########################################
 ### Load standard parameters for pdf ###
@@ -180,7 +182,7 @@ else:
     # sigma_dL = 0.1*dL_centre
 
     # Use this for redshift dependent errors
-    sigma_dL = GW_error_CE(z_centre, H0=HUBBLE, Om=OMEGA_MATTER)
+    sigma_dL = Error_factor * GW_error_CE(z_centre, H0=HUBBLE, Om=OMEGA_MATTER)
 
     dL_obs_centre = np.random.normal(dL_centre, sigma_dL)
 
@@ -197,7 +199,8 @@ else:
                             A_sigma_inter=A_sigma_inter,
                             H0=HUBBLE, f_diff=0.84, f_diff_alpha=0,
                             Om=OMEGA_MATTER, w=W_LAMBDA, N_draws=1,
-                            mode=None #'standard'
+                            mode=None, #'standard'
+                            Error_factor = Error_factor
                             )
     
     # Save the generated data
