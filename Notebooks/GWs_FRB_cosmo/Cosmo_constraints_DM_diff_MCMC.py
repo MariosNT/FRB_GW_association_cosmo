@@ -35,13 +35,13 @@ N_STEPS = 1000
 # checkpoint
 RESUME = True
 CKP_INTERVAL = 50
-DATA_FILE = './DM_diff_checkpoint/simulation_data_smallError.pkl'
-MCMC_FILE = './DM_diff_checkpoint/mcmc_checkpoint_smallError.pkl'
+DATA_FILE = './DM_diff_checkpoint/simulation_data_z_02.pkl'
+MCMC_FILE = './DM_diff_checkpoint/mcmc_checkpoint_z_02.pkl'
 
 # savefile
-DATA_FIG='./plot/data_cluster_DM_diff_smallError.pdf'
-SAVE_RESULT='./posterior/cluster_MCMC_DM_diff_smallError.npy'
-SAVE_FIG='./plot/MCMC_cluster_DM_diff_smallError'
+DATA_FIG='./plot/data_cluster_DM_diff_z_02.pdf'
+SAVE_RESULT='./posterior/cluster_MCMC_DM_diff_z_02.npy'
+SAVE_FIG='./plot/MCMC_cluster_DM_diff_z_02'
 
 DATA_PATH = '../FRB_cosmo/interpolation/095_C0mean.npz'
 interpolations = np.load(f'../Realistic_sources/quantile_linear_interpolations.npz')
@@ -49,7 +49,11 @@ interpolations = np.load(f'../Realistic_sources/quantile_linear_interpolations.n
 N_EVENTS = 50
 REDSHIFT_METHOD = 'rates'  # choose from 'rates', 'uniform', 'gaussian', 'lognormal' and 'powerlaw'
 
-Error_factor = 0.1 # times the error in event generation, =1, set other value for test
+Error_factor = 1.0 # times the error in event generation, =1, set other value for test
+
+# Redshift range for events, default (0.25, 2.0)
+Z_min = 0.2
+Z_max = 2.0
 
 ########################################
 ### Load standard parameters for pdf ###
@@ -80,7 +84,7 @@ def _load_and_create_interpolators():
 
 Sigmas, Errors, C0s, As, sigma_error_inter, C0_sigma_inter, A_sigma_inter = _load_and_create_interpolators()
 
-z_array=np.linspace(0.25, 2.0, 1000)
+z_array=np.linspace(Z_min, Z_max, 1000)
 
 def initialize_globals():
     """Initialize global variables for worker processes"""
@@ -89,7 +93,7 @@ def initialize_globals():
     
     if sigma_error_inter is None:
         Sigmas, Errors, C0s, As, sigma_error_inter, C0_sigma_inter, A_sigma_inter = _load_and_create_interpolators()
-        z_array = np.linspace(0.25, 2.0, 1000)
+        z_array = np.linspace(Z_min, Z_max, 1000)
     
 #######################
 ### DL error model ###
@@ -168,7 +172,7 @@ else:
     # Generate new data
     print("Generating new simulation data...")
     
-    z_range = np.linspace(0.25, 2.0, 1000)
+    z_range = np.linspace(Z_min, Z_max, 1000)
     z_centre = draw_redshift_distribution(z_range, H0=HUBBLE, Omega_m=OMEGA_MATTER, 
                                           N_draws=N_EVENTS, method=REDSHIFT_METHOD)
 
