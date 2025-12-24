@@ -1138,11 +1138,11 @@ def DM_diff_sampling(z, # redshift
     
     p_range=normalise(p_range)
     
-    dm_diff_obs = np.random.choice(dm_range, size=N_draws, replace=True,\
+    dm_diff_obs = rng.choice(dm_range, size=N_draws, replace=True,\
             p=p_range
             )
     
-    return dm_diff_obs, s_DM_obs
+    return dm_diff_obs[0], s_DM_obs
 
 def p_dm_ext_fast(DM_ext, z, # Data
                 S, e_mu, sigma_host, # parameters
@@ -1247,7 +1247,7 @@ def DM_ext_sampling(z, # redshift
     
     p_range=normalise(p_range)
     
-    dm_ext_obs = np.random.choice(dm_range, size=N_draws, replace=True,\
+    dm_ext_obs = rng.choice(dm_range, size=N_draws, replace=True,\
             p=p_range
             )
     
@@ -1256,4 +1256,4 @@ def DM_ext_sampling(z, # redshift
     error4=calc_confidence_interval_width(cdf, target_prob=0.9545, x_log_min=-2, x_log_max=1+np.log10(dm_range[-1]))
     s_DM_obs = error4/4
     
-    return dm_ext_obs, s_DM_obs
+    return dm_ext_obs[0], s_DM_obs
