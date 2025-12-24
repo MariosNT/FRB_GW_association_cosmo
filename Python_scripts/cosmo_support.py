@@ -22,8 +22,6 @@ def rate_function(z):
 
 def D_comoving(z, H0, Omega_m, w):
     return wCDM(H0=H0, Om0=Omega_m, Ode0=1-Omega_m, w0=w).comoving_distance(z).value
-    # return FlatLambdaCDM(H0, Omega_m).comoving_distance(z).value
-
 
 ###############################################
 
@@ -132,7 +130,7 @@ def draw_redshift_distribution(z_array, H0=HUBBLE, Omega_m=OMEGA_MATTER, w=W_LAM
     
     pdf=redshift_distribution(z_array, H0, Omega_m, w, method)
     
-    redshift_draws = np.random.choice(z_array, p=pdf, replace=True, size=N_draws)
+    redshift_draws = rng.choice(z_array, p=pdf, replace=True, size=N_draws)
         
     ## Check if we have many events with the same redshift
     if np.unique(redshift_draws).size/N_draws < 0.8:
@@ -141,65 +139,20 @@ def draw_redshift_distribution(z_array, H0=HUBBLE, Omega_m=OMEGA_MATTER, w=W_LAM
     return redshift_draws
 
 
-### old version
-
-""" def draw_redshift_distribution(z_array, H0=HUBBLE, Omega_m=OMEGA_MATTER, N_draws=50, method='rates'):
-    """
-"""     Function that generates random redshifts for our GWs/FRB events.
-
-    Input
-    ----------
-    z_array : redshift range from which to draw samples
-    
-    H0 : Hubble constant [km/s/Mpc]
-    
-    Omega_m : Omega matter
-    
-    N_draws : Number of mock redshifts to draw
-    
-    method : Choose between `rates` and `uniform`. Defines the method used to draw random samples.
-    
-    Output
-    ---------
-    redshift_draws : Mock redshift observations """
-"""
-    
-    if method == 'rates':
-        Dc_squared = D_comoving(z_array, H0, Omega_m)**2
-        rate = rate_function(z_array)
-        Hz = Hubble_function(z_array, H0, Omega_m)
-
-        pdf = normalise(4*np.pi*Dc_squared*rate/(Hz*(1+z_array)))
-        
-        redshift_draws = np.random.choice(z_array, p=pdf, replace=True, size=N_draws)
-        
-    elif method == 'uniform':
-        redshift_draws = np.random.choice(z_array, replace=False, size=N_draws)
-    
-    elif method == 'gaussian':
-        pdf = distribution_redshift_Gaussian(z_array)
-        redshift_draws = np.random.choice(z_array, p=pdf, replace=True, size=N_draws)
-        
-    elif method == 'lognormal':
-        pdf = distribution_redshift_LogNormal(z_array)
-        redshift_draws = np.random.choice(z_array, p=pdf, replace=True, size=N_draws)
-        
-    elif method == 'powerlaw':
-        pdf = distribution_redshift_Power(z_array)
-        redshift_draws = np.random.choice(z_array, p=pdf, replace=True, size=N_draws)        
-        
-    else:
-        raise Exception("Wrong method chosen! Choose between 'rates', 'uniform', 'gaussian', 'lognormal' and 'powerlaw'.")
-        
-    ## Check if we have many events with the same redshift
-    if np.unique(redshift_draws).size/N_draws < 0.8:
-        raise Exception("Many replications in redshifts drawn. Retry the sampling!")      
-    
-    return redshift_draws """
-
-
-
 ###############################################
+
+def FRBs_load_and_create_interpolators(path):
+    load_arrays = np.load(path)
+    Sigmas = load_arrays['a']
+    Errors = load_arrays['d']
+    C0s = load_arrays['c'] 
+    As = load_arrays['b']
+    
+    sigma_error_inter = interpolate.interp1d(Errors, Sigmas, kind=1, bounds_error=False,fill_value='extrapolate')
+    C0_sigma_inter = interpolate.interp1d(Sigmas, C0s, kind=1, bounds_error=False,fill_value='extrapolate')
+    A_sigma_inter = interpolate.interp1d(Sigmas, As, kind=1, bounds_error=False,fill_value='extrapolate')
+
+    return Sigmas, Errors, C0s, As, sigma_error_inter, C0_sigma_inter, A_sigma_inter
 
 
 def f_IGM_redshift(z, alpha=0.11, f_IGM_0 = f_IGM):
@@ -360,35 +313,6 @@ def luminosity_distance(z, H0=HUBBLE, Om=OMEGA_MATTER, w=W_LAMBDA):
         return dL[0]
     else:
         return dL
-
-## old version
-# def luminosity_distance(z, H0, Om, w=-1):
-    """
-    Function of the dL formula, 
-    eq. (5) in [arXiv:1805.12265].
-    
-    Input
-    ----------
-    z : redshift
-    
-    H0 : Hubble constant [km/s/Mpc]
-    
-    Om : Omega matter
-    
-    w : DE EoS parameter (w=-1 for Λ)
-    
-    Output
-    ---------
-    dL : Luminosity distance [Mpc]
-    """      
-
-    # factor = (1+z)*(C_LIGHT*1e-3)/H0
-    # integral = quad(dDL_integrand_w, 0, z, args=(Om, w))[0]
-        
-    # dL = factor*integral
-    
-    # return dL
-
 
 def dLDM_measure(z, H0, Om, w=-1, DM_host=0):
     """
@@ -607,19 +531,6 @@ def find_A(C_0, F, z, alpha=3, beta=3, x_min=0, x_max=np.inf, sigma_met="Mac"):
 '''
 The following functions are used for calculate the error for ∆ and get the sigma (but in function we do a reverse way which from each sigma to calculate error). This is because we find the \sigma_{diff} in P(∆) is not exactly its error and they also don't show linear relation.
 '''
-
-""" def var_z(z):
-    Om=OMEGA_MATTER
-    def dDc(x):
-        return 1/np.sqrt(Om*(1+x)**3+(1-Om))
-    
-    def dDM(x):
-        return (1+x)/np.sqrt(Om*(1+x)**3+(1-Om))
-    
-    int1,_=quad(dDc, 0, z)
-    int2,_=quad(dDM, 0, z)
-    
-    return int1/int2**2 """
     
 def var_z(z, Om = OMEGA_MATTER, w = W_LAMBDA):
     # np.sqrt(Om*(1+z)**3+(1-Om)*(1+z)**(3*(1+w)))
@@ -811,91 +722,6 @@ def calc_confidence_interval_width(cdf, target_prob=0.6827, x_log_min=-3, x_log_
     upper_limit = find_quantile(upper_target)
     
     return upper_limit - lower_limit
-
-""" def calc_confidence_interval_width(sigma, C_0, A, target_prob=0.6827, alpha=3, beta=3):
-
-    # Calculate the width of the 1σ confidence interval for the given sigma.
-    
-    # Parameters:
-    # -----------
-    # sigma : float
-    #     The sigma_DM parameter
-    # C_0 : float
-    #     The C_0 parameter
-    # alpha : float, optional
-    #     Power in the exponent, default is 3
-    # beta : float, optional
-    #     Power of Delta, default is 3
-    
-    # Returns:
-    # --------
-    # float
-    #     The width of the σ confidence interval (upper limit - lower limit=2σ)
-    
-    # Find the mode (peak) of the distribution to help with interval search
-    def neg_pdf(Delta):
-        return -pdf_DM_cosmo(Delta, C_0, A, sigma, alpha, beta)
-    
-    # Use a grid search first to find a good starting point
-    # test_points = np.logspace(-3, 2, 50)  # Test points from 0.001 to 100
-    # pdf_values = np.array([pdf_DM_cosmo(x, C_0, A, sigma, alpha, beta) for x in test_points])
-    # best_idx = np.argmax(pdf_values)
-    # better_initial_guess = test_points[best_idx]
-    
-    # Now use minimize with the better initial guess
-    # result = minimize(neg_pdf, better_initial_guess, bounds=[(1e-10, 100)])
-    mode = result.x[0]
-    
-    # Rest of the function remains the same...
-    # Function to find probability mass up to a point
-    def cdf(Delta):
-        integral, _ = quad(lambda x: pdf_DM_cosmo(x, C_0, A, sigma, alpha, beta), 1e-10, Delta)
-        return integral
-    
-    # For 2σ confidence interval, we need 0.9545 mass (95.45%)
-    # target_prob = 0.6827 # 0.9545
-    # Find the central interval
-    lower_target = (1 - target_prob) / 2
-    upper_target = 1 - lower_target
-    
-    # Find the values at these probability levels using a more robust approach
-    def find_quantile(prob_level, cdf=cdf):
-        # First, sample points to get rough range
-        test_points = np.logspace(-3, 2, 100)  # Log-spaced points
-        cdf_values = np.array([cdf(x) for x in test_points])
-        
-        # Find points that bracket our target probability
-        if prob_level <= np.min(cdf_values):
-            return test_points[0]
-        if prob_level >= np.max(cdf_values):
-            return test_points[-1]
-        
-        # Find the two points that bracket our target
-        for i in range(len(cdf_values)-1):
-            if cdf_values[i] <= prob_level <= cdf_values[i+1]:
-                a, b = test_points[i], test_points[i+1]
-                
-                # Use bisection method which doesn't rely on sign change
-                mid = (a + b) / 2
-                for _ in range(20):  # 20 iterations should be enough
-                    mid = (a + b) / 2
-                    mid_val = cdf(mid)
-                    if abs(mid_val - prob_level) < 1e-6:
-                        return mid
-                    elif mid_val < prob_level:
-                        a = mid
-                    else:
-                        b = mid
-                return mid
-        
-        # Fallback
-        return mode
-    
-    lower_limit = find_quantile(lower_target)
-    upper_limit = find_quantile(upper_target)
-    
-    return upper_limit - lower_limit """
-
 
 ##############################################
 ### PDF SRC (Source/Immediate environment) ###

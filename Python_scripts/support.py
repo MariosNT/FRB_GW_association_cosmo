@@ -60,6 +60,11 @@ def gaussian_pdf(x, x0, s0):
 
 
 
+def func_lin(x, a0, a1):
+    return a0+a1*x    
+
+
+
 def posterior_contour_2D(posterior_2D_norm, n=1000):
     """
     Function that generates a contour plot of the 2D posterior distribution.
