@@ -980,7 +980,7 @@ A_sigma_inter = interpolate.interp1d(Sigmas, As, kind=1,bounds_error=False,
     DM_th = DM_diff_HOF_fast(z=z, H0_O_b_f_IGM=HOf, Om=Om, w=w)
     sigma=f_sigma_error(error) #sigma_var_inter(f_sqrtvar_delta(S,z))# sigma_var_inter(np.sqrt(f_variance_delta(F,z)))
     
-    C_0=f_C0_sigma(sigma)
+    C_0 = f_C0_sigma(sigma)
     A = f_A_sigma(sigma)
 
     ## integration
@@ -1257,3 +1257,48 @@ def DM_ext_sampling(z, # redshift
     s_DM_obs = error4/4
     
     return dm_ext_obs[0], s_DM_obs
+
+def DM_ext_sampling_fast(z, # redshift
+                     sigma_error_inter, C0_sigma_inter, A_sigma_inter, # interpolation functions functions
+                     #### if not choose 'standard' mode, use the following parameters ####
+                     S, EXP_MU, SIGMA_HOST, HOF=None, # FRB fitting results
+                     #### if choose 'standard' mode, use the following parameters ####
+                     H0=HUBBLE, f_diff=f_IGM, f_diff_alpha=f_ALPHA, # FRB standard parameters
+                     Om=OMEGA_MATTER, w=W_LAMBDA, # other cosmology parameters
+                     N_draws=1, int_N=2000, # sampling settings
+                     mode='standard', # generate events from standard cosmology parameters, else from FRB MCMC fitting results
+                     Error_factor = 1.0
+                     ):
+    """
+    Sampling DM_ext for a given redshift and cosmology.
+    """
+    if (mode=='standard'):
+        DM_th=dispersion_measure(z=z, H0=H0, Om=Om, w=w, alpha=f_diff_alpha, f_IGM_0 = f_diff)
+    else:
+        if (HOF is None):
+            raise ValueError("HOF must be provided when not using standard mode.")
+        DM_th=DM_diff_HOf(z, HOF, Om=Om, w=w)
+        
+    error=Error_factor * f_variance_delta(S=S, z=z, Om=Om, w=w)
+    s_DM_obs = error*DM_th
+    
+    sigma_diff=sigma_error_inter(error)
+    C0=C0_sigma_inter(sigma_diff)
+    A=A_sigma_inter(sigma_diff)
+    
+    dm_range=np.linspace(0.25*DM_th, 500+2.0*DM_th, int_N)
+    
+    p_range=[
+        pdf_DM_cosmo(Delta=dm/DM_th, C_0=C0, A=A, sigma=sigma_diff, alpha=3, beta=3)/DM_th
+        for dm in dm_range]
+    
+    p_range=normalise(p_range)
+    
+    dm_diff_obs = rng.choice(dm_range, size=N_draws, replace=True,\
+            p=p_range
+            )
+
+    LOG_SIGMA = np.sqrt((np.exp(SIGMA_HOST**2)-1)*np.exp(2*np.log(EXP_MU)+SIGMA_HOST**2))  # The standard deviation of the LogNormal
+    dm_host_obs = rng.lognormal(mean=np.log(EXP_MU), sigma=SIGMA_HOST, size=1)/(1+z)
+    
+    return dm_diff_obs[0]+dm_host_obs[0], np.sqrt(s_DM_obs**2+(LOG_SIGMA/(1+z))**2)
