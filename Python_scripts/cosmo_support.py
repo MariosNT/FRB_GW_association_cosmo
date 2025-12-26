@@ -1123,7 +1123,7 @@ def DM_diff_sampling(z, # redshift
             raise ValueError("HOF must be provided when not using standard mode.")
         DM_th=DM_diff_HOf(z, HOF, Om=Om, w=w)
         
-    error=Error_factor * f_variance_delta(S=S, z=z, Om=Om, w=w)
+    error=Error_factor * np.sqrt(f_variance_delta(S=S, z=z, Om=Om, w=w))
     s_DM_obs = error*DM_th
     
     sigma_diff=sigma_error_inter(error)
@@ -1279,7 +1279,7 @@ def DM_ext_sampling_fast(z, # redshift
             raise ValueError("HOF must be provided when not using standard mode.")
         DM_th=DM_diff_HOf(z, HOF, Om=Om, w=w)
         
-    error=Error_factor * f_variance_delta(S=S, z=z, Om=Om, w=w)
+    error=Error_factor * np.sqrt(f_variance_delta(S=S, z=z, Om=Om, w=w))
     s_DM_obs = error*DM_th
     
     sigma_diff=sigma_error_inter(error)
@@ -1299,6 +1299,6 @@ def DM_ext_sampling_fast(z, # redshift
             )
 
     LOG_SIGMA = np.sqrt((np.exp(SIGMA_HOST**2)-1)*np.exp(2*np.log(EXP_MU)+SIGMA_HOST**2))  # The standard deviation of the LogNormal
-    dm_host_obs = rng.lognormal(mean=np.log(EXP_MU), sigma=SIGMA_HOST, size=1)/(1+z)
+    dm_host_obs = rng.lognormal(mean=np.log(EXP_MU), sigma=SIGMA_HOST, size=N_draws)/(1+z)
     
     return dm_diff_obs[0]+dm_host_obs[0], np.sqrt(s_DM_obs**2+(LOG_SIGMA/(1+z))**2)
