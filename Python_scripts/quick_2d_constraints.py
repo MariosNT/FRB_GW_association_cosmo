@@ -34,13 +34,13 @@ def wei_2d_analysis(z_min=0.2, z_max=2.0, N_events=20, z_method='rates'):
         s_dL_obs[idx] = sigma_dL(z_val, HUBBLE, OMEGA_MATTER, w=W_LAMBDA, method='Wei')
         s_DM_fid = SIGMA_DM
 
-        dL_values_obs[idx] = np.random.normal(dL_fid, s_dL_obs[idx])
-        DM_values_obs[idx] = np.random.normal(DM_fid, s_DM_fid)
+        dL_values_obs[idx] = rng.normal(dL_fid, s_dL_obs[idx])
+        DM_values_obs[idx] = rng.normal(DM_fid, s_DM_fid)
 
         dLDM_obs[idx] = dL_values_obs[idx]*DM_values_obs[idx]
         s_dLDM_obs[idx] = sigma_dLDM(dL_values_obs[idx], DM_values_obs[idx], s_dL_obs[idx])
 
-    ## fid values
+    ## fiducial values
     for idx, z_val in enumerate(z_range): 
         dL_values_fid[idx] = luminosity_distance(z_val, HUBBLE, OMEGA_MATTER, w=W_LAMBDA)
         DM_values_fid[idx] = dispersion_measure(z_val, HUBBLE, OMEGA_MATTER, w=W_LAMBDA)   
@@ -129,8 +129,8 @@ def ideal_distances_analysis(z_min=0.2, z_max=2.0, N_events=20, z_method='rates'
         s_dL_obs[idx] = sigma_dL(z_val, HUBBLE, OMEGA_MATTER, w=W_LAMBDA, method='Wei')
         s_DM_fid = SIGMA_DM
 
-        dL_values_obs[idx] = np.random.normal(dL_fid, s_dL_obs[idx])
-        DM_values_obs[idx] = np.random.normal(DM_fid, s_DM_fid)
+        dL_values_obs[idx] = rng.normal(dL_fid, s_dL_obs[idx])
+        DM_values_obs[idx] = rng.normal(DM_fid, s_DM_fid)
 
     ### Create the fiducial cosmo values (with zero scatter) for comparison    
     for idx, z_val in enumerate(z_range): 
@@ -154,7 +154,7 @@ def ideal_distances_analysis(z_min=0.2, z_max=2.0, N_events=20, z_method='rates'
         ## Fitting H0 & Om
         chi_fit_2D = np.zeros_like(H_Om)
 
-        for idx_h, H0 in enumerate(H0_array):
+        for idx_h, H0 in enumerate(tqdm(H0_array)):
             for idx_Om, Om in enumerate(Omega_m_array):
                 chi_square = 0
                 for idx_z, z_val in enumerate(z_obs):
@@ -176,7 +176,7 @@ def ideal_distances_analysis(z_min=0.2, z_max=2.0, N_events=20, z_method='rates'
         ## Fitting H0 & Om & w
         chi_fit_3D = np.zeros_like(H3D_)
 
-        for idx_h, H0 in enumerate(H0_array):
+        for idx_h, H0 in enumerate(tqdm(H0_array)):
             for idx_Om, Om in enumerate(Omega_m_array):
                 for idx_w, W in enumerate(w_array):
                     chi_square = 0

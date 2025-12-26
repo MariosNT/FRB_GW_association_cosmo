@@ -194,7 +194,7 @@ def dDM_integrand_w(z, Om, w, alpha=0.11, f_IGM_0 = f_IGM):
     return f_IGM_z*(1+z)/np.sqrt(Om*(1+z)**3+(1-Om)*(1+z)**(3*(1+w)))
 
 
-def dispersion_measure(z, H0, Om, w=W_LAMBDA, alpha=0, f_IGM_0 = f_IGM):
+def dispersion_measure(z, H0=HUBBLE, Om=OMEGA_MATTER, w=W_LAMBDA, alpha=f_ALPHA, f_IGM_0 = f_IGM):
     """
     Function of the DM formula, 
     eq. (12) in [arXiv:1805.12265].
@@ -341,7 +341,7 @@ def dLDM_measure(z, H0, Om, w=-1, DM_host=0):
     return dLDM
 
 
-def sigma_dL(z, H0, Om, w=-1, method='Wei'):
+def sigma_dL(z, H0=HUBBLE, Om=OMEGA_MATTER, w=W_LAMBDA, method='Wei'):
     """
     Function that calculates the error of dL,
     eq. (10) in [arXiv:1805.12265].
