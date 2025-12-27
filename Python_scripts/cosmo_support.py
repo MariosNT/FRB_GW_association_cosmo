@@ -314,7 +314,7 @@ def luminosity_distance(z, H0=HUBBLE, Om=OMEGA_MATTER, w=W_LAMBDA):
     else:
         return dL
 
-def dLDM_measure(z, H0, Om, w=-1, DM_host=0):
+def dLDM_measure(z, H0, Om, w=W_LAMBDA, DM_host=0):
     """
     Function that calculates the dLDM product.
     

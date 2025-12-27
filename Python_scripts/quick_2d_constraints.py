@@ -9,15 +9,15 @@ from support import *
 ###############################################
 
 def wei_2d_analysis(z_min=0.2, z_max=2.0, N_events=20, z_method='rates'):
+    """
+    Function that automates the Wei+2018 analysis: Recovers Om, and (Om, w).
+    """
     
     ## Redshift range of analysis
     z_range = np.linspace(z_min, z_max, 500)
 
+    ## Draw N_events sources for analysis
     z_obs = draw_redshift_distribution(z_range, H0=HUBBLE, Omega_m=OMEGA_MATTER, N_draws=N_events, method=z_method)
-
-    dL_values_fid = np.zeros_like(z_range)
-    DM_values_fid = np.zeros_like(z_range)
-    dLDM_fid = np.zeros_like(z_range)
 
     dL_values_obs = np.zeros_like(z_obs)
     DM_values_obs = np.zeros_like(z_obs)
@@ -26,7 +26,8 @@ def wei_2d_analysis(z_min=0.2, z_max=2.0, N_events=20, z_method='rates'):
     dLDM_obs = np.zeros_like(z_obs)
     s_dLDM_obs = np.zeros_like(z_obs)
 
-    ## obs values
+    ## Observed values
+    ## We perturb the distance measures, using Gaussians, around the theoretical values
     for idx, z_val in enumerate(z_obs): 
         dL_fid = luminosity_distance(z_val, HUBBLE, OMEGA_MATTER, w=W_LAMBDA)
         DM_fid = dispersion_measure(z_val, HUBBLE, OMEGA_MATTER, w=W_LAMBDA)
@@ -37,15 +38,9 @@ def wei_2d_analysis(z_min=0.2, z_max=2.0, N_events=20, z_method='rates'):
         dL_values_obs[idx] = rng.normal(dL_fid, s_dL_obs[idx])
         DM_values_obs[idx] = rng.normal(DM_fid, s_DM_fid)
 
+        ## Joint dL-DM observation + error
         dLDM_obs[idx] = dL_values_obs[idx]*DM_values_obs[idx]
-        s_dLDM_obs[idx] = sigma_dLDM(dL_values_obs[idx], DM_values_obs[idx], s_dL_obs[idx])
-
-    ## fiducial values
-    for idx, z_val in enumerate(z_range): 
-        dL_values_fid[idx] = luminosity_distance(z_val, HUBBLE, OMEGA_MATTER, w=W_LAMBDA)
-        DM_values_fid[idx] = dispersion_measure(z_val, HUBBLE, OMEGA_MATTER, w=W_LAMBDA)   
-        dLDM_fid[idx] = dLDM_measure(z_val, HUBBLE, OMEGA_MATTER, w=W_LAMBDA)
-        
+        s_dLDM_obs[idx] = sigma_dLDM(dL_values_obs[idx], DM_values_obs[idx], s_dL_obs[idx])       
         
     ## We create a grid of values for Om and Ho
     Omega_m_array = np.linspace(0.0, 0.6, 100)
@@ -64,7 +59,6 @@ def wei_2d_analysis(z_min=0.2, z_max=2.0, N_events=20, z_method='rates'):
             chi_square += (dLDM_obs[idx_z]-dLDM)**2/s_dLDM_obs[idx_z]**2
 
         chi_fit[idx_Om] = chi_square    
-        
         
     ## Finding the best-fit Om & error 
 
@@ -85,7 +79,7 @@ def wei_2d_analysis(z_min=0.2, z_max=2.0, N_events=20, z_method='rates'):
     ## Fitting Om & w
     chi_fit_2D = np.zeros_like(Om_)
 
-    for idx_Om, Om in enumerate(Omega_m_array):
+    for idx_Om, Om in enumerate(tqdm(Omega_m_array)):
         for idx_w, w_val in enumerate(w_array):
             chi_square = 0
             for idx_z, z_val in enumerate(z_obs):
@@ -107,35 +101,27 @@ def wei_2d_analysis(z_min=0.2, z_max=2.0, N_events=20, z_method='rates'):
 
 
 def ideal_distances_analysis(z_min=0.2, z_max=2.0, N_events=20, z_method='rates', Ho_res=50, Om_res=40, w_res=45, fit='2D'):
+    """
+    Function that automates our analysis: Recovers (H0, Om) & (H0, Om, w).
+
+    Here we assume ideal luminosity distances, so we skip the step of transforming distances to redshifts
+    and use directly the z_obs values, to compare between DM_obs and DM_theory.
+    """
     
     ## Redshift range of analysis
     z_range = np.linspace(z_min, z_max, 500)
 
     z_obs = draw_redshift_distribution(z_range, H0=HUBBLE, Omega_m=OMEGA_MATTER, N_draws=N_events, method=z_method)
 
-    dL_values_fid = np.zeros_like(z_range)
-    DM_values_fid = np.zeros_like(z_range)
-
-    dL_values_obs = np.zeros_like(z_obs)
     DM_values_obs = np.zeros_like(z_obs)
-    s_dL_obs = np.zeros_like(z_obs)
-
 
     ## Create mock observations (following the fiducial cosmology + scatter)
     for idx, z_val in enumerate(z_obs): 
-        dL_fid = luminosity_distance(z_val, HUBBLE, OMEGA_MATTER, w=W_LAMBDA)
         DM_fid = dispersion_measure(z_val, HUBBLE, OMEGA_MATTER, w=W_LAMBDA)
 
-        s_dL_obs[idx] = sigma_dL(z_val, HUBBLE, OMEGA_MATTER, w=W_LAMBDA, method='Wei')
         s_DM_fid = SIGMA_DM
 
-        dL_values_obs[idx] = rng.normal(dL_fid, s_dL_obs[idx])
         DM_values_obs[idx] = rng.normal(DM_fid, s_DM_fid)
-
-    ### Create the fiducial cosmo values (with zero scatter) for comparison    
-    for idx, z_val in enumerate(z_range): 
-        dL_values_fid[idx] = luminosity_distance(z_val, HUBBLE, OMEGA_MATTER, w=W_LAMBDA)
-        DM_values_fid[idx] = dispersion_measure(z_val, HUBBLE, OMEGA_MATTER, w=W_LAMBDA)   
         
         
     ## We create a grid of values for Om, Ho and w
