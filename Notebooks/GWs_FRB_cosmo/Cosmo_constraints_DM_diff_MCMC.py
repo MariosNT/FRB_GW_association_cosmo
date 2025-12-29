@@ -20,7 +20,6 @@ from datetime import datetime
 
 import emcee
 from multiprocess import Pool, cpu_count
-from pathlib import Path
 
 # initial parameters
 Hubble0 = 70
@@ -35,35 +34,53 @@ N_STEPS = 1000
 # checkpoint
 RESUME = True
 CKP_INTERVAL = 50
-DATA_FILE = './DM_diff_checkpoint/simulation_data_z_02.pkl'
-MCMC_FILE = './DM_diff_checkpoint/mcmc_checkpoint_z_02.pkl'
+DATA_FILE = './checkpoint/data.pkl'
+MCMC_FILE = './checkpoint/mcmc_dm_diff_checkpoint.pkl'
 
 # savefile
-DATA_FIG='./plot/data_cluster_DM_diff_z_02.pdf'
-SAVE_RESULT='./posterior/cluster_MCMC_DM_diff_z_02.npy'
-SAVE_FIG='./plot/MCMC_cluster_DM_diff_z_02'
+SAVE_RESULT='./posterior/cluster_MCMC_DM_diff.npy'
+SAVE_FIG='./plot/MCMC_cluster_DM_diff'
 
 DATA_PATH = '../FRB_cosmo/interpolation/095_C0mean.npz'
 interpolations = np.load(f'../Realistic_sources/quantile_linear_interpolations.npz')
 
-N_EVENTS = 50
-REDSHIFT_METHOD = 'rates'  # choose from 'rates', 'uniform', 'gaussian', 'lognormal' and 'powerlaw'
+###################
+### Load events ###
+###################
 
-Error_factor = 1.0 # times the error in event generation, =1, set other value for test
-
-# Redshift range for events, default (0.25, 2.0)
-Z_min = 0.2
-Z_max = 2.0
-
-########################################
-### Load standard parameters for pdf ###
-########################################
-
-S=0.133
-EXP_MU=182.937
-SIGMA_HOST=0.605
-DM_MWHALO=30
-HOF=2.813
+if os.path.exists(DATA_FILE):
+    # Load previously saved data
+    print(f"Loading data from {DATA_FILE}...")
+    with open(DATA_FILE, 'rb') as f:
+        saved_data = pickle.load(f)
+    
+    # events redshifts
+    z_centre = saved_data['z_centre']
+    # DL data
+    dL_obs_centre = saved_data['dL_obs_centre']
+    sigma_dL = saved_data['sigma_dL']
+    # DM_diff data
+    DM_diff_obs = saved_data['DM_diff_obs']
+    sigma_DM_diff = saved_data['sigma_DM_diff']
+    
+    # Theoratical values (DM is the DM_diff)
+    dL_centre = saved_data['dL_centre']
+    DM_centre = saved_data['DM_centre']
+    
+    S = saved_data['S']
+    Z_min = saved_data['Z_min']
+    Z_max = saved_data['Z_max']
+    REDSHIFT_METHOD = saved_data['REDSHIFT_METHOD']
+    
+    print(f"Successfully loaded {len(z_centre)} events from saved data.")
+    
+else:
+    print(f"No data file {DATA_FILE}, please check path or generate data.")
+    sys.exit()
+    
+if not RESUME and os.path.exists(MCMC_FILE):
+    print(f"RESUME=False: Removing old save MCMC checkpoint {MCMC_FILE}...")
+    os.remove(MCMC_FILE)
 
 ###################################
 ### Load interpolations for pdf ###
@@ -94,156 +111,6 @@ def initialize_globals():
     if sigma_error_inter is None:
         Sigmas, Errors, C0s, As, sigma_error_inter, C0_sigma_inter, A_sigma_inter = _load_and_create_interpolators()
         z_array = np.linspace(Z_min, Z_max, 1000)
-    
-#######################
-### DL error model ###
-#######################
-
-LVK_linear = interpolations['LVK_interpolation']
-CE_linear = interpolations['CE_interpolation']
-
-# Find use quadratic function may get negative error in some large redshift
-
-def func_lin(x, a0, a1):
-    return a0+a1*x
-
-
-def GW_error_LVK(z, H0, Om, w=-1, order=1):
-    if (order==1):
-        sigma_ratio = func_lin(z, *LVK_linear)/100
-        dL=luminosity_distance(z, H0, Om, w)
-        return sigma_ratio*dL
-    elif (order==2):
-        a0=17.015
-        a1=131.750
-        a2=-174.911
-        dL=luminosity_distance(z, H0, Om, w)
-        return (a2*z*z+a1*z+a0)*dL
-    else:
-        print('Choose order from 1 or 2. Use default instead')
-        return sigma_dL(z_val, H0, Om, w=w, method='Wei')
-    
-def GW_error_CE(z, H0, Om, w=-1, order=1):
-    if (order==1):
-        sigma_ratio = func_lin(z, *CE_linear)/100
-        dL=luminosity_distance(z, H0, Om, w)
-        return sigma_ratio*dL
-    elif (order==2):
-        a0=7.649
-        a1=18.581
-        a2=-4.559
-        dL=luminosity_distance(z, H0, Om, w)
-        return (a2*z*z+a1*z+a0)*dL
-    else:
-        print('Choose order from 1 or 2. Use default instead')
-        return sigma_dL(z_val, H0, Om, w=w, method='Wei')
-
-#######################
-### Generate events ###
-#######################
-
-if RESUME and os.path.exists(DATA_FILE):
-    # Load previously saved data
-    print(f"Loading data from {DATA_FILE}...")
-    with open(DATA_FILE, 'rb') as f:
-        saved_data = pickle.load(f)
-    
-    z_centre = saved_data['z_centre']
-    dL_obs_centre = saved_data['dL_obs_centre']
-    sigma_dL = saved_data['sigma_dL']
-    DM_obs_centre = saved_data['DM_obs_centre']
-    s_DM_obs = saved_data['s_DM_obs']
-    
-    # Also load the theoretical values
-    dL_centre = saved_data['dL_centre']
-    DM_centre = saved_data['DM_centre']
-    
-    print(f"Successfully loaded {len(z_centre)} events from saved data.")
-    
-else:
-    if not RESUME and os.path.exists(DATA_FILE):
-        print(f"RESUME=False: Removing old save data {DATA_FILE}...")
-        os.remove(DATA_FILE)
-    
-    if not RESUME and os.path.exists(MCMC_FILE):
-        print(f"RESUME=False: Removing old save MCMC checkpoint {MCMC_FILE}...")
-        os.remove(MCMC_FILE)
-    
-    # Generate new data
-    print("Generating new simulation data...")
-    
-    z_range = np.linspace(Z_min, Z_max, 1000)
-    z_centre = draw_redshift_distribution(z_range, H0=HUBBLE, Omega_m=OMEGA_MATTER, 
-                                          N_draws=N_EVENTS, method=REDSHIFT_METHOD)
-
-    # Theoretical dL, fiducial cosmo
-    dL_centre = luminosity_distance(z=z_centre, H0=HUBBLE, Om=OMEGA_MATTER, w=W_LAMBDA)
-    # Theoretical DM, fiducial cosmo
-    DM_centre = dispersion_measure(z_centre, H0=HUBBLE, Om=OMEGA_MATTER)
-
-    ## Choice of observed luminosity distance
-    # Use this for fixed error/redshift
-    # sigma_dL = 0.1*dL_centre
-
-    # Use this for redshift dependent errors
-    sigma_dL = Error_factor * GW_error_CE(z_centre, H0=HUBBLE, Om=OMEGA_MATTER)
-
-    dL_obs_centre = np.random.normal(dL_centre, sigma_dL)
-
-    DM_obs_centre = np.zeros_like(z_centre)
-    s_DM_obs = np.zeros_like(z_centre)
-
-    for idx, z_val in enumerate(z_centre):
-        print(f"Processing event {idx+1}/{N_EVENTS}...")
-        DM_obs_centre[idx], s_DM_obs[idx] = \
-            DM_diff_sampling(z=z_val, 
-                            S=S, HOF=HOF,
-                            sigma_error_inter=sigma_error_inter,
-                            C0_sigma_inter=C0_sigma_inter,
-                            A_sigma_inter=A_sigma_inter,
-                            H0=HUBBLE, f_diff=0.84, f_diff_alpha=0,
-                            Om=OMEGA_MATTER, w=W_LAMBDA, N_draws=1,
-                            mode=None, #'standard'
-                            Error_factor = Error_factor
-                            )
-    
-    # Save the generated data
-    save_data = {
-        'z_centre': z_centre,
-        'dL_obs_centre': dL_obs_centre,
-        'sigma_dL': sigma_dL,
-        'DM_obs_centre': DM_obs_centre,
-        's_DM_obs': s_DM_obs,
-        'dL_centre': dL_centre,
-        'DM_centre': DM_centre
-    }
-    
-    directory = os.path.dirname(DATA_FILE)
-    if directory:
-        os.makedirs(directory, exist_ok=True)
-    with open(DATA_FILE, 'wb') as f:
-        pickle.dump(save_data, f)
-    
-    print(f"Data saved to {DATA_FILE}")
-
-fig = plt.figure(figsize=(11, 5))
-ax1 = fig.add_subplot(121)
-ax2 = fig.add_subplot(122)
-
-ax1.plot(np.sort(z_centre), np.sort(dL_centre))
-ax1.errorbar(z_centre, dL_obs_centre, yerr=sigma_dL, marker='o', ls='', ms=3, c='r', label=f'N={len(z_centre)}')
-ax1.set_ylabel(r'$d_{L}$ [Mpc]')
-ax1.set_xlabel(r'$z$')
-ax1.legend(loc='upper left')
-
-ax2.plot(np.sort(z_centre), np.sort(DM_centre))
-ax2.errorbar(z_centre, DM_obs_centre, yerr=s_DM_obs, marker='o', ls='', ms=3, c='r')
-ax2.set_ylabel(r'$DM_{\rm diff}$ [pc/cm$^3$]')
-ax2.set_xlabel(r'$z$')
-
-Path('./plot').mkdir(parents=True, exist_ok=True)
-plt.savefig(DATA_FIG)
-# plt.tight_layout()
 
 #######################
 ### MCMC Analysis ###
@@ -665,7 +532,7 @@ if __name__ == '__main__':
                    zs=z_centre, dLs=dL_obs_centre, s_dLs=sigma_dL, DMs=DM_obs_centre, s_DMs=s_DM_obs, 
                    nwalkers=N_WALKERS, heating=HEATING, nsteps=N_STEPS) """
     sampler = run_mcmc_checkpoint(initial_params, 
-                   zs=z_centre, dLs=dL_obs_centre, s_dLs=sigma_dL, DMs=DM_obs_centre, s_DMs=s_DM_obs, 
+                   zs=z_centre, dLs=dL_obs_centre, s_dLs=sigma_dL, DMs=DM_diff_obs, s_DMs=sigma_DM_diff, 
                    nwalkers=N_WALKERS, heating=HEATING, nsteps=N_STEPS,
                    checkpoint_interval=CKP_INTERVAL, checkpoint_file=MCMC_FILE,resume=RESUME)
     
