@@ -245,6 +245,6 @@ ax3.errorbar(z_centre, DM_ext_obs, yerr=sigma_DM_ext, marker='o', ls='', ms=3, c
 ax3.set_ylabel(r'DM$_{\rm ext}$ [pc/cm$^3$]')
 ax3.set_xlabel(r'$z$')
 
-Path('./plot').mkdir(parents=True, exist_ok=True)
+Path(DATA_FIG).parent.mkdir(parents=True, exist_ok=True)
 plt.savefig(DATA_FIG)
 # plt.tight_layout()

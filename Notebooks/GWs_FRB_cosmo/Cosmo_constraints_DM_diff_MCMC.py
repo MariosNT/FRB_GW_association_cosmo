@@ -17,6 +17,7 @@ from cosmo_support import *
 import pickle
 import os
 from datetime import datetime
+from pathlib import Path
 
 import emcee
 from multiprocess import Pool, cpu_count
@@ -519,6 +520,7 @@ def mcmc_plot_results(samples, param_names, savetitle=None, bins=30, target_prob
     
     plt.tight_layout()
     if savetitle is not None:
+        Path(savetitle).parent.mkdir(parents=True, exist_ok=True)
         plt.savefig(savetitle+"_chains.png", dpi=300, bbox_inches='tight')
     plt.show()
     plt.close()
@@ -546,6 +548,7 @@ if __name__ == '__main__':
         print(f"{name} = {params_median[i]:.3f} ± {params_errors[i]:.3f}")
 
     # Save samples to file for later analysis if needed
+    Path(SAVE_RESULT).parent.mkdir(parents=True, exist_ok=True)
     np.save(SAVE_RESULT, samples)
 
     mcmc_plot_results(samples, param_names, savetitle=SAVE_FIG)
