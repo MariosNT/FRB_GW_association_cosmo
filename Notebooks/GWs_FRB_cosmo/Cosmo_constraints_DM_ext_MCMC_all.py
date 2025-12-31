@@ -35,7 +35,7 @@ HEATING = 10
 N_STEPS = 1000
 
 # checkpoint
-RESUME = True
+RESUME = False
 CKP_INTERVAL = 50
 DATA_FILE = './checkpoint/data.pkl'
 MCMC_FILE = './checkpoint/mcmc_dm_ext_checkpoint.pkl'
@@ -81,7 +81,8 @@ else:
     print(f"No data file {DATA_FILE}, please check path or generate data.")
     sys.exit()
     
-if not RESUME and os.path.exists(MCMC_FILE):
+if not RESUME and os.path.exists(MCMC556607
+                                 _FILE):
     print(f"RESUME=False: Removing old save MCMC checkpoint {MCMC_FILE}...")
     os.remove(MCMC_FILE)
 
