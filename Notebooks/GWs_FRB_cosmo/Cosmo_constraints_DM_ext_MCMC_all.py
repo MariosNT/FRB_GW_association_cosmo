@@ -62,7 +62,7 @@ if os.path.exists(DATA_FILE):
     # DL data
     dL_obs_centre = saved_data['dL_obs_centre']
     sigma_dL = saved_data['sigma_dL']
-    # DM_diff data
+    # DM_ext data
     DM_ext_obs = saved_data['DM_ext_obs']
     sigma_DM_ext = saved_data['sigma_DM_ext']
     
@@ -81,8 +81,7 @@ else:
     print(f"No data file {DATA_FILE}, please check path or generate data.")
     sys.exit()
     
-if not RESUME and os.path.exists(MCMC556607
-                                 _FILE):
+if not RESUME and os.path.exists(MCMC_FILE):
     print(f"RESUME=False: Removing old save MCMC checkpoint {MCMC_FILE}...")
     os.remove(MCMC_FILE)
 
