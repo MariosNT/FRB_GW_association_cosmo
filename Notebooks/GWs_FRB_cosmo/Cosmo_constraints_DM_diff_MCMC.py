@@ -40,7 +40,7 @@ MCMC_FILE = './checkpoint/mcmc_dm_diff_checkpoint.pkl'
 
 # savefile
 SAVE_RESULT='./posterior/cluster_MCMC_DM_diff.npy'
-SAVE_FIG='./plot/MCMC_cluster_DM_diff'
+SAVE_FIG='./plot/MCMC_cluster_DM_diff_nofast'
 
 DATA_PATH = '../FRB_cosmo/interpolation/095_C0mean.npz'
 interpolations = np.load(f'../Realistic_sources/quantile_linear_interpolations.npz')
@@ -153,7 +153,7 @@ def log_likelihood(theta, zs, dLs, s_dLs, DMs, s_DMs):
             p_DM=np.zeros_like(z_array)
             
             for idx_z, (z_val, Delta, DM_th) in enumerate(zip(z_array, Delta_array, DM_th_array)):
-                error=f_variance_delta(S=S, z=z_val, Om=omega, w=w)
+                error=np.sqrt(f_variance_delta(S=S, z=z_val, Om=omega, w=w))
 
                 sigma_diff=sigma_error_inter(error)
                 C0=C0_sigma_inter(sigma_diff)

@@ -42,7 +42,7 @@ MCMC_FILE = './checkpoint/mcmc_dm_ext_checkpoint.pkl'
 
 # savefile
 SAVE_RESULT='./posterior/cluster_MCMC_DM_ext_all.npy'
-SAVE_FIG='./plot/MCMC_cluster_DM_ext_all'
+SAVE_FIG='./plot/MCMC_cluster_DM_ext_all_nofast'
 
 DATA_PATH = '../FRB_cosmo/interpolation/095_C0mean.npz'
 interpolations = np.load(f'../Realistic_sources/quantile_linear_interpolations.npz')

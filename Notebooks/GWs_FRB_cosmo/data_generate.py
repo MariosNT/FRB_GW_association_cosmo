@@ -39,7 +39,7 @@ from pathlib import Path
 
 # savefile
 DATA_FILE = './checkpoint/data.pkl'
-DATA_FIG='./plot/data.pdf'
+DATA_FIG='./plot/data_nofast.pdf'
 
 ITP_PATH = '../FRB_cosmo/interpolation/095_C0mean.npz'
 interpolations = np.load(f'../Realistic_sources/quantile_linear_interpolations.npz')
@@ -174,7 +174,7 @@ for idx, z_val in enumerate(z_centre):
                         )
         
     DM_ext_obs[idx], sigma_DM_ext[idx] = \
-        DM_ext_sampling_fast(z=z_val, 
+        DM_ext_sampling(z=z_val, 
                             S=S, HOF=HOF, SIGMA_HOST=SIGMA_HOST, EXP_MU=EXP_MU,
                             sigma_error_inter=sigma_error_inter,
                             C0_sigma_inter=C0_sigma_inter,

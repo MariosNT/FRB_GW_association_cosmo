@@ -112,7 +112,7 @@ def log_likelihood(theta, data):
             p_DM=np.zeros_like(z_array)
             
             for idx, (z_val, Delta, DM_th) in enumerate(zip(z_array, Delta_array, DM_th_array)):
-                error=f_variance_delta(S=S, z=z_val, Om=omega, w=w)
+                error=np.sqrt(f_variance_delta(S=S, z=z_val, Om=omega, w=w))
 
                 sigma_diff=sigma_error_inter(error)
                 C0=C0_sigma_inter(sigma_diff)
