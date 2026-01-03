@@ -30,7 +30,7 @@ w0 = -1.0
 # MCMC parameters
 N_WALKERS = 96
 HEATING = 10
-N_STEPS = 1000
+N_STEPS = 500 # 1000
 
 # checkpoint
 RESUME = False
@@ -204,7 +204,7 @@ def log_prior(theta):
     # Define your prior ranges here
     hubble_min, hubble_max = 40, 100 #0.016 # 0.2 # 2.0 #0.2 
     omega_min, omega_max = 0.0, 1.0  
-    w_min, w_max = -3.0, 0.0 
+    w_min, w_max = -2.0, 0.0 
 
     # Check if parameters are within prior ranges
     if (hubble_min <= hubble <= hubble_max and 
