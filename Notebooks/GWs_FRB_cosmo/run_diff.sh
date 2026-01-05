@@ -5,7 +5,7 @@
 #SBATCH --nodes=1
 #SBATCH --account=unv116
 #SBATCH --ntasks-per-node=48
-#SBATCH -t 24:00:00
+#SBATCH -t 12:00:00
 #SBATCH --mem=50G
 #SBATCH --constraint="lustre"
 
