@@ -23,13 +23,13 @@ import emcee
 from multiprocess import Pool, cpu_count
 
 # initial parameters
-Hubble0 = 70
+Hubble0 = 68
 Omega0 = 0.3
 w0 = -1.0
 
 # MCMC parameters
 N_WALKERS = 96
-HEATING = 10
+HEATING = 500
 N_STEPS = 1000
 
 # checkpoint
