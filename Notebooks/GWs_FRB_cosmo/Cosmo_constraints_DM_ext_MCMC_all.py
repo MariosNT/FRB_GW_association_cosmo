@@ -400,18 +400,18 @@ def run_mcmc_checkpoint(initial_params, zs, dLs, s_dLs, DMs, s_DMs,
             )
             
             # Heating phase
-            print("Heating...")
-            state = None
-            with tqdm(total=heating) as pbar:
-                for i, result in enumerate(sampler.sample(pos, iterations=heating)):
-                    pbar.update(1)
-                    state = result
-                    if i % 100 == 0:
-                        acc_frac = np.mean(sampler.acceptance_fraction)
-                        pbar.set_description(f"Acceptance fraction: {acc_frac:.3f}")
+            # print("Heating...")
+            # state = None
+            # with tqdm(total=heating) as pbar:
+            #     for i, result in enumerate(sampler.sample(pos, iterations=heating)):
+            #         pbar.update(1)
+            #         state = result
+            #         if i % 100 == 0:
+            #             acc_frac = np.mean(sampler.acceptance_fraction)
+            #             pbar.set_description(f"Acceptance fraction: {acc_frac:.3f}")
             
-            # Reset sampler after heating
-            sampler.reset()
+            # # Reset sampler after heating
+            # sampler.reset()
             
             # Main running phase
             print("Main running...")
