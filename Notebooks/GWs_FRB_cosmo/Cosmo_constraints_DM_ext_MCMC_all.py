@@ -400,18 +400,18 @@ def run_mcmc_checkpoint(initial_params, zs, dLs, s_dLs, DMs, s_DMs,
             )
             
             # Heating phase
-            # print("Heating...")
-            # state = None
-            # with tqdm(total=heating) as pbar:
-            #     for i, result in enumerate(sampler.sample(pos, iterations=heating)):
-            #         pbar.update(1)
-            #         state = result
-            #         if i % 100 == 0:
-            #             acc_frac = np.mean(sampler.acceptance_fraction)
-            #             pbar.set_description(f"Acceptance fraction: {acc_frac:.3f}")
+            print("Heating...")
+            state = None
+            with tqdm(total=heating) as pbar:
+                for i, result in enumerate(sampler.sample(pos, iterations=heating)):
+                    pbar.update(1)
+                    state = result
+                    if i % 100 == 0:
+                        acc_frac = np.mean(sampler.acceptance_fraction)
+                        pbar.set_description(f"Acceptance fraction: {acc_frac:.3f}")
             
-            # # Reset sampler after heating
-            # sampler.reset()
+            # Reset sampler after heating
+            sampler.reset()
             
             # Main running phase
             print("Main running...")
@@ -459,7 +459,7 @@ def run_mcmc_checkpoint(initial_params, zs, dLs, s_dLs, DMs, s_DMs,
 Because running MCMC depend on proior and likelihood function defination, so only include analyze function here.
 '''
 
-def mcmc_analyze_results(sampler, burn_in=10, thin=15, target_prob=0.6827):
+def mcmc_analyze_results(sampler, thin=15, target_prob=0.6827):
     """
     Analyze the MCMC results.
     
@@ -474,7 +474,7 @@ def mcmc_analyze_results(sampler, burn_in=10, thin=15, target_prob=0.6827):
         params_errors: Parameter uncertainties (16th and 84th percentiles)
     """
     # Discard burn-in, flatten and thin the samples
-    flat_samples = sampler.get_chain(discard=burn_in, thin=thin, flat=True)
+    flat_samples = sampler.get_chain(thin=thin, flat=True)
     
     # Calculate the median and 16th and 84th percentiles for the parameters
     params_median = np.median(flat_samples, axis=0)
@@ -544,7 +544,7 @@ if __name__ == '__main__':
                    checkpoint_interval=CKP_INTERVAL, checkpoint_file=MCMC_FILE,resume=RESUME)
     
     # Analyze results
-    samples, params_median, params_errors = mcmc_analyze_results(sampler, burn_in=HEATING)
+    samples, params_median, params_errors = mcmc_analyze_results(sampler)
 
     # Print results
     param_names = [r'$ H_0$ ', r'$ \Omega_m$ ', r'$ w$ ', r'$ exp(\mu)$ ', r'$ \sigma_{\rm host}$ ']
