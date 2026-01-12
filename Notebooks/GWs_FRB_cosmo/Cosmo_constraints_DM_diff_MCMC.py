@@ -35,12 +35,12 @@ N_STEPS = 500
 # checkpoint
 RESUME = False
 CKP_INTERVAL = 50
-DATA_FILE = './checkpoint/data_fast.pkl'
+DATA_FILE = './checkpoint/data_nofast.pkl'
 MCMC_FILE = './checkpoint/mcmc_dm_diff_checkpoint.pkl'
 
 # savefile
-SAVE_RESULT='./posterior/cluster_MCMC_DM_diff_fast.npy'
-SAVE_FIG='./plot/MCMC_cluster_DM_diff_fast'
+SAVE_RESULT='./posterior/cluster_MCMC_DM_diff_nofast.npy'
+SAVE_FIG='./plot/MCMC_cluster_DM_diff_nofast'
 
 DATA_PATH = '../FRB_cosmo/interpolation/095_C0mean.npz'
 interpolations = np.load(f'../Realistic_sources/quantile_linear_interpolations.npz')
