@@ -375,7 +375,23 @@ def sigma_dL(z, H0=HUBBLE, Om=OMEGA_MATTER, w=W_LAMBDA, method='Wei'):
         print("Wrong error method!")
     
     return s_dL
-    
+
+
+def GWs_error(z, H0=HUBBLE, Om=OMEGA_MATTER, w=W_LAMBDA, method='constant'):
+    if method=='LVK':
+        sigma_ratio = func_lin(z, *LVK_error)/100
+        dL=luminosity_distance(z, H0, Om, w)
+        return sigma_ratio*dL
+    elif method=='CE':
+        sigma_ratio = func_lin(z, *CE_error)/100
+        dL=luminosity_distance(z, H0, Om, w)
+        return sigma_ratio*dL
+    elif method=='Wei':
+        return sigma_dL(z, H0, Om, w, method=method)
+    elif method=='constant':
+        return sigma_dL(z, H0, Om, w, method=method)
+    else:
+        print("Wrong error generation method! Choose from: 'LVK', 'CE', 'Wei', and 'constant'.")    
 
 
 def sigma_dLDM(dL, DM, error_dL, error_DM=SIGMA_DM):
@@ -1138,11 +1154,11 @@ def DM_diff_sampling(z, # redshift
     
     p_range=normalise(p_range)
     
-    dm_diff_obs = rng.choice(dm_range, size=N_draws, replace=True,\
+    dm_diff_obs = rng.choice(dm_range, size=int_N, replace=True,\
             p=p_range
             )
     
-    return dm_diff_obs[0], s_DM_obs
+    return dm_diff_obs[0], s_DM_obs, dm_diff_obs
 
 def p_dm_ext_fast(DM_ext, z, # Data
                 S, e_mu, sigma_host, # parameters
