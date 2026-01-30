@@ -38,10 +38,9 @@ import os
 from pathlib import Path
 
 # savefile
-DATA_FILE = './checkpoint/data_fast.pkl'
-DATA_FIG='./plot/data_fast.pdf'
+DATA_FILE = './checkpoint/data_02.pkl'
+DATA_FIG='./plot/data_02.pdf'
 
-ITP_PATH = '../FRB_cosmo/interpolation/095_C0mean.npz'
 interpolations = np.load(f'../Realistic_sources/quantile_linear_interpolations.npz')
 
 REDSHIFT_METHOD = 'rates'  # choose from 'rates', 'uniform', 'gaussian', 'lognormal' and 'powerlaw'
@@ -50,36 +49,16 @@ N_EVENTS = 50
 Error_factor = 1.0   # times the error in event generation, =1, set other value for test
 
 # Redshift range for events, default (0.25, 2.0)
-Z_min = 0.2
-Z_max = 2.0
+Z_min = 0.001
+Z_max = 0.2
 
 ########################################
 ### Load standard parameters for pdf ###
 ########################################
 
-S=0.133
+S=0.06
 EXP_MU=182.937
 SIGMA_HOST=0.605
-HOF=2.78318 # 2.813
-
-###################################
-### Load interpolations for pdf ###
-###################################
-
-def _load_and_create_interpolators():
-    load_arrays = np.load(ITP_PATH)
-    Sigmas = load_arrays['a']
-    Errors = load_arrays['d']
-    C0s = load_arrays['c'] 
-    As = load_arrays['b']
-    
-    sigma_error_inter = interpolate.interp1d(Errors, Sigmas, kind=1, bounds_error=False,fill_value='extrapolate')
-    C0_sigma_inter = interpolate.interp1d(Sigmas, C0s, kind=1, bounds_error=False,fill_value='extrapolate')
-    A_sigma_inter = interpolate.interp1d(Sigmas, As, kind=1, bounds_error=False,fill_value='extrapolate')
-    
-    return Sigmas, Errors, C0s, As, sigma_error_inter, C0_sigma_inter, A_sigma_inter
-
-Sigmas, Errors, C0s, As, sigma_error_inter, C0_sigma_inter, A_sigma_inter = _load_and_create_interpolators()
     
 #######################
 ### DL error model ###
@@ -127,7 +106,7 @@ def GW_error_CE(z, H0, Om, w=-1, order=1):
 #######################
 ### Generate events ###
 #######################
-    
+
 if os.path.exists(DATA_FILE):
     print(f"RESUME=False: Removing old save data {DATA_FILE}...")
     os.remove(DATA_FILE)
@@ -149,9 +128,11 @@ DM_centre = dispersion_measure(z_centre, H0=HUBBLE, Om=OMEGA_MATTER)
 # sigma_dL = 0.1*dL_centre
 
 # Use this for redshift dependent errors
-sigma_dL = Error_factor * GW_error_CE(z_centre, H0=HUBBLE, Om=OMEGA_MATTER)
+sigma_dL_CE = Error_factor * GW_error_CE(z_centre, H0=HUBBLE, Om=OMEGA_MATTER)
+sigma_dL_LVK = Error_factor * GW_error_LVK(z_centre, H0=HUBBLE, Om=OMEGA_MATTER)
 
-dL_obs_centre = np.random.normal(dL_centre, sigma_dL)
+dL_obs_centre_CE = np.random.normal(dL_centre, sigma_dL_CE)
+dL_obs_centre_LVK = np.random.normal(dL_centre, sigma_dL_LVK)
 
 DM_diff_obs = np.zeros_like(z_centre)
 sigma_DM_diff = np.zeros_like(z_centre)
@@ -161,27 +142,9 @@ sigma_DM_ext = np.zeros_like(z_centre)
 
 for idx, z_val in enumerate(z_centre):
     print(f"Processing event {idx+1}/{N_EVENTS}...")
-    DM_diff_obs[idx], sigma_DM_diff[idx] = \
-        DM_diff_sampling(z=z_val, 
-                        S=S, HOF=HOF,
-                        sigma_error_inter=sigma_error_inter,
-                        C0_sigma_inter=C0_sigma_inter,
-                        A_sigma_inter=A_sigma_inter,
-                        H0=HUBBLE, f_diff=0.84, f_diff_alpha=0,
-                        Om=OMEGA_MATTER, w=W_LAMBDA, N_draws=1,
-                        mode=None, #'standard'
-                        Error_factor = Error_factor
-                        )
+    DM_diff_obs[idx], sigma_DM_diff[idx] = DM_diff_ln_sampling(z=z_val, S=S)
         
-    DM_ext_obs[idx], sigma_DM_ext[idx] = \
-        DM_ext_sampling_fast(z=z_val, 
-                            S=S, HOF=HOF, SIGMA_HOST=SIGMA_HOST, EXP_MU=EXP_MU,
-                            sigma_error_inter=sigma_error_inter,
-                            C0_sigma_inter=C0_sigma_inter,
-                            A_sigma_inter=A_sigma_inter,
-                            Om=OMEGA_MATTER, w=W_LAMBDA, N_draws=1, int_N=1000, 
-                            Error_factor = Error_factor
-                        )
+    DM_ext_obs[idx], sigma_DM_ext[idx] = DM_ext_ln_sampling(z=z_val, S=S, SIGMA_HOST=SIGMA_HOST, EXP_MU=EXP_MU)
 
 #################
 ### Save data ###
@@ -191,8 +154,10 @@ save_data = {
     # events redshifts
     'z_centre': z_centre,
     # DL data
-    'dL_obs_centre': dL_obs_centre,
-    'sigma_dL': sigma_dL,
+    'dL_obs_centre_CE': dL_obs_centre_CE,
+    'sigma_dL_CE': sigma_dL_CE,
+    'dL_obs_centre_LVK': dL_obs_centre_LVK,
+    'sigma_dL_LVK': sigma_dL_LVK,
     # DM_diff data
     'DM_diff_obs': DM_diff_obs,
     'sigma_DM_diff': sigma_DM_diff,
@@ -207,7 +172,6 @@ save_data = {
     'S': S,
     'EXP_MU': EXP_MU,
     'SIGMA_HOST': SIGMA_HOST,
-    'HOF': HOF,
     'Z_min': Z_min,
     'Z_max': Z_max
 }
@@ -229,19 +193,20 @@ ax1 = fig.add_subplot(131)
 ax2 = fig.add_subplot(132)
 ax3 = fig.add_subplot(133)
 
+ax1.errorbar(z_centre, dL_obs_centre_CE, yerr=sigma_dL_CE, marker='o', ls='', ms=3, label=f'CE')
+ax1.errorbar(z_centre, dL_obs_centre_LVK, yerr=sigma_dL_LVK, marker='o', ls='', ms=3, label=f'LVK')
 ax1.plot(np.sort(z_centre), np.sort(dL_centre))
-ax1.errorbar(z_centre, dL_obs_centre, yerr=sigma_dL, marker='o', ls='', ms=3, c='r', label=f'N={len(z_centre)}')
 ax1.set_ylabel(r'$d_{L}$ [Mpc]')
 ax1.set_xlabel(r'$z$')
 ax1.legend(loc='upper left')
 
-ax2.plot(np.sort(z_centre), np.sort(DM_centre))
 ax2.errorbar(z_centre, DM_diff_obs, yerr=sigma_DM_diff, marker='o', ls='', ms=3, c='r')
+ax2.plot(np.sort(z_centre), np.sort(DM_centre))
 ax2.set_ylabel(r'$DM_{\rm diff}$ [pc/cm$^3$]')
 ax2.set_xlabel(r'$z$')
 
-ax3.plot(np.sort(z_centre), np.sort(DM_centre)+100)
 ax3.errorbar(z_centre, DM_ext_obs, yerr=sigma_DM_ext, marker='o', ls='', ms=3, c='r')
+ax3.plot(np.sort(z_centre), np.sort(DM_centre)+100)
 ax3.set_ylabel(r'DM$_{\rm ext}$ [pc/cm$^3$]')
 ax3.set_xlabel(r'$z$')
 

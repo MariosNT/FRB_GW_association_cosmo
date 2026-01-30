@@ -1,8 +1,6 @@
 # A .py version of Cosmo_constraints_DM_diff_MCMC.ipynb for running in the cluster
+# DM_diff - dL constraints for z<0.2 with log-normal distribution
 
-sigma_error_inter = None
-C0_sigma_inter = None
-A_sigma_inter = None
 z_array = None
 
 import sys
@@ -35,12 +33,14 @@ N_STEPS = 500
 # checkpoint
 RESUME = False
 CKP_INTERVAL = 50
-DATA_FILE = './checkpoint/data_fast.pkl'
-MCMC_FILE = './checkpoint/mcmc_dm_diff_checkpoint.pkl'
+DATA_FILE = './checkpoint/data_02.pkl'
+MCMC_FILE = './checkpoint/mcmc_dm_diff_02_checkpoint.pkl'
 
 # savefile
-SAVE_RESULT='./posterior/cluster_MCMC_DM_diff_fast.npy'
-SAVE_FIG='./plot/MCMC_cluster_DM_diff_fast'
+SAVE_RESULT_CE='./posterior/MCMC_DM_diff_02_CE.npy'
+SAVE_RESULT_LVK='./posterior/MCMC_DM_diff_02_LVK.npy'
+SAVE_FIG_CE='./plot/MCMC_DM_diff_02_CE'
+SAVE_FIG_LVK='./plot/MCMC_DM_diff_02_LVK'
 
 DATA_PATH = '../FRB_cosmo/interpolation/095_C0mean.npz'
 interpolations = np.load(f'../Realistic_sources/quantile_linear_interpolations.npz')
@@ -58,8 +58,10 @@ if os.path.exists(DATA_FILE):
     # events redshifts
     z_centre = saved_data['z_centre']
     # DL data
-    dL_obs_centre = saved_data['dL_obs_centre']
-    sigma_dL = saved_data['sigma_dL']
+    dL_obs_centre_CE = saved_data['dL_obs_centre_CE']
+    sigma_dL_CE = saved_data['sigma_dL_CE']
+    dL_obs_centre_LVK = saved_data['dL_obs_centre_LVK']
+    sigma_dL_LVK = saved_data['sigma_dL_LVK']
     # DM_diff data
     DM_diff_obs = saved_data['DM_diff_obs']
     sigma_DM_diff = saved_data['sigma_DM_diff']
@@ -83,35 +85,14 @@ if not RESUME and os.path.exists(MCMC_FILE):
     print(f"RESUME=False: Removing old save MCMC checkpoint {MCMC_FILE}...")
     os.remove(MCMC_FILE)
 
-###################################
-### Load interpolations for pdf ###
-###################################
-
-def _load_and_create_interpolators():
-    load_arrays = np.load(DATA_PATH)
-    Sigmas = load_arrays['a']
-    Errors = load_arrays['d']
-    C0s = load_arrays['c'] 
-    As = load_arrays['b']
-    
-    sigma_error_inter = interpolate.interp1d(Errors, Sigmas, kind=1, bounds_error=False,fill_value='extrapolate')
-    C0_sigma_inter = interpolate.interp1d(Sigmas, C0s, kind=1, bounds_error=False,fill_value='extrapolate')
-    A_sigma_inter = interpolate.interp1d(Sigmas, As, kind=1, bounds_error=False,fill_value='extrapolate')
-    
-    return Sigmas, Errors, C0s, As, sigma_error_inter, C0_sigma_inter, A_sigma_inter
-
-Sigmas, Errors, C0s, As, sigma_error_inter, C0_sigma_inter, A_sigma_inter = _load_and_create_interpolators()
 
 z_array=np.linspace(Z_min, Z_max, 1000)
 
 def initialize_globals():
     """Initialize global variables for worker processes"""
-    global sigma_error_inter, C0_sigma_inter, A_sigma_inter
     global z_array
     
-    if sigma_error_inter is None:
-        Sigmas, Errors, C0s, As, sigma_error_inter, C0_sigma_inter, A_sigma_inter = _load_and_create_interpolators()
-        z_array = np.linspace(Z_min, Z_max, 1000)
+    z_array = np.linspace(Z_min, Z_max, 1000)
 
 #######################
 ### MCMC Analysis ###
@@ -153,13 +134,8 @@ def log_likelihood(theta, zs, dLs, s_dLs, DMs, s_DMs):
             p_DM=np.zeros_like(z_array)
             
             for idx_z, (z_val, Delta, DM_th) in enumerate(zip(z_array, Delta_array, DM_th_array)):
-                error=np.sqrt(f_variance_delta(S=S, z=z_val, Om=omega, w=w))
-
-                sigma_diff=sigma_error_inter(error)
-                C0=C0_sigma_inter(sigma_diff)
-                A=A_sigma_inter(sigma_diff)
                 
-                p_DM[idx_z]=pdf_DM_cosmo(Delta=Delta, C_0=C0, A=A, sigma=sigma_diff, alpha=3, beta=3)/DM_th
+                p_DM[idx_z]=pdf_DM_diff_ln(Delta=Delta, z=z_val, S=S)/DM_th
                 
                 """ if (np.isnan([error,C0,A,sigma_diff]).any()):
                     p_DM[idx_z]=0.0
@@ -529,26 +505,34 @@ if __name__ == '__main__':
     # Define initial parameters: [F, HOf, sigma_host, e_mu]
     initial_params = np.array([Hubble0, Omega0, w0])
 
-    # Run MCMC
-    """ sampler = run_mcmc(initial_params, 
-                   zs=z_centre, dLs=dL_obs_centre, s_dLs=sigma_dL, DMs=DM_obs_centre, s_DMs=s_DM_obs, 
-                   nwalkers=N_WALKERS, heating=HEATING, nsteps=N_STEPS) """
-    sampler = run_mcmc_checkpoint(initial_params, 
-                   zs=z_centre, dLs=dL_obs_centre, s_dLs=sigma_dL, DMs=DM_diff_obs, s_DMs=sigma_DM_diff, 
+    # CE
+    print('MCMC for CE data')
+    sampler_CE = run_mcmc_checkpoint(initial_params, 
+                   zs=z_centre, dLs=dL_obs_centre_CE, s_dLs=sigma_dL_CE, DMs=DM_diff_obs, s_DMs=sigma_DM_diff, 
                    nwalkers=N_WALKERS, heating=HEATING, nsteps=N_STEPS,
                    checkpoint_interval=CKP_INTERVAL, checkpoint_file=MCMC_FILE,resume=RESUME)
+    samples_CE, params_median_CE, params_errors_CE = mcmc_analyze_results(sampler_CE)
     
-    # Analyze results
-    samples, params_median, params_errors = mcmc_analyze_results(sampler)
+    # LVK
+    print('MCMC for LVK data')
+    sampler_LVK = run_mcmc_checkpoint(initial_params, 
+                   zs=z_centre, dLs=dL_obs_centre_LVK, s_dLs=sigma_dL_LVK, DMs=DM_diff_obs, s_DMs=sigma_DM_diff, 
+                   nwalkers=N_WALKERS, heating=HEATING, nsteps=N_STEPS,
+                   checkpoint_interval=CKP_INTERVAL, checkpoint_file=MCMC_FILE,resume=RESUME)
+    samples_LVK, params_median_LVK, params_errors_LVK = mcmc_analyze_results(sampler_LVK)
 
     # Print results
     param_names = [r'$ H_0$ ', r'$ \Omega_m$ ', r'$ w$ ']
     print("MCMC Results:")
     for i, name in enumerate(param_names):
-        print(f"{name} = {params_median[i]:.3f} ± {params_errors[i]:.3f}")
+        print(f"CE: {name} = {params_median_CE[i]:.3f} ± {params_errors_CE[i]:.3f}")
+    for i, name in enumerate(param_names):
+        print(f"LVK: {name} = {params_median_LVK[i]:.3f} ± {params_errors_LVK[i]:.3f}")
 
     # Save samples to file for later analysis if needed
-    Path(SAVE_RESULT).parent.mkdir(parents=True, exist_ok=True)
-    np.save(SAVE_RESULT, samples)
+    Path(SAVE_RESULT_CE).parent.mkdir(parents=True, exist_ok=True)
+    np.save(SAVE_RESULT_CE, samples_CE)
+    np.save(SAVE_RESULT_LVK, samples_LVK)
 
-    mcmc_plot_results(samples, param_names, savetitle=SAVE_FIG)
+    mcmc_plot_results(samples_CE, param_names, savetitle=SAVE_FIG_CE)
+    mcmc_plot_results(samples_LVK, param_names, savetitle=SAVE_FIG_LVK)

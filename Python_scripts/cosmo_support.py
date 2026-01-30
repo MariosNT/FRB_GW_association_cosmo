@@ -1116,6 +1116,170 @@ def posterior_analysis(Dv_4D, Dv_array, HOf_array, sigma_host_array, e_mu_array,
     
     return posterior_4D
 
+################### log-normal DM_IGM ####################
+
+def pdf_DM_diff_ln(Delta, z, S=0.06):
+    # log-normal distribution for DM_diff, with variable Delta=DM_diff/<DM_diff>
+    
+    var=f_variance_delta(S, z)
+    e_mu=1.0/np.sqrt(var+1.0)
+    sigma_ln=np.log(var+1.0)
+    
+    Delta_array = np.asarray(Delta)
+    result = np.zeros_like(Delta_array, dtype=float) # np.full_like(DM_array, 1e-10, dtype=np.float64)
+    
+    valid_indices = (Delta_array > 0) & np.isfinite(Delta_array)
+    
+    if np.any(valid_indices):
+        mu = np.log(e_mu)
+        valid_DM = Delta_array[valid_indices]
+        result[valid_indices] = 1.0/(sigma_ln*np.sqrt(2*np.pi)*valid_DM) * \
+                               np.exp(-(np.log(valid_DM)-mu)**2/(2*(sigma_ln**2)))
+    
+    return result
+
+def p_dm_ext_ln(DM_ext, z, # Data
+                e_mu, sigma_host, # parameters
+                S=0.06,
+                space='Delta', # which space to do convolution
+                dropna=False, # drop nan value
+                H0=HUBBLE, f_diff=0.84, f_diff_alpha=0, # FRB standard parameters
+                Om=OMEGA_MATTER, w=W_LAMBDA, # other cosmology parameters
+                int_N=5000 # integration points
+                ):
+    
+    ## Cosmic calculation    
+    DM_th = dispersion_measure(z=z, H0=H0, Om=Om, w=w, alpha=f_diff_alpha, f_IGM_0 = f_diff)
+
+    ## integration
+    if (space=='Delta'):
+        
+        ## variable=Delta
+        varable_array = np.linspace(0, DM_ext / DM_th, int_N)
+
+        ## Cosmic calculation
+        p_cosmic = pdf_DM_diff_ln(Delta=varable_array, z=z, S=S)
+    
+        # print([f_sqrtvar_delta(F,z),sigma,C_0, A])
+    
+        ## Host calculation
+        p_host = pdf_DM_host((1+z)*(DM_ext - DM_th * varable_array), e_mu, sigma_host)
+        
+        ## factor
+        factor=1+z
+        
+    elif (space=='DM'):
+        ## variable=DM
+        varable_array = np.linspace(0, DM_ext * (1+z), int_N)
+        
+        ## Cosmic calculation
+        Deltas = (DM_ext-varable_array/(1+z))/DM_th
+        p_cosmic = pdf_DM_diff_ln(Deltas, z=z, S=S)
+    
+        # print([f_sqrtvar_delta(F,z),sigma,C_0, A])
+    
+        ## Host calculation
+        p_host = pdf_DM_host(varable_array, e_mu, sigma_host)
+        
+        ## factor
+        factor=1.0/DM_th
+        
+    else:
+        raise ValueError("Invalid space parameter. Choose 'Delta' or 'DM'.")
+    
+    if (dropna==True):
+        p_host[np.isnan(p_host)] = 0
+        p_cosmic[np.isnan(p_cosmic)] = 0
+        
+    ## Combine together    
+    prob = np.trapz(p_host*p_cosmic, x=varable_array)
+    
+    return prob*factor
+
+def DM_diff_ln_sampling(z, # redshift
+                     S=0.06, 
+                     #### if choose 'standard' mode, use the following parameters ####
+                     H0=HUBBLE, f_diff=0.84, f_diff_alpha=0, # FRB standard parameters
+                     Om=OMEGA_MATTER, w=W_LAMBDA, # other cosmology parameters
+                     N_draws=1, int_N=2000, # sampling settings
+                     Error_factor = 1.0
+                     ):
+    """
+    Sampling DM_diff for a given redshift and cosmology.
+    """
+    DM_th=dispersion_measure(z=z, H0=H0, Om=Om, w=w, alpha=f_diff_alpha, f_IGM_0 = f_diff)
+    
+    sigma2 = Error_factor * f_variance_delta(S=S, z=z, Om=Om, w=w)
+    
+    SIGMA_LN = np.sqrt(np.log(sigma2 + 1))
+    MU_LN = -0.5 * np.log(sigma2 +1)
+    
+    Delta_diff_obs = rng.lognormal(mean=MU_LN, sigma=SIGMA_LN, size=N_draws)
+    
+    dm_diff_obs = Delta_diff_obs * DM_th
+    
+    s_DM_obs = np.sqrt((np.exp(SIGMA_LN**2)-1)*np.exp(2*MU_LN+SIGMA_LN**2)) * DM_th
+        
+    # error=Error_factor * np.sqrt(f_variance_delta(S=S, z=z, Om=Om, w=w))
+    # s_DM_obs = error*DM_th
+    
+    # dm_range=np.linspace(0.25*DM_th, 500+2.0*DM_th, int_N)
+    
+    # p_range=[
+    #     pdf_DM_diff_ln(Delta=dm/DM_th, z=z, S=S)/DM_th
+    #     for dm in dm_range]
+    
+    # p_range=normalise(p_range)
+    
+    # dm_diff_obs = rng.choice(dm_range, size=N_draws, replace=True,\
+    #         p=p_range
+    #         )
+    
+    return dm_diff_obs[0], s_DM_obs
+
+def DM_ext_ln_sampling(z, # redshift
+                     EXP_MU, SIGMA_HOST, S=0.06, 
+                     H0=HUBBLE, f_diff=f_IGM, f_diff_alpha=f_ALPHA, # FRB standard parameters
+                     Om=OMEGA_MATTER, w=W_LAMBDA, # other cosmology parameters
+                     N_draws=1, int_N=2000, # sampling settings
+                     Error_factor = 1.0
+                     ):
+    """
+    Sampling DM_ext for a given redshift and cosmology.
+    """
+    DM_th=dispersion_measure(z=z, H0=H0, Om=Om, w=w, alpha=f_diff_alpha, f_IGM_0 = f_diff)
+    
+    sigma2 = Error_factor * f_variance_delta(S=S, z=z, Om=Om, w=w)
+    
+    SIGMA_LN = np.sqrt(np.log(sigma2 + 1))
+    MU_LN = -0.5 * np.log(sigma2 +1)
+    
+    Delta_diff_obs = rng.lognormal(mean=MU_LN, sigma=SIGMA_LN, size=N_draws)
+    
+    dm_diff_obs = Delta_diff_obs * DM_th
+    
+    s_DM_obs = np.sqrt((np.exp(SIGMA_LN**2)-1)*np.exp(2*MU_LN+SIGMA_LN**2)) * DM_th
+        
+    # error=Error_factor * np.sqrt(f_variance_delta(S=S, z=z, Om=Om, w=w))
+    # s_DM_obs = error*DM_th
+    
+    # dm_range=np.linspace(0.25*DM_th, 500+2.0*DM_th, int_N)
+    
+    # p_range=[
+    #     pdf_DM_diff_ln(Delta=dm/DM_th, z=z, S=S)/DM_th
+    #     for dm in dm_range]
+    
+    # p_range=normalise(p_range)
+    
+    # dm_diff_obs = rng.choice(dm_range, size=N_draws, replace=True,\
+    #         p=p_range
+    #         )
+
+    LOG_SIGMA = np.sqrt((np.exp(SIGMA_HOST**2)-1)*np.exp(2*np.log(EXP_MU)+SIGMA_HOST**2))  # The standard deviation of the LogNormal
+    dm_host_obs = rng.lognormal(mean=np.log(EXP_MU), sigma=SIGMA_HOST, size=N_draws)/(1+z)
+    
+    return dm_diff_obs[0]+dm_host_obs[0], np.sqrt(s_DM_obs**2+(LOG_SIGMA/(1+z))**2)
+
 ################### FRB_GW DM sampling ###################
 
 def DM_diff_sampling(z, # redshift
@@ -1154,11 +1318,11 @@ def DM_diff_sampling(z, # redshift
     
     p_range=normalise(p_range)
     
-    dm_diff_obs = rng.choice(dm_range, size=int_N, replace=True,\
+    dm_diff_obs = rng.choice(dm_range, size=N_draws, replace=True,\
             p=p_range
             )
     
-    return dm_diff_obs[0], s_DM_obs, dm_diff_obs
+    return dm_diff_obs[0], s_DM_obs
 
 def p_dm_ext_fast(DM_ext, z, # Data
                 S, e_mu, sigma_host, # parameters
