@@ -38,8 +38,8 @@ import os
 from pathlib import Path
 
 # savefile
-DATA_FILE = './checkpoint/data.pkl'
-DATA_FIG='./plot/data.pdf'
+DATA_FILE = './checkpoint/data_2.pkl'
+DATA_FIG='./plot/data_2.pdf'
 
 ITP_PATH = '../FRB_cosmo/interpolation/095_C0mean.npz'
 interpolations = np.load(f'../Realistic_sources/quantile_linear_interpolations.npz')
@@ -58,6 +58,7 @@ Z_max = 2.0
 ########################################
 
 S=0.133
+S_LN=0.06
 EXP_MU=182.937
 SIGMA_HOST=0.605
 HOF=2.78318 # 2.813
@@ -159,6 +160,12 @@ sigma_DM_diff = np.zeros_like(z_centre)
 DM_ext_obs = np.zeros_like(z_centre)
 sigma_DM_ext = np.zeros_like(z_centre)
 
+DM_diff_obs_ln = np.zeros_like(z_centre)
+sigma_DM_diff_ln = np.zeros_like(z_centre)
+
+DM_ext_obs_ln = np.zeros_like(z_centre)
+sigma_DM_ext_ln = np.zeros_like(z_centre)
+
 for idx, z_val in enumerate(z_centre):
     print(f"Processing event {idx+1}/{N_EVENTS}...")
     DM_diff_obs[idx], sigma_DM_diff[idx] = \
@@ -181,7 +188,11 @@ for idx, z_val in enumerate(z_centre):
                             A_sigma_inter=A_sigma_inter,
                             Om=OMEGA_MATTER, w=W_LAMBDA, N_draws=1, int_N=1000, 
                             Error_factor = Error_factor
-                        )
+                            )
+        
+    DM_diff_obs_ln[idx], sigma_DM_diff_ln[idx] = DM_diff_ln_sampling(z=z_val, S=S_LN)
+        
+    DM_ext_obs_ln[idx], sigma_DM_ext_ln[idx] = DM_ext_ln_sampling(z=z_val, S=S_LN, SIGMA_HOST=SIGMA_HOST, EXP_MU=EXP_MU)
 
 #################
 ### Save data ###
@@ -196,15 +207,20 @@ save_data = {
     # DM_diff data
     'DM_diff_obs': DM_diff_obs,
     'sigma_DM_diff': sigma_DM_diff,
+    'DM_diff_obs_ln': DM_diff_obs_ln,
+    'sigma_DM_diff_ln': sigma_DM_diff_ln,
     # DM_ext data
     'DM_ext_obs': DM_ext_obs,
     'sigma_DM_ext': sigma_DM_ext,
+    'DM_ext_obs_ln': DM_ext_obs_ln,
+    'sigma_DM_ext_ln': sigma_DM_ext_ln,
     # Theoratical values (DM is the DM_diff)
     'dL_centre': dL_centre,
     'DM_centre': DM_centre,
     # constant
     'REDSHIFT_METHOD': REDSHIFT_METHOD,
     'S': S,
+    'S_LN': S_LN,
     'EXP_MU': EXP_MU,
     'SIGMA_HOST': SIGMA_HOST,
     'HOF': HOF,
@@ -230,18 +246,22 @@ ax2 = fig.add_subplot(132)
 ax3 = fig.add_subplot(133)
 
 ax1.plot(np.sort(z_centre), np.sort(dL_centre))
-ax1.errorbar(z_centre, dL_obs_centre, yerr=sigma_dL, marker='o', ls='', ms=3, c='r', label=f'N={len(z_centre)}')
+ax1.errorbar(z_centre, dL_obs_centre, yerr=sigma_dL, marker='o', ls='', ms=3, c='r', label=f'CE')
 ax1.set_ylabel(r'$d_{L}$ [Mpc]')
 ax1.set_xlabel(r'$z$')
 ax1.legend(loc='upper left')
 
 ax2.plot(np.sort(z_centre), np.sort(DM_centre))
-ax2.errorbar(z_centre, DM_diff_obs, yerr=sigma_DM_diff, marker='o', ls='', ms=3, c='r')
+ax2.errorbar(z_centre, DM_diff_obs, yerr=sigma_DM_diff, marker='o', ls='', ms=3, label=f'Macquart\' PDF')
+ax2.errorbar(z_centre, DM_diff_obs_ln, yerr=sigma_DM_diff_ln, marker='o', ls='', ms=3, label=f'Log-normal PDF')
+ax2.legend(loc='upper left')
 ax2.set_ylabel(r'$DM_{\rm diff}$ [pc/cm$^3$]')
 ax2.set_xlabel(r'$z$')
 
 ax3.plot(np.sort(z_centre), np.sort(DM_centre)+100)
-ax3.errorbar(z_centre, DM_ext_obs, yerr=sigma_DM_ext, marker='o', ls='', ms=3, c='r')
+ax3.errorbar(z_centre, DM_ext_obs, yerr=sigma_DM_ext, marker='o', ls='', ms=3, label=f'Macquart\' PDF')
+ax3.errorbar(z_centre, DM_ext_obs_ln, yerr=sigma_DM_ext_ln, marker='o', ls='', ms=3, label=f'Log-normal PDF')
+ax3.legend(loc='upper left')
 ax3.set_ylabel(r'DM$_{\rm ext}$ [pc/cm$^3$]')
 ax3.set_xlabel(r'$z$')
 

@@ -37,12 +37,12 @@ N_STEPS = 1000
 # checkpoint
 RESUME = False
 CKP_INTERVAL = 50
-DATA_FILE = './checkpoint/data.pkl'
-MCMC_FILE = './checkpoint/mcmc_dm_ext_checkpoint.pkl'
+DATA_FILE = './checkpoint/data_2.pkl'
+MCMC_FILE = './checkpoint/mcmc_dm_ext_2_checkpoint.pkl'
 
 # savefile
-SAVE_RESULT='./posterior/cluster_MCMC_DM_ext_all.npy'
-SAVE_FIG='./plot/MCMC_cluster_DM_ext_all'
+SAVE_RESULT='./posterior/cluster_MCMC_DM_ext_2.npy'
+SAVE_FIG='./plot/MCMC_cluster_DM_ext_2'
 
 DATA_PATH = '../FRB_cosmo/interpolation/095_C0mean.npz'
 interpolations = np.load(f'../Realistic_sources/quantile_linear_interpolations.npz')

@@ -1,8 +1,6 @@
 # A .py version of Cosmo_constraints_DM_diff_MCMC.ipynb for running in the cluster
+# DM_diff - dL constraints for z<0.2 with log-normal distribution
 
-sigma_error_inter = None
-C0_sigma_inter = None
-A_sigma_inter = None
 z_array = None
 
 import sys
@@ -39,8 +37,8 @@ DATA_FILE = './checkpoint/data_2.pkl'
 MCMC_FILE = './checkpoint/mcmc_dm_diff_2_checkpoint.pkl'
 
 # savefile
-SAVE_RESULT='./posterior/cluster_MCMC_DM_diff_2.npy'
-SAVE_FIG='./plot/MCMC_cluster_DM_diff_2'
+SAVE_RESULT='./posterior/MCMC_DM_diff_2_ln.npy'
+SAVE_FIG='./plot/MCMC_DM_diff_2_ln'
 
 DATA_PATH = '../FRB_cosmo/interpolation/095_C0mean.npz'
 interpolations = np.load(f'../Realistic_sources/quantile_linear_interpolations.npz')
@@ -61,14 +59,14 @@ if os.path.exists(DATA_FILE):
     dL_obs_centre = saved_data['dL_obs_centre']
     sigma_dL = saved_data['sigma_dL']
     # DM_diff data
-    DM_diff_obs = saved_data['DM_diff_obs']
-    sigma_DM_diff = saved_data['sigma_DM_diff']
+    DM_diff_obs = saved_data['DM_diff_obs_ln']
+    sigma_DM_diff = saved_data['sigma_DM_diff_ln']
     
     # Theoratical values (DM is the DM_diff)
     dL_centre = saved_data['dL_centre']
     DM_centre = saved_data['DM_centre']
     
-    S = saved_data['S']
+    S_ln = saved_data['S_ln']
     Z_min = saved_data['Z_min']
     Z_max = saved_data['Z_max']
     REDSHIFT_METHOD = saved_data['REDSHIFT_METHOD']
@@ -83,35 +81,14 @@ if not RESUME and os.path.exists(MCMC_FILE):
     print(f"RESUME=False: Removing old save MCMC checkpoint {MCMC_FILE}...")
     os.remove(MCMC_FILE)
 
-###################################
-### Load interpolations for pdf ###
-###################################
-
-def _load_and_create_interpolators():
-    load_arrays = np.load(DATA_PATH)
-    Sigmas = load_arrays['a']
-    Errors = load_arrays['d']
-    C0s = load_arrays['c'] 
-    As = load_arrays['b']
-    
-    sigma_error_inter = interpolate.interp1d(Errors, Sigmas, kind=1, bounds_error=False,fill_value='extrapolate')
-    C0_sigma_inter = interpolate.interp1d(Sigmas, C0s, kind=1, bounds_error=False,fill_value='extrapolate')
-    A_sigma_inter = interpolate.interp1d(Sigmas, As, kind=1, bounds_error=False,fill_value='extrapolate')
-    
-    return Sigmas, Errors, C0s, As, sigma_error_inter, C0_sigma_inter, A_sigma_inter
-
-Sigmas, Errors, C0s, As, sigma_error_inter, C0_sigma_inter, A_sigma_inter = _load_and_create_interpolators()
 
 z_array=np.linspace(Z_min, Z_max, 1000)
 
 def initialize_globals():
     """Initialize global variables for worker processes"""
-    global sigma_error_inter, C0_sigma_inter, A_sigma_inter
     global z_array
     
-    if sigma_error_inter is None:
-        Sigmas, Errors, C0s, As, sigma_error_inter, C0_sigma_inter, A_sigma_inter = _load_and_create_interpolators()
-        z_array = np.linspace(Z_min, Z_max, 1000)
+    z_array = np.linspace(Z_min, Z_max, 1000)
 
 #######################
 ### MCMC Analysis ###
@@ -153,13 +130,8 @@ def log_likelihood(theta, zs, dLs, s_dLs, DMs, s_DMs):
             p_DM=np.zeros_like(z_array)
             
             for idx_z, (z_val, Delta, DM_th) in enumerate(zip(z_array, Delta_array, DM_th_array)):
-                error=np.sqrt(f_variance_delta(S=S, z=z_val, Om=omega, w=w))
-
-                sigma_diff=sigma_error_inter(error)
-                C0=C0_sigma_inter(sigma_diff)
-                A=A_sigma_inter(sigma_diff)
                 
-                p_DM[idx_z]=pdf_DM_cosmo(Delta=Delta, C_0=C0, A=A, sigma=sigma_diff, alpha=3, beta=3)/DM_th
+                p_DM[idx_z]=pdf_DM_diff_ln(Delta=Delta, z=z_val, S=S_ln)/DM_th
                 
                 """ if (np.isnan([error,C0,A,sigma_diff]).any()):
                     p_DM[idx_z]=0.0
@@ -529,16 +501,11 @@ if __name__ == '__main__':
     # Define initial parameters: [F, HOf, sigma_host, e_mu]
     initial_params = np.array([Hubble0, Omega0, w0])
 
-    # Run MCMC
-    """ sampler = run_mcmc(initial_params, 
-                   zs=z_centre, dLs=dL_obs_centre, s_dLs=sigma_dL, DMs=DM_obs_centre, s_DMs=s_DM_obs, 
-                   nwalkers=N_WALKERS, heating=HEATING, nsteps=N_STEPS) """
+    print('MCMC for log data')
     sampler = run_mcmc_checkpoint(initial_params, 
                    zs=z_centre, dLs=dL_obs_centre, s_dLs=sigma_dL, DMs=DM_diff_obs, s_DMs=sigma_DM_diff, 
                    nwalkers=N_WALKERS, heating=HEATING, nsteps=N_STEPS,
                    checkpoint_interval=CKP_INTERVAL, checkpoint_file=MCMC_FILE,resume=RESUME)
-    
-    # Analyze results
     samples, params_median, params_errors = mcmc_analyze_results(sampler)
 
     # Print results
