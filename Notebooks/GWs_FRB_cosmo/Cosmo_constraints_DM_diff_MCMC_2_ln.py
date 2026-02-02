@@ -66,7 +66,7 @@ if os.path.exists(DATA_FILE):
     dL_centre = saved_data['dL_centre']
     DM_centre = saved_data['DM_centre']
     
-    S_ln = saved_data['S_ln']
+    S_LN = saved_data['S_LN']
     Z_min = saved_data['Z_min']
     Z_max = saved_data['Z_max']
     REDSHIFT_METHOD = saved_data['REDSHIFT_METHOD']
@@ -131,7 +131,7 @@ def log_likelihood(theta, zs, dLs, s_dLs, DMs, s_DMs):
             
             for idx_z, (z_val, Delta, DM_th) in enumerate(zip(z_array, Delta_array, DM_th_array)):
                 
-                p_DM[idx_z]=pdf_DM_diff_ln(Delta=Delta, z=z_val, S=S_ln)/DM_th
+                p_DM[idx_z]=pdf_DM_diff_ln(Delta=Delta, z=z_val, S=S_LN)/DM_th
                 
                 """ if (np.isnan([error,C0,A,sigma_diff]).any()):
                     p_DM[idx_z]=0.0
