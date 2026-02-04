@@ -18,6 +18,7 @@ source ~/miniconda3/etc/profile.d/conda.sh
 conda activate py310
 
 python3 -W ignore::DeprecationWarning Cosmo_constraints_DM_diff_MCMC_2.py
+# python3 -W ignore::DeprecationWarning Cosmo_constraints_DM_diff_MCMC_2_ln.py
 # python3 -W ignore::DeprecationWarning Cosmo_constraints_DM_diff_MCMC_02.py
 
 python3 ../../../automail.py -task 'DM_diff'
