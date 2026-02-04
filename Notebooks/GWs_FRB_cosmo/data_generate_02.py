@@ -56,7 +56,7 @@ Z_max = 0.2
 ### Load standard parameters for pdf ###
 ########################################
 
-S=0.06
+S_LN=0.06
 EXP_MU=182.937
 SIGMA_HOST=0.605
     
@@ -142,9 +142,9 @@ sigma_DM_ext = np.zeros_like(z_centre)
 
 for idx, z_val in enumerate(z_centre):
     print(f"Processing event {idx+1}/{N_EVENTS}...")
-    DM_diff_obs[idx], sigma_DM_diff[idx] = DM_diff_ln_sampling(z=z_val, S=S)
+    DM_diff_obs[idx], sigma_DM_diff[idx] = DM_diff_ln_sampling(z=z_val, S=S_LN)
         
-    DM_ext_obs[idx], sigma_DM_ext[idx] = DM_ext_ln_sampling(z=z_val, S=S, SIGMA_HOST=SIGMA_HOST, EXP_MU=EXP_MU)
+    DM_ext_obs[idx], sigma_DM_ext[idx] = DM_ext_ln_sampling(z=z_val, S=S_LN, SIGMA_HOST=SIGMA_HOST, EXP_MU=EXP_MU)
 
 #################
 ### Save data ###
@@ -169,7 +169,7 @@ save_data = {
     'DM_centre': DM_centre,
     # constant
     'REDSHIFT_METHOD': REDSHIFT_METHOD,
-    'S': S,
+    'S': S_LN,
     'EXP_MU': EXP_MU,
     'SIGMA_HOST': SIGMA_HOST,
     'Z_min': Z_min,
