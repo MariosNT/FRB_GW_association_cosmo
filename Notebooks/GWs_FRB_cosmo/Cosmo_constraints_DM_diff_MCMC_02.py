@@ -33,14 +33,14 @@ N_STEPS = 500
 # checkpoint
 RESUME = False
 CKP_INTERVAL = 50
-DATA_FILE = './checkpoint/data_02.pkl'
+DATA_FILE = './checkpoint/data_02_200.pkl'
 MCMC_FILE = './checkpoint/mcmc_dm_diff_02_checkpoint.pkl'
 
 # savefile
-SAVE_RESULT_CE='./posterior/MCMC_DM_diff_02_CE.npy'
-SAVE_RESULT_LVK='./posterior/MCMC_DM_diff_02_LVK.npy'
-SAVE_FIG_CE='./plot/MCMC_DM_diff_02_CE'
-SAVE_FIG_LVK='./plot/MCMC_DM_diff_02_LVK'
+SAVE_RESULT_CE='./posterior/MCMC_DM_diff_02_200_CE.npy'
+SAVE_RESULT_LVK='./posterior/MCMC_DM_diff_02_200_LVK.npy'
+SAVE_FIG_CE='./plot/MCMC_DM_diff_02_200_CE'
+SAVE_FIG_LVK='./plot/MCMC_DM_diff_02_200_LVK'
 
 DATA_PATH = '../FRB_cosmo/interpolation/095_C0mean.npz'
 interpolations = np.load(f'../Realistic_sources/quantile_linear_interpolations.npz')
@@ -70,7 +70,7 @@ if os.path.exists(DATA_FILE):
     dL_centre = saved_data['dL_centre']
     DM_centre = saved_data['DM_centre']
     
-    S = saved_data['S']
+    S_LN = saved_data['S_LN']
     Z_min = saved_data['Z_min']
     Z_max = saved_data['Z_max']
     REDSHIFT_METHOD = saved_data['REDSHIFT_METHOD']
@@ -135,7 +135,7 @@ def log_likelihood(theta, zs, dLs, s_dLs, DMs, s_DMs):
             
             for idx_z, (z_val, Delta, DM_th) in enumerate(zip(z_array, Delta_array, DM_th_array)):
                 
-                p_DM[idx_z]=pdf_DM_diff_ln(Delta=Delta, z=z_val, S=S)/DM_th
+                p_DM[idx_z]=pdf_DM_diff_ln(Delta=Delta, z=z_val, S=S_LN)/DM_th
                 
                 """ if (np.isnan([error,C0,A,sigma_diff]).any()):
                     p_DM[idx_z]=0.0

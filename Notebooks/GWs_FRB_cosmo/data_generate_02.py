@@ -169,7 +169,7 @@ save_data = {
     'DM_centre': DM_centre,
     # constant
     'REDSHIFT_METHOD': REDSHIFT_METHOD,
-    'S': S_LN,
+    'S_LN': S_LN,
     'EXP_MU': EXP_MU,
     'SIGMA_HOST': SIGMA_HOST,
     'Z_min': Z_min,
