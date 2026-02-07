@@ -270,7 +270,7 @@ def load_checkpoint(filename="DM_diff_checkpoint.pkl"):
 
 def run_mcmc_checkpoint(initial_params, zs, dLs, s_dLs, DMs, s_DMs, 
              nwalkers=32, heating=10, nsteps=2000, 
-             checkpoint_interval=50, checkpoint_file=MCMC_FILE,
+             checkpoint_interval=50, checkpoint_file=MCMC_FILE_CE,
              resume=RESUME):
     """
     Run the MCMC analysis with checkpoint support.
