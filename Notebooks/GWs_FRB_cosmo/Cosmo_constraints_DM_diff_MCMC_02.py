@@ -27,14 +27,15 @@ w0 = -1.0
 
 # MCMC parameters
 N_WALKERS = 96
-HEATING = 500
+HEATING = 200
 N_STEPS = 500
 
 # checkpoint
-RESUME = False
+RESUME = True
 CKP_INTERVAL = 50
 DATA_FILE = './checkpoint/data_02_200.pkl'
-MCMC_FILE = './checkpoint/mcmc_dm_diff_02_checkpoint.pkl'
+MCMC_FILE_CE = './checkpoint/mcmc_dm_diff_02_CE_200_checkpoint.pkl'
+MCMC_FILE_LVK = './checkpoint/mcmc_dm_diff_02_LVK_200_checkpoint.pkl'
 
 # savefile
 SAVE_RESULT_CE='./posterior/MCMC_DM_diff_02_200_CE.npy'
@@ -81,9 +82,13 @@ else:
     print(f"No data file {DATA_FILE}, please check path or generate data.")
     sys.exit()
 
-if not RESUME and os.path.exists(MCMC_FILE):
-    print(f"RESUME=False: Removing old save MCMC checkpoint {MCMC_FILE}...")
-    os.remove(MCMC_FILE)
+if not RESUME and os.path.exists(MCMC_FILE_CE):
+    print(f"RESUME=False: Removing old save MCMC checkpoint {MCMC_FILE_CE}...")
+    os.remove(MCMC_FILE_CE)
+    
+if not RESUME and os.path.exists(MCMC_FILE_LVK):
+    print(f"RESUME=False: Removing old save MCMC checkpoint {MCMC_FILE_LVK}...")
+    os.remove(MCMC_FILE_LVK)
 
 
 z_array=np.linspace(Z_min, Z_max, 1000)
@@ -510,7 +515,7 @@ if __name__ == '__main__':
     sampler_CE = run_mcmc_checkpoint(initial_params, 
                    zs=z_centre, dLs=dL_obs_centre_CE, s_dLs=sigma_dL_CE, DMs=DM_diff_obs, s_DMs=sigma_DM_diff, 
                    nwalkers=N_WALKERS, heating=HEATING, nsteps=N_STEPS,
-                   checkpoint_interval=CKP_INTERVAL, checkpoint_file=MCMC_FILE,resume=RESUME)
+                   checkpoint_interval=CKP_INTERVAL, checkpoint_file=MCMC_FILE_CE,resume=RESUME)
     samples_CE, params_median_CE, params_errors_CE = mcmc_analyze_results(sampler_CE)
     
     # LVK
@@ -518,7 +523,7 @@ if __name__ == '__main__':
     sampler_LVK = run_mcmc_checkpoint(initial_params, 
                    zs=z_centre, dLs=dL_obs_centre_LVK, s_dLs=sigma_dL_LVK, DMs=DM_diff_obs, s_DMs=sigma_DM_diff, 
                    nwalkers=N_WALKERS, heating=HEATING, nsteps=N_STEPS,
-                   checkpoint_interval=CKP_INTERVAL, checkpoint_file=MCMC_FILE,resume=RESUME)
+                   checkpoint_interval=CKP_INTERVAL, checkpoint_file=MCMC_FILE_LVK,resume=RESUME)
     samples_LVK, params_median_LVK, params_errors_LVK = mcmc_analyze_results(sampler_LVK)
 
     # Print results
