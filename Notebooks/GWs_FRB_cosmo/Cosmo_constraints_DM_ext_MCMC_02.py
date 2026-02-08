@@ -72,7 +72,7 @@ if os.path.exists(DATA_FILE):
     dL_centre = saved_data['dL_centre']
     DM_centre = saved_data['DM_centre']
     
-    S = saved_data['S']
+    S_LN = saved_data['S_LN']
     Z_min = saved_data['Z_min']
     Z_max = saved_data['Z_max']
     REDSHIFT_METHOD = saved_data['REDSHIFT_METHOD']
@@ -136,7 +136,7 @@ def log_likelihood(theta, zs, dLs, s_dLs, DMs, s_DMs):
             for idx_z, z_val in enumerate(z_array):                
                 p_DM[idx_z]=p_dm_ext_ln(DM_ext=DM_obs, z=z_val, 
                                         e_mu=e_mu, sigma_host=sigma_host, 
-                                        S=S, 
+                                        S=S_LN, 
                                         space='Delta',
                                         dropna=False, # drop nan value
                                         H0=hubble, f_diff=0.84, f_diff_alpha=0, # FRB standard parameters

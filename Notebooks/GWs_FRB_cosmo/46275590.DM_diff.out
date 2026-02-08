@@ -1,0 +1,7 @@
+Loading data from ./checkpoint/data_02_200.pkl...
+Successfully loaded 200 events from saved data.
+Traceback (most recent call last):
+  File "/expanse/lustre/projects/unv116/jzhuge/FRB_GW_association_cosmo/Notebooks/GWs_FRB_cosmo/Cosmo_constraints_DM_diff_MCMC_02.py", line 273, in <module>
+    checkpoint_interval=50, checkpoint_file=MCMC_FILE,
+NameError: name 'MCMC_FILE' is not defined. Did you mean: 'MCMC_FILE_CE'?
+Email sending successfully

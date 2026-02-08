@@ -27,20 +27,21 @@ w0 = -1.0
 
 # MCMC parameters
 N_WALKERS = 96
-HEATING = 500
+HEATING = 200
 N_STEPS = 500
 
 # checkpoint
-RESUME = False
+RESUME = True
 CKP_INTERVAL = 50
-DATA_FILE = './checkpoint/data_02.pkl'
-MCMC_FILE = './checkpoint/mcmc_dm_diff_02_checkpoint.pkl'
+DATA_FILE = './checkpoint/data_02_200.pkl'
+MCMC_FILE_CE = './checkpoint/mcmc_dm_diff_02_CE_200_checkpoint.pkl'
+MCMC_FILE_LVK = './checkpoint/mcmc_dm_diff_02_LVK_200_checkpoint.pkl'
 
 # savefile
-SAVE_RESULT_CE='./posterior/MCMC_DM_diff_02_CE.npy'
-SAVE_RESULT_LVK='./posterior/MCMC_DM_diff_02_LVK.npy'
-SAVE_FIG_CE='./plot/MCMC_DM_diff_02_CE'
-SAVE_FIG_LVK='./plot/MCMC_DM_diff_02_LVK'
+SAVE_RESULT_CE='./posterior/MCMC_DM_diff_02_200_CE.npy'
+SAVE_RESULT_LVK='./posterior/MCMC_DM_diff_02_200_LVK.npy'
+SAVE_FIG_CE='./plot/MCMC_DM_diff_02_200_CE'
+SAVE_FIG_LVK='./plot/MCMC_DM_diff_02_200_LVK'
 
 DATA_PATH = '../FRB_cosmo/interpolation/095_C0mean.npz'
 interpolations = np.load(f'../Realistic_sources/quantile_linear_interpolations.npz')
@@ -70,7 +71,7 @@ if os.path.exists(DATA_FILE):
     dL_centre = saved_data['dL_centre']
     DM_centre = saved_data['DM_centre']
     
-    S = saved_data['S']
+    S_LN = saved_data['S_LN']
     Z_min = saved_data['Z_min']
     Z_max = saved_data['Z_max']
     REDSHIFT_METHOD = saved_data['REDSHIFT_METHOD']
@@ -81,9 +82,13 @@ else:
     print(f"No data file {DATA_FILE}, please check path or generate data.")
     sys.exit()
 
-if not RESUME and os.path.exists(MCMC_FILE):
-    print(f"RESUME=False: Removing old save MCMC checkpoint {MCMC_FILE}...")
-    os.remove(MCMC_FILE)
+if not RESUME and os.path.exists(MCMC_FILE_CE):
+    print(f"RESUME=False: Removing old save MCMC checkpoint {MCMC_FILE_CE}...")
+    os.remove(MCMC_FILE_CE)
+    
+if not RESUME and os.path.exists(MCMC_FILE_LVK):
+    print(f"RESUME=False: Removing old save MCMC checkpoint {MCMC_FILE_LVK}...")
+    os.remove(MCMC_FILE_LVK)
 
 
 z_array=np.linspace(Z_min, Z_max, 1000)
@@ -135,7 +140,7 @@ def log_likelihood(theta, zs, dLs, s_dLs, DMs, s_DMs):
             
             for idx_z, (z_val, Delta, DM_th) in enumerate(zip(z_array, Delta_array, DM_th_array)):
                 
-                p_DM[idx_z]=pdf_DM_diff_ln(Delta=Delta, z=z_val, S=S)/DM_th
+                p_DM[idx_z]=pdf_DM_diff_ln(Delta=Delta, z=z_val, S=S_LN)/DM_th
                 
                 """ if (np.isnan([error,C0,A,sigma_diff]).any()):
                     p_DM[idx_z]=0.0
@@ -265,7 +270,7 @@ def load_checkpoint(filename="DM_diff_checkpoint.pkl"):
 
 def run_mcmc_checkpoint(initial_params, zs, dLs, s_dLs, DMs, s_DMs, 
              nwalkers=32, heating=10, nsteps=2000, 
-             checkpoint_interval=50, checkpoint_file=MCMC_FILE,
+             checkpoint_interval=50, checkpoint_file=MCMC_FILE_CE,
              resume=RESUME):
     """
     Run the MCMC analysis with checkpoint support.
@@ -510,7 +515,7 @@ if __name__ == '__main__':
     sampler_CE = run_mcmc_checkpoint(initial_params, 
                    zs=z_centre, dLs=dL_obs_centre_CE, s_dLs=sigma_dL_CE, DMs=DM_diff_obs, s_DMs=sigma_DM_diff, 
                    nwalkers=N_WALKERS, heating=HEATING, nsteps=N_STEPS,
-                   checkpoint_interval=CKP_INTERVAL, checkpoint_file=MCMC_FILE,resume=RESUME)
+                   checkpoint_interval=CKP_INTERVAL, checkpoint_file=MCMC_FILE_CE,resume=RESUME)
     samples_CE, params_median_CE, params_errors_CE = mcmc_analyze_results(sampler_CE)
     
     # LVK
@@ -518,7 +523,7 @@ if __name__ == '__main__':
     sampler_LVK = run_mcmc_checkpoint(initial_params, 
                    zs=z_centre, dLs=dL_obs_centre_LVK, s_dLs=sigma_dL_LVK, DMs=DM_diff_obs, s_DMs=sigma_DM_diff, 
                    nwalkers=N_WALKERS, heating=HEATING, nsteps=N_STEPS,
-                   checkpoint_interval=CKP_INTERVAL, checkpoint_file=MCMC_FILE,resume=RESUME)
+                   checkpoint_interval=CKP_INTERVAL, checkpoint_file=MCMC_FILE_LVK,resume=RESUME)
     samples_LVK, params_median_LVK, params_errors_LVK = mcmc_analyze_results(sampler_LVK)
 
     # Print results
