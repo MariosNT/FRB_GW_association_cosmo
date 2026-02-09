@@ -320,6 +320,15 @@ def run_mcmc_checkpoint(initial_params, zs, dLs, s_dLs, DMs, s_DMs,
             
             if remaining_steps <= 0:
                 print("MCMC already completed!")
+                c_data = checkpoint['chain']
+                lp_data = checkpoint['log_prob']
+                
+                sampler.backend.chain = c_data
+                sampler.backend.log_prob = lp_data
+                sampler.backend.iteration = nsteps
+                
+                sampler.backend.accepted = (checkpoint['acceptance_fraction'] * nsteps).astype(int)
+                
                 return sampler
                 
             print(f"Resuming from step {start_step}, {remaining_steps} steps remaining")
