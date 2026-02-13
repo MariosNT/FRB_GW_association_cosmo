@@ -3,7 +3,7 @@
 ###############################################
 
 from config import *
-from support import normalise
+from support import normalise, func_lin
 
 
 ###############################################
@@ -377,13 +377,13 @@ def sigma_dL(z, H0=HUBBLE, Om=OMEGA_MATTER, w=W_LAMBDA, method='Wei'):
     return s_dL
 
 
-def GWs_error(z, H0=HUBBLE, Om=OMEGA_MATTER, w=W_LAMBDA, method='constant'):
+def GWs_error(z, interpolation_error, H0=HUBBLE, Om=OMEGA_MATTER, w=W_LAMBDA, method='constant'):
     if method=='LVK':
-        sigma_ratio = func_lin(z, *LVK_error)/100
+        sigma_ratio = func_lin(z, *interpolation_error)/100
         dL=luminosity_distance(z, H0, Om, w)
         return sigma_ratio*dL
     elif method=='CE':
-        sigma_ratio = func_lin(z, *CE_error)/100
+        sigma_ratio = func_lin(z, *interpolation_error)/100
         dL=luminosity_distance(z, H0, Om, w)
         return sigma_ratio*dL
     elif method=='Wei':
