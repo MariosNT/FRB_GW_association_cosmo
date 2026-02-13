@@ -1123,7 +1123,7 @@ def pdf_DM_diff_ln(Delta, z, S=0.06):
     
     var=f_variance_delta(S, z)
     e_mu=1.0/np.sqrt(var+1.0)
-    sigma_ln=np.log(var+1.0)
+    sigma_ln2=np.log(var+1.0)
     
     Delta_array = np.asarray(Delta)
     result = np.zeros_like(Delta_array, dtype=float) # np.full_like(DM_array, 1e-10, dtype=np.float64)
@@ -1133,7 +1133,7 @@ def pdf_DM_diff_ln(Delta, z, S=0.06):
     if np.any(valid_indices):
         mu = np.log(e_mu)
         valid_DM = Delta_array[valid_indices]
-        result[valid_indices] = 1.0/(sigma_ln*np.sqrt(2*np.pi)*valid_DM) * np.exp(-(np.log(valid_DM)-mu)**2/(2*(sigma_ln**2)))
+        result[valid_indices] = 1.0/(np.sqrt(2*np.pi*sigma_ln2)*valid_DM) * np.exp(-(np.log(valid_DM)-mu)**2/(2*(sigma_ln2)))
     
     return result
 

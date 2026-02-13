@@ -27,21 +27,21 @@ w0 = -1.0
 
 # MCMC parameters
 N_WALKERS = 96
-HEATING = 200
+HEATING = 500
 N_STEPS = 500
 
 # checkpoint
-RESUME = True
+RESUME = False
 CKP_INTERVAL = 50
-DATA_FILE = './checkpoint/data_02_200.pkl'
-MCMC_FILE_CE = './checkpoint/mcmc_dm_diff_02_CE_200_checkpoint.pkl'
-MCMC_FILE_LVK = './checkpoint/mcmc_dm_diff_02_LVK_200_checkpoint.pkl'
+DATA_FILE = './checkpoint/data_02.pkl'
+MCMC_FILE_CE = './checkpoint/mcmc_dm_diff_02_CE_checkpoint.pkl'
+MCMC_FILE_LVK = './checkpoint/mcmc_dm_diff_02_LVK_checkpoint.pkl'
 
 # savefile
-SAVE_RESULT_CE='./posterior/MCMC_DM_diff_02_200_CE.npy'
-SAVE_RESULT_LVK='./posterior/MCMC_DM_diff_02_200_LVK.npy'
-SAVE_FIG_CE='./plot/MCMC_DM_diff_02_200_CE'
-SAVE_FIG_LVK='./plot/MCMC_DM_diff_02_200_LVK'
+SAVE_RESULT_CE='./posterior/MCMC_DM_diff_02_CE.npy'
+SAVE_RESULT_LVK='./posterior/MCMC_DM_diff_02_LVK.npy'
+SAVE_FIG_CE='./plot/MCMC_DM_diff_02_CE'
+SAVE_FIG_LVK='./plot/MCMC_DM_diff_02_LVK'
 
 DATA_PATH = '../FRB_cosmo/interpolation/095_C0mean.npz'
 interpolations = np.load(f'../Realistic_sources/quantile_linear_interpolations.npz')
