@@ -42,7 +42,8 @@ DATA_FILE = './checkpoint/data_2.pkl'
 DATA_FIG='./plot/data_2.pdf'
 
 ITP_PATH = '../FRB_cosmo/interpolation/095_C0mean.npz'
-interpolations = np.load(f'../Realistic_sources/quantile_linear_interpolations.npz')
+sim_error_interpolations = np.load(f'../Realistic_sources/quantile_linear_interpolations.npz')
+# interpolations = np.load(f'../Realistic_sources/quantile_linear_interpolations.npz')
 
 REDSHIFT_METHOD = 'rates'  # choose from 'rates', 'uniform', 'gaussian', 'lognormal' and 'powerlaw'
 
@@ -86,44 +87,46 @@ Sigmas, Errors, C0s, As, sigma_error_inter, C0_sigma_inter, A_sigma_inter = _loa
 ### DL error model ###
 #######################
 
-LVK_linear = interpolations['LVK_interpolation']
-CE_linear = interpolations['CE_interpolation']
+CE_error = sim_error_interpolations['CE_interpolation']
 
-# Find use quadratic function may get negative error in some large redshift
+# LVK_linear = interpolations['LVK_interpolation']
+# CE_linear = interpolations['CE_interpolation']
 
-def func_lin(x, a0, a1):
-    return a0+a1*x
+# # Find use quadratic function may get negative error in some large redshift
+
+# def func_lin(x, a0, a1):
+#     return a0+a1*x
 
 
-def GW_error_LVK(z, H0, Om, w=-1, order=1):
-    if (order==1):
-        sigma_ratio = func_lin(z, *LVK_linear)/100
-        dL=luminosity_distance(z, H0, Om, w)
-        return sigma_ratio*dL
-    elif (order==2):
-        a0=17.015
-        a1=131.750
-        a2=-174.911
-        dL=luminosity_distance(z, H0, Om, w)
-        return (a2*z*z+a1*z+a0)*dL
-    else:
-        print('Choose order from 1 or 2. Use default instead')
-        return sigma_dL(z_val, H0, Om, w=w, method='Wei')
+# def GW_error_LVK(z, H0, Om, w=-1, order=1):
+#     if (order==1):
+#         sigma_ratio = func_lin(z, *LVK_linear)/100
+#         dL=luminosity_distance(z, H0, Om, w)
+#         return sigma_ratio*dL
+#     elif (order==2):
+#         a0=17.015
+#         a1=131.750
+#         a2=-174.911
+#         dL=luminosity_distance(z, H0, Om, w)
+#         return (a2*z*z+a1*z+a0)*dL
+#     else:
+#         print('Choose order from 1 or 2. Use default instead')
+#         return sigma_dL(z_val, H0, Om, w=w, method='Wei')
     
-def GW_error_CE(z, H0, Om, w=-1, order=1):
-    if (order==1):
-        sigma_ratio = func_lin(z, *CE_linear)/100
-        dL=luminosity_distance(z, H0, Om, w)
-        return sigma_ratio*dL
-    elif (order==2):
-        a0=7.649
-        a1=18.581
-        a2=-4.559
-        dL=luminosity_distance(z, H0, Om, w)
-        return (a2*z*z+a1*z+a0)*dL
-    else:
-        print('Choose order from 1 or 2. Use default instead')
-        return sigma_dL(z_val, H0, Om, w=w, method='Wei')
+# def GW_error_CE(z, H0, Om, w=-1, order=1):
+#     if (order==1):
+#         sigma_ratio = func_lin(z, *CE_linear)/100
+#         dL=luminosity_distance(z, H0, Om, w)
+#         return sigma_ratio*dL
+#     elif (order==2):
+#         a0=7.649
+#         a1=18.581
+#         a2=-4.559
+#         dL=luminosity_distance(z, H0, Om, w)
+#         return (a2*z*z+a1*z+a0)*dL
+#     else:
+#         print('Choose order from 1 or 2. Use default instead')
+#         return sigma_dL(z_val, H0, Om, w=w, method='Wei')
 
 #######################
 ### Generate events ###
@@ -150,7 +153,7 @@ DM_centre = dispersion_measure(z_centre, H0=HUBBLE, Om=OMEGA_MATTER)
 # sigma_dL = 0.1*dL_centre
 
 # Use this for redshift dependent errors
-sigma_dL = Error_factor * GW_error_CE(z_centre, H0=HUBBLE, Om=OMEGA_MATTER)
+sigma_dL = Error_factor * GWs_error(z_centre, CE_error, H0=HUBBLE, Om=OMEGA_MATTER, w=W_LAMBDA, method='CE') # GW_error_CE(z_centre, H0=HUBBLE, Om=OMEGA_MATTER)
 
 dL_obs_centre = np.random.normal(dL_centre, sigma_dL)
 
@@ -181,7 +184,7 @@ for idx, z_val in enumerate(z_centre):
                         )
         
     DM_ext_obs[idx], sigma_DM_ext[idx] = \
-        DM_ext_sampling_fast(z=z_val, 
+        DM_ext_sampling(z=z_val, 
                             S=S, HOF=HOF, SIGMA_HOST=SIGMA_HOST, EXP_MU=EXP_MU,
                             sigma_error_inter=sigma_error_inter,
                             C0_sigma_inter=C0_sigma_inter,

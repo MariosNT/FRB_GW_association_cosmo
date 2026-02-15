@@ -41,7 +41,8 @@ from pathlib import Path
 DATA_FILE = './checkpoint/data_02.pkl'
 DATA_FIG='./plot/data_02.pdf'
 
-interpolations = np.load(f'../Realistic_sources/quantile_linear_interpolations.npz')
+sim_error_interpolations = np.load(f'../Realistic_sources/quantile_linear_interpolations.npz')
+# interpolations = np.load(f'../Realistic_sources/quantile_linear_interpolations.npz')
 
 REDSHIFT_METHOD = 'rates'  # choose from 'rates', 'uniform', 'gaussian', 'lognormal' and 'powerlaw'
 
@@ -64,44 +65,48 @@ SIGMA_HOST=0.605
 ### DL error model ###
 #######################
 
-LVK_linear = interpolations['LVK_interpolation']
-CE_linear = interpolations['CE_interpolation']
+CE_error = sim_error_interpolations['CE_interpolation']
 
-# Find use quadratic function may get negative error in some large redshift
+LVK_error = sim_error_interpolations['LVK_interpolation']
 
-def func_lin(x, a0, a1):
-    return a0+a1*x
+# LVK_linear = interpolations['LVK_interpolation']
+# CE_linear = interpolations['CE_interpolation']
+
+# # Find use quadratic function may get negative error in some large redshift
+
+# def func_lin(x, a0, a1):
+#     return a0+a1*x
 
 
-def GW_error_LVK(z, H0, Om, w=-1, order=1):
-    if (order==1):
-        sigma_ratio = func_lin(z, *LVK_linear)/100
-        dL=luminosity_distance(z, H0, Om, w)
-        return sigma_ratio*dL
-    elif (order==2):
-        a0=17.015
-        a1=131.750
-        a2=-174.911
-        dL=luminosity_distance(z, H0, Om, w)
-        return (a2*z*z+a1*z+a0)*dL
-    else:
-        print('Choose order from 1 or 2. Use default instead')
-        return sigma_dL(z_val, H0, Om, w=w, method='Wei')
+# def GW_error_LVK(z, H0, Om, w=-1, order=1):
+#     if (order==1):
+#         sigma_ratio = func_lin(z, *LVK_linear)/100
+#         dL=luminosity_distance(z, H0, Om, w)
+#         return sigma_ratio*dL
+#     elif (order==2):
+#         a0=17.015
+#         a1=131.750
+#         a2=-174.911
+#         dL=luminosity_distance(z, H0, Om, w)
+#         return (a2*z*z+a1*z+a0)*dL
+#     else:
+#         print('Choose order from 1 or 2. Use default instead')
+#         return sigma_dL(z_val, H0, Om, w=w, method='Wei')
     
-def GW_error_CE(z, H0, Om, w=-1, order=1):
-    if (order==1):
-        sigma_ratio = func_lin(z, *CE_linear)/100
-        dL=luminosity_distance(z, H0, Om, w)
-        return sigma_ratio*dL
-    elif (order==2):
-        a0=7.649
-        a1=18.581
-        a2=-4.559
-        dL=luminosity_distance(z, H0, Om, w)
-        return (a2*z*z+a1*z+a0)*dL
-    else:
-        print('Choose order from 1 or 2. Use default instead')
-        return sigma_dL(z_val, H0, Om, w=w, method='Wei')
+# def GW_error_CE(z, H0, Om, w=-1, order=1):
+#     if (order==1):
+#         sigma_ratio = func_lin(z, *CE_linear)/100
+#         dL=luminosity_distance(z, H0, Om, w)
+#         return sigma_ratio*dL
+#     elif (order==2):
+#         a0=7.649
+#         a1=18.581
+#         a2=-4.559
+#         dL=luminosity_distance(z, H0, Om, w)
+#         return (a2*z*z+a1*z+a0)*dL
+#     else:
+#         print('Choose order from 1 or 2. Use default instead')
+#         return sigma_dL(z_val, H0, Om, w=w, method='Wei')
 
 #######################
 ### Generate events ###
@@ -128,8 +133,8 @@ DM_centre = dispersion_measure(z_centre, H0=HUBBLE, Om=OMEGA_MATTER)
 # sigma_dL = 0.1*dL_centre
 
 # Use this for redshift dependent errors
-sigma_dL_CE = Error_factor * GW_error_CE(z_centre, H0=HUBBLE, Om=OMEGA_MATTER)
-sigma_dL_LVK = Error_factor * GW_error_LVK(z_centre, H0=HUBBLE, Om=OMEGA_MATTER)
+sigma_dL_CE = Error_factor * GWs_error(z_centre, CE_error, H0=HUBBLE, Om=OMEGA_MATTER, w=W_LAMBDA, method='CE') # GW_error_CE(z_centre, H0=HUBBLE, Om=OMEGA_MATTER)
+sigma_dL_LVK = Error_factor * GWs_error(z_centre, LVK_error, H0=HUBBLE, Om=OMEGA_MATTER, w=W_LAMBDA, method='LVK') # GW_error_LVK(z_centre, H0=HUBBLE, Om=OMEGA_MATTER)
 
 dL_obs_centre_CE = np.random.normal(dL_centre, sigma_dL_CE)
 dL_obs_centre_LVK = np.random.normal(dL_centre, sigma_dL_LVK)
@@ -200,12 +205,12 @@ ax1.set_ylabel(r'$d_{L}$ [Mpc]')
 ax1.set_xlabel(r'$z$')
 ax1.legend(loc='upper left')
 
-ax2.errorbar(z_centre, DM_diff_obs, yerr=sigma_DM_diff, marker='o', ls='', ms=3, c='r')
+ax2.errorbar(z_centre, DM_diff_obs, yerr=sigma_DM_diff, marker='o', ls='', ms=3, c='r', label=f'Log-normal PDF')
 ax2.plot(np.sort(z_centre), np.sort(DM_centre))
 ax2.set_ylabel(r'$DM_{\rm diff}$ [pc/cm$^3$]')
 ax2.set_xlabel(r'$z$')
 
-ax3.errorbar(z_centre, DM_ext_obs, yerr=sigma_DM_ext, marker='o', ls='', ms=3, c='r')
+ax3.errorbar(z_centre, DM_ext_obs, yerr=sigma_DM_ext, marker='o', ls='', ms=3, c='r', label=f'Log-normal PDF')
 ax3.plot(np.sort(z_centre), np.sort(DM_centre)+100)
 ax3.set_ylabel(r'DM$_{\rm ext}$ [pc/cm$^3$]')
 ax3.set_xlabel(r'$z$')
