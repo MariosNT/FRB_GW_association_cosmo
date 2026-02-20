@@ -155,7 +155,7 @@ DM_centre = dispersion_measure(z_centre, H0=HUBBLE, Om=OMEGA_MATTER)
 # Use this for redshift dependent errors
 sigma_dL = Error_factor * GWs_error(z_centre, CE_error, H0=HUBBLE, Om=OMEGA_MATTER, w=W_LAMBDA, method='CE') # GW_error_CE(z_centre, H0=HUBBLE, Om=OMEGA_MATTER)
 
-dL_obs_centre = np.random.normal(dL_centre, sigma_dL)
+dL_obs_centre = rng.normal(dL_centre, sigma_dL)
 
 DM_diff_obs = np.zeros_like(z_centre)
 sigma_DM_diff = np.zeros_like(z_centre)
@@ -193,9 +193,9 @@ for idx, z_val in enumerate(z_centre):
                             Error_factor = Error_factor
                             )
         
-    DM_diff_obs_ln[idx], sigma_DM_diff_ln[idx] = DM_diff_ln_sampling(z=z_val, S=S_LN)
+    DM_diff_obs_ln[idx], sigma_DM_diff_ln[idx] = DM_diff_ln_sampling(z=z_val, S=S_LN, Error_factor=Error_factor)
         
-    DM_ext_obs_ln[idx], sigma_DM_ext_ln[idx] = DM_ext_ln_sampling(z=z_val, S=S_LN, SIGMA_HOST=SIGMA_HOST, EXP_MU=EXP_MU)
+    DM_ext_obs_ln[idx], sigma_DM_ext_ln[idx] = DM_ext_ln_sampling(z=z_val, S=S_LN, SIGMA_HOST=SIGMA_HOST, EXP_MU=EXP_MU, Error_factor=Error_factor)
 
 #################
 ### Save data ###

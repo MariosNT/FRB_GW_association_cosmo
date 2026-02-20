@@ -1208,7 +1208,7 @@ def DM_diff_ln_sampling(z, # redshift
     """
     DM_th=dispersion_measure(z=z, H0=H0, Om=Om, w=w, alpha=f_diff_alpha, f_IGM_0 = f_diff)
     
-    sigma2 = Error_factor * f_variance_delta(S=S, z=z, Om=Om, w=w)
+    sigma2 = Error_factor**2 * f_variance_delta(S=S, z=z, Om=Om, w=w)
     
     SIGMA_LN = np.sqrt(np.log(sigma2 + 1))
     MU_LN = -0.5 * np.log(sigma2 +1)
@@ -1248,7 +1248,7 @@ def DM_ext_ln_sampling(z, # redshift
     """
     DM_th=dispersion_measure(z=z, H0=H0, Om=Om, w=w, alpha=f_diff_alpha, f_IGM_0 = f_diff)
     
-    sigma2 = Error_factor * f_variance_delta(S=S, z=z, Om=Om, w=w)
+    sigma2 = Error_factor**2 * f_variance_delta(S=S, z=z, Om=Om, w=w)
     
     SIGMA_LN = np.sqrt(np.log(sigma2 + 1))
     MU_LN = -0.5 * np.log(sigma2 +1)

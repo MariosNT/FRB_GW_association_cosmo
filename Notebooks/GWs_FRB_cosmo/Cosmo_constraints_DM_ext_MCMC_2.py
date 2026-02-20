@@ -44,7 +44,7 @@ MCMC_FILE = './checkpoint/mcmc_dm_ext_2_checkpoint.pkl'
 SAVE_RESULT='./posterior/MCMC_DM_ext_2.npy'
 SAVE_FIG='./plot/MCMC_DM_ext_2'
 
-DATA_PATH = '../FRB_cosmo/interpolation/095_C0mean.npz'
+ITP_PATH = '../FRB_cosmo/interpolation/095_C0mean.npz'
 interpolations = np.load(f'../Realistic_sources/quantile_linear_interpolations.npz')
 
 ###################
@@ -90,7 +90,7 @@ if not RESUME and os.path.exists(MCMC_FILE):
 ###################################
 
 def _load_and_create_interpolators():
-    load_arrays = np.load(DATA_PATH)
+    load_arrays = np.load(ITP_PATH)
     Sigmas = load_arrays['a']
     Errors = load_arrays['d']
     C0s = load_arrays['c'] 

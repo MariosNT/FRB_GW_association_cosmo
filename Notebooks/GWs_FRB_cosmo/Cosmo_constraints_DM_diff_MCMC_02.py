@@ -43,7 +43,6 @@ SAVE_RESULT_LVK='./posterior/MCMC_DM_diff_02_LVK.npy'
 SAVE_FIG_CE='./plot/MCMC_DM_diff_02_CE'
 SAVE_FIG_LVK='./plot/MCMC_DM_diff_02_LVK'
 
-DATA_PATH = '../FRB_cosmo/interpolation/095_C0mean.npz'
 interpolations = np.load(f'../Realistic_sources/quantile_linear_interpolations.npz')
 
 ###################

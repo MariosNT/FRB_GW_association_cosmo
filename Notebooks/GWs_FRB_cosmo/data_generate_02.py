@@ -136,8 +136,8 @@ DM_centre = dispersion_measure(z_centre, H0=HUBBLE, Om=OMEGA_MATTER)
 sigma_dL_CE = Error_factor * GWs_error(z_centre, CE_error, H0=HUBBLE, Om=OMEGA_MATTER, w=W_LAMBDA, method='CE') # GW_error_CE(z_centre, H0=HUBBLE, Om=OMEGA_MATTER)
 sigma_dL_LVK = Error_factor * GWs_error(z_centre, LVK_error, H0=HUBBLE, Om=OMEGA_MATTER, w=W_LAMBDA, method='LVK') # GW_error_LVK(z_centre, H0=HUBBLE, Om=OMEGA_MATTER)
 
-dL_obs_centre_CE = np.random.normal(dL_centre, sigma_dL_CE)
-dL_obs_centre_LVK = np.random.normal(dL_centre, sigma_dL_LVK)
+dL_obs_centre_CE = rng.normal(dL_centre, sigma_dL_CE)
+dL_obs_centre_LVK = rng.normal(dL_centre, sigma_dL_LVK)
 
 DM_diff_obs = np.zeros_like(z_centre)
 sigma_DM_diff = np.zeros_like(z_centre)
@@ -147,9 +147,9 @@ sigma_DM_ext = np.zeros_like(z_centre)
 
 for idx, z_val in enumerate(z_centre):
     print(f"Processing event {idx+1}/{N_EVENTS}...")
-    DM_diff_obs[idx], sigma_DM_diff[idx] = DM_diff_ln_sampling(z=z_val, S=S_LN)
+    DM_diff_obs[idx], sigma_DM_diff[idx] = DM_diff_ln_sampling(z=z_val, S=S_LN, Error_factor=Error_factor)
         
-    DM_ext_obs[idx], sigma_DM_ext[idx] = DM_ext_ln_sampling(z=z_val, S=S_LN, SIGMA_HOST=SIGMA_HOST, EXP_MU=EXP_MU)
+    DM_ext_obs[idx], sigma_DM_ext[idx] = DM_ext_ln_sampling(z=z_val, S=S_LN, SIGMA_HOST=SIGMA_HOST, EXP_MU=EXP_MU, Error_factor=Error_factor)
 
 #################
 ### Save data ###
