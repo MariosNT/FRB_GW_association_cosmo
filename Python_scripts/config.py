@@ -6,7 +6,6 @@
 import numpy as np
 from numpy import linalg as LA
 from numpy.random import default_rng
-# rng = default_rng(seed=1234)
 rng = default_rng(seed=8)
 import pandas as pd
 
