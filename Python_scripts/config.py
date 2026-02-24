@@ -44,7 +44,7 @@ import warnings
 
 ### Defining useful constants (SI)
 ### Updated values according to Planck18
-OMEGA_MATTER = 0.30966 
+OMEGA_MATTER = 0.30966  ## Slightly different from Planck18 paper [https://docs.astropy.org/en/latest/cosmology/realizations.html#planck-2018]
 W_LAMBDA = -1
 HUBBLE = 67.66
 OMEGA_BARYONS = 0.04897
