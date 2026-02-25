@@ -45,7 +45,7 @@ ITP_PATH = '../FRB_cosmo/interpolation/095_C0mean.npz'
 sim_error_interpolations = np.load(f'../Realistic_sources/quantile_linear_interpolations.npz')
 # interpolations = np.load(f'../Realistic_sources/quantile_linear_interpolations.npz')
 
-REDSHIFT_METHOD = 'rates'  # choose from 'rates', 'uniform', 'gaussian', 'lognormal' and 'powerlaw'
+REDSHIFT_METHOD = 'powerlaw'  # choose from 'rates', 'uniform', 'gaussian', 'lognormal' and 'powerlaw'
 
 N_EVENTS = 50
 Error_factor = 1.0   # times the error in event generation, =1, set other value for test
