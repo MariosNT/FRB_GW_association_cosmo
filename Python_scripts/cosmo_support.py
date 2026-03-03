@@ -85,22 +85,19 @@ def redshift_distribution(z_array, H0=HUBBLE, Omega_m=OMEGA_MATTER, w=W_LAMBDA, 
         rate = rate_function(z_array)
         Hz = Hubble_function(z_array, H0, Omega_m, w)
 
-        pdf = normalise(4*np.pi*Dc_squared*rate/(Hz*(1+z_array)))
+        pdf = 4*np.pi*Dc_squared*rate/(Hz*(1+z_array))
         
     elif method == 'uniform':
-        pdf = None
+        pdf = 1.0*z_array
     
     elif method == 'gaussian':
         pdf = distribution_redshift_Gaussian(z_array)
-        pdf = normalise(pdf)
         
     elif method == 'lognormal':
         pdf = distribution_redshift_LogNormal(z_array)
-        pdf = normalise(pdf)
         
     elif method == 'powerlaw':
-        pdf = distribution_redshift_Power(z_array) 
-        pdf = normalise(pdf)    
+        pdf = distribution_redshift_Power(z_array)  
         
     else:
         raise Exception("Wrong method chosen! Choose between 'rates', 'uniform', 'gaussian', 'lognormal' and 'powerlaw'.")
@@ -129,6 +126,7 @@ def draw_redshift_distribution(z_array, H0=HUBBLE, Omega_m=OMEGA_MATTER, w=W_LAM
     """
     
     pdf=redshift_distribution(z_array, H0, Omega_m, w, method)
+    pdf=normalise(pdf)
     
     redshift_draws = rng.choice(z_array, p=pdf, replace=True, size=N_draws)
         
