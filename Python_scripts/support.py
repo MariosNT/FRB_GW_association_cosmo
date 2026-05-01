@@ -63,6 +63,10 @@ def gaussian_pdf(x, x0, s0):
 def func_lin(x, a0, a1):
     return a0+a1*x    
 
+def func_curved(x, a0, a1, a2):
+    return a0 + a1*x + a2*np.log(x)
+    
+
 
 
 def posterior_contour_2D(posterior_2D_norm, n=1000):

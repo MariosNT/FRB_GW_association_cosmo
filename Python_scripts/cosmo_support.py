@@ -3,7 +3,7 @@
 ###############################################
 
 from config import *
-from support import normalise, func_lin
+from support import normalise, func_lin, func_curved
 
 
 ###############################################
@@ -381,7 +381,7 @@ def GWs_error(z, interpolation_error, H0=HUBBLE, Om=OMEGA_MATTER, w=W_LAMBDA, me
         dL=luminosity_distance(z, H0, Om, w)
         return sigma_ratio*dL
     elif method=='CE':
-        sigma_ratio = func_lin(z, *interpolation_error)/100
+        sigma_ratio = func_curved(z, *interpolation_error)/100
         dL=luminosity_distance(z, H0, Om, w)
         return sigma_ratio*dL
     elif method=='Wei':
