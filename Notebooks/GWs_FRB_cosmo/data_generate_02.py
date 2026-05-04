@@ -41,7 +41,7 @@ from pathlib import Path
 DATA_FILE = './checkpoint/data_02.pkl'
 DATA_FIG='./plot/data_02.pdf'
 
-sim_error_interpolations = np.load(f'../Realistic_sources/quantile_linear_interpolations.npz')
+sim_error_interpolations = np.load(f'../Realistic_sources/quantile_linear_curved_interpolations.npz')
 # interpolations = np.load(f'../Realistic_sources/quantile_linear_interpolations.npz')
 
 REDSHIFT_METHOD = 'powerlaw'  # choose from 'rates', 'uniform', 'gaussian', 'lognormal' and 'powerlaw'
@@ -50,7 +50,7 @@ N_EVENTS = 50
 Error_factor = 1.0   # times the error in event generation, =1, set other value for test
 
 # Redshift range for events, default (0.25, 2.0)
-Z_min = 0.001
+Z_min = z_min = 0.015
 Z_max = 0.2
 
 ########################################
@@ -67,7 +67,7 @@ SIGMA_HOST=0.605
 
 CE_error = sim_error_interpolations['CE_interpolation']
 
-LVK_error = sim_error_interpolations['LVK_interpolation']
+LVK_error = sim_error_interpolations['LV_interpolation']
 
 # LVK_linear = interpolations['LVK_interpolation']
 # CE_linear = interpolations['CE_interpolation']

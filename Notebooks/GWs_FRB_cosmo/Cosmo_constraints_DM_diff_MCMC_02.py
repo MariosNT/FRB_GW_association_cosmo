@@ -27,8 +27,8 @@ w0 = -1.0
 
 # MCMC parameters
 N_WALKERS = 96
-HEATING = 500
-N_STEPS = 800
+HEATING = 800
+N_STEPS = 1000
 
 # checkpoint
 RESUME = False
@@ -42,8 +42,6 @@ SAVE_RESULT_CE='./posterior/MCMC_DM_diff_02_CE.npy'
 SAVE_RESULT_LVK='./posterior/MCMC_DM_diff_02_LVK.npy'
 SAVE_FIG_CE='./plot/MCMC_DM_diff_02_CE'
 SAVE_FIG_LVK='./plot/MCMC_DM_diff_02_LVK'
-
-interpolations = np.load(f'../Realistic_sources/quantile_linear_interpolations.npz')
 
 ###################
 ### Load events ###

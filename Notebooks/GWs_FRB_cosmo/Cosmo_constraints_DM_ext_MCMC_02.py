@@ -29,22 +29,21 @@ sigma_host0 = 0.6
 
 # MCMC parameters
 N_WALKERS = 96
-HEATING = 500
-N_STEPS = 800
+HEATING = 800
+N_STEPS = 1000
 
 # checkpoint
 RESUME = False
 CKP_INTERVAL = 50
 DATA_FILE = './checkpoint/data_02.pkl'
-MCMC_FILE = './checkpoint/mcmc_dm_ext_02_checkpoint.pkl'
+MCMC_FILE_CE = './checkpoint/mcmc_dm_ext_02_CE_checkpoint.pkl'
+MCMC_FILE_LVK = './checkpoint/mcmc_dm_ext_02_LVK_checkpoint.pkl'
 
 # savefile
 SAVE_RESULT_CE='./posterior/MCMC_DM_ext_02_CE.npy'
 SAVE_RESULT_LVK='./posterior/MCMC_DM_ext_02_LVK.npy'
 SAVE_FIG_CE='./plot/MCMC_DM_ext_02_CE'
 SAVE_FIG_LVK='./plot/MCMC_DM_ext_02_LVK'
-
-interpolations = np.load(f'../Realistic_sources/quantile_linear_interpolations.npz')
 
 ###################
 ### Load events ###
@@ -82,9 +81,13 @@ else:
     print(f"No data file {DATA_FILE}, please check path or generate data.")
     sys.exit()
     
-if not RESUME and os.path.exists(MCMC_FILE):
-    print(f"RESUME=False: Removing old save MCMC checkpoint {MCMC_FILE}...")
-    os.remove(MCMC_FILE)
+if not RESUME and os.path.exists(MCMC_FILE_CE):
+    print(f"RESUME=False: Removing old save MCMC checkpoint {MCMC_FILE_CE}...")
+    os.remove(MCMC_FILE_CE)
+    
+if not RESUME and os.path.exists(MCMC_FILE_LVK):
+    print(f"RESUME=False: Removing old save MCMC checkpoint {MCMC_FILE_LVK}...")
+    os.remove(MCMC_FILE_LVK)
 
 z_array=np.linspace(Z_min, Z_max, 1000)
 
@@ -271,7 +274,7 @@ def load_checkpoint(filename="mcmc_checkpoint.pkl"):
 
 def run_mcmc_checkpoint(initial_params, zs, dLs, s_dLs, DMs, s_DMs, 
              nwalkers=32, heating=10, nsteps=2000, 
-             checkpoint_interval=50, checkpoint_file=MCMC_FILE,
+             checkpoint_interval=50, checkpoint_file=MCMC_FILE_CE,
              resume=RESUME):
     """
     Run the MCMC analysis with checkpoint support.
@@ -525,7 +528,7 @@ if __name__ == '__main__':
     sampler_CE = run_mcmc_checkpoint(initial_params, 
                    zs=z_centre, dLs=dL_obs_centre_CE, s_dLs=sigma_dL_CE, DMs=DM_ext_obs, s_DMs=sigma_DM_ext, 
                    nwalkers=N_WALKERS, heating=HEATING, nsteps=N_STEPS,
-                   checkpoint_interval=CKP_INTERVAL, checkpoint_file=MCMC_FILE,resume=RESUME)
+                   checkpoint_interval=CKP_INTERVAL, checkpoint_file=MCMC_FILE_CE,resume=RESUME)
     samples_CE, params_median_CE, params_errors_CE = mcmc_analyze_results(sampler_CE)
     
     # LVK
@@ -533,7 +536,7 @@ if __name__ == '__main__':
     sampler_LVK = run_mcmc_checkpoint(initial_params, 
                    zs=z_centre, dLs=dL_obs_centre_LVK, s_dLs=sigma_dL_LVK, DMs=DM_ext_obs, s_DMs=sigma_DM_ext, 
                    nwalkers=N_WALKERS, heating=HEATING, nsteps=N_STEPS,
-                   checkpoint_interval=CKP_INTERVAL, checkpoint_file=MCMC_FILE,resume=RESUME)
+                   checkpoint_interval=CKP_INTERVAL, checkpoint_file=MCMC_FILE_LVK,resume=RESUME)
     samples_LVK, params_median_LVK, params_errors_LVK = mcmc_analyze_results(sampler_LVK)
 
     # Print results
