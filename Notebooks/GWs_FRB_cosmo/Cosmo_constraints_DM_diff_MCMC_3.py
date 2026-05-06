@@ -149,22 +149,24 @@ def log_likelihood(theta, zs, dLs, s_dLs, DMs, s_DMs):
             DM_th_array=dispersion_measure(z=z_array, H0=hubble, Om=omega, w=w, alpha=0, f_IGM_0 = 0.84)
             Delta_array = DM_obs/ DM_th_array
             
-            p_DM=np.zeros_like(z_array)
+            errors = np.sqrt(S * var_z(z_array, Om=omega, w=w))
+            sigma_diffs = sigma_error_inter(errors)
+            C0s = C0_sigma_inter(sigma_diffs)
+            As = A_sigma_inter(sigma_diffs)
             
-            for idx_z, (z_val, Delta, DM_th) in enumerate(zip(z_array, Delta_array, DM_th_array)):
-                error=np.sqrt(f_variance_delta(S=S, z=z_val, Om=omega, w=w))
+            p_DM_all = pdf_DM_cosmo(Delta=Delta_array, C_0=C0s, A=As, sigma=sigma_diffs)
+            p_DM = p_DM_all / DM_th_array
+            
+            # p_DM=np.zeros_like(z_array)
+            
+            # for idx_z, (z_val, Delta, DM_th) in enumerate(zip(z_array, Delta_array, DM_th_array)):
+            #     error=np.sqrt(f_variance_delta(S=S, z=z_val, Om=omega, w=w))
 
-                sigma_diff=sigma_error_inter(error)
-                C0=C0_sigma_inter(sigma_diff)
-                A=A_sigma_inter(sigma_diff)
+            #     sigma_diff=sigma_error_inter(error)
+            #     C0=C0_sigma_inter(sigma_diff)
+            #     A=A_sigma_inter(sigma_diff)
                 
-                p_DM[idx_z]=pdf_DM_cosmo(Delta=Delta, C_0=C0, A=A, sigma=sigma_diff, alpha=3, beta=3)/DM_th
-                
-                """ if (np.isnan([error,C0,A,sigma_diff]).any()):
-                    p_DM[idx_z]=0.0
-                    # print(f'NaN found for error at z={z_val}, H0={hubble}, Om={omega}, w={w} for error={error}, C0={C0}, A={A}, sigma_diff={sigma_diff}')
-                else:
-                    p_DM[idx_z]=pdf_DM_cosmo(Delta=Delta, C_0=C0, A=A, sigma=sigma_diff, alpha=3, beta=3)/DM_th """
+            #     p_DM[idx_z]=pdf_DM_cosmo(Delta=Delta, C_0=C0, A=A, sigma=sigma_diff, alpha=3, beta=3)/DM_th
                     
             p_selection = redshift_distribution(z_array=z_array, H0=hubble, Omega_m=omega, w=w, method=REDSHIFT_METHOD)
             p_selection = normalise(p_selection, z_array)

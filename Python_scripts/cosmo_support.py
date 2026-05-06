@@ -475,10 +475,6 @@ def pdf_DM_cosmo(Delta, C_0, A, sigma, alpha=3, beta=3):
                     
     return result
 
-    # Old version
-    # pdf=A*(Delta**(-beta))*np.exp(-((Delta**(-alpha)-C_0)**2)/(2*(alpha**2)*(sigma**2)))
-    # return pdf
-
 def DM_diff_HOf(z, HOf, Om=OMEGA_MATTER, w=W_LAMBDA):
     
     def integrand(z, Om, w):

@@ -6,17 +6,14 @@
 import numpy as np
 from numpy import linalg as LA
 from numpy.random import default_rng
-rng = default_rng(seed=48)
+rng = default_rng(seed=68) # 48
 import pandas as pd
 
 from scipy import interpolate
 import scipy.constants as const
-from scipy.integrate import quad
-from scipy.optimize import fsolve
-from scipy.integrate import quad_vec
+from scipy.integrate import quad, cumulative_trapezoid, quad_vec
 from scipy.stats import gaussian_kde
-from scipy.optimize import curve_fit
-from scipy.optimize import root_scalar, minimize
+from scipy.optimize import curve_fit, root_scalar, minimize, fsolve
 
 ### Astropy package
 import astropy.units as u

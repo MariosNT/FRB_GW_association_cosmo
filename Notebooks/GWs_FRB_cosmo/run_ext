@@ -1,6 +1,6 @@
 #!/bin/bash
-#SBATCH --job-name="DM_ext"
-#SBATCH --output="%j.DM_ext.out"
+#SBATCH --job-name="DMext3"
+#SBATCH --output="%j.DMext3.out"
 #SBATCH --partition=compute
 #SBATCH --nodes=1
 #SBATCH --account=unv116
