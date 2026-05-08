@@ -27,8 +27,8 @@ w0 = -1.0
 
 # MCMC parameters
 N_WALKERS = 96
-HEATING = 800
-N_STEPS = 1000
+HEATING = 600
+N_STEPS = 800
 
 # checkpoint
 RESUME = False
@@ -124,17 +124,14 @@ def log_likelihood(theta, zs, dLs, s_dLs, DMs, s_DMs):
             DM_th_array=dispersion_measure(z=z_array, H0=hubble, Om=omega, w=w, alpha=0, f_IGM_0 = 0.84)
             Delta_array = DM_obs/ DM_th_array
             
-            p_DM=np.zeros_like(z_array)
+            p_DM_all = pdf_DM_diff_ln(Delta=Delta_array, z=z_array, S=S_LN)
+            p_DM = p_DM_all / DM_th_array
             
-            for idx_z, (z_val, Delta, DM_th) in enumerate(zip(z_array, Delta_array, DM_th_array)):
+            # p_DM=np.zeros_like(z_array)
+            
+            # for idx_z, (z_val, Delta, DM_th) in enumerate(zip(z_array, Delta_array, DM_th_array)):
                 
-                p_DM[idx_z]=pdf_DM_diff_ln(Delta=Delta, z=z_val, S=S_LN)/DM_th
-                
-                """ if (np.isnan([error,C0,A,sigma_diff]).any()):
-                    p_DM[idx_z]=0.0
-                    # print(f'NaN found for error at z={z_val}, H0={hubble}, Om={omega}, w={w} for error={error}, C0={C0}, A={A}, sigma_diff={sigma_diff}')
-                else:
-                    p_DM[idx_z]=pdf_DM_cosmo(Delta=Delta, C_0=C0, A=A, sigma=sigma_diff, alpha=3, beta=3)/DM_th """
+            #     p_DM[idx_z]=pdf_DM_diff_ln(Delta=Delta, z=z_val, S=S_LN)/DM_th
                     
             p_selection = redshift_distribution(z_array=z_array, H0=hubble, Omega_m=omega, w=w, method=REDSHIFT_METHOD)
             p_selection = normalise(p_selection, z_array)
