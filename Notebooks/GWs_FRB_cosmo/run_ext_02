@@ -21,4 +21,4 @@ conda activate py310
 # python3 -W ignore::DeprecationWarning Cosmo_constraints_DM_ext_MCMC_2_ln.py
 python3 -W ignore::DeprecationWarning Cosmo_constraints_DM_ext_MCMC_02.py
 
-python3 ../../../automail.py -task 'DM_ext'
+python3 ../../../automail.py -task 'DM_ext02'

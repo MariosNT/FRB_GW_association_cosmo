@@ -21,4 +21,4 @@ python3 -W ignore::DeprecationWarning Cosmo_constraints_DM_diff_MCMC_3.py
 python3 -W ignore::DeprecationWarning Cosmo_constraints_DM_diff_MCMC_3_ln.py
 # python3 -W ignore::DeprecationWarning Cosmo_constraints_DM_diff_MCMC_02.py
 
-python3 ../../../automail.py -task 'DM_diff'
+python3 ../../../automail.py -task 'DM_diff3'
