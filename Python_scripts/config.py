@@ -6,7 +6,7 @@
 import numpy as np
 from numpy import linalg as LA
 from numpy.random import default_rng
-rng = default_rng(seed=3) # 3 # 48 # 68
+rng = default_rng(seed=100) # 3 # 48 # 68
 import pandas as pd
 
 from scipy import interpolate
