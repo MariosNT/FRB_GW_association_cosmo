@@ -1,39 +1,39 @@
 % Low-z Diff Results
-\newcommand{\LowDiffCEH}{70.968_{-2.657}^{+2.708}}
-\newcommand{\LowDiffCEOmega}{0.556_{-0.331}^{+0.297}}
-\newcommand{\LowDiffCEw}{-0.878_{-0.688}^{+0.603}}
-\newcommand{\LowDiffLVKH}{73.975_{-3.469}^{+3.833}}
-\newcommand{\LowDiffLVKOmega}{0.404_{-0.279}^{+0.358}}
-\newcommand{\LowDiffLVKw}{-1.146_{-0.586}^{+0.687}}
+\newcommand{\LowDiffCEH}{70.4_{-2.5}^{+2.6}}
+\newcommand{\LowDiffCEOmega}{0.6_{-0.3}^{+0.3}}
+\newcommand{\LowDiffCEw}{-0.8_{-0.7}^{+0.6}}
+\newcommand{\LowDiffLVKH}{73.6_{-3.5}^{+3.7}}
+\newcommand{\LowDiffLVKOmega}{0.4_{-0.3}^{+0.4}}
+\newcommand{\LowDiffLVKw}{-1.2_{-0.6}^{+0.7}}
 
 % Low-z Ext Results
-\newcommand{\LowExtCEH}{71.774_{-4.234}^{+4.730}}
-\newcommand{\LowExtCEOmega}{0.528_{-0.321}^{+0.320}}
-\newcommand{\LowExtCEw}{-0.941_{-0.703}^{+0.645}}
-\newcommand{\LowExtCEmu}{148.032_{-18.356}^{+16.669}}
-\newcommand{\LowExtCEsigma}{0.560_{-0.077}^{+0.093}}
-\newcommand{\LowExtLVKH}{79.269_{-7.285}^{+7.925}}
-\newcommand{\LowExtLVKOmega}{0.443_{-0.308}^{+0.358}}
-\newcommand{\LowExtLVKw}{-1.116_{-0.613}^{+0.665}}
-\newcommand{\LowExtLVKmu}{145.532_{-18.234}^{+18.646}}
-\newcommand{\LowExtLVKsigma}{0.516_{-0.078}^{+0.090}}
+\newcommand{\LowExtCEH}{71.1_{-4.4}^{+4.6}}
+\newcommand{\LowExtCEOmega}{0.6_{-0.4}^{+0.3}}
+\newcommand{\LowExtCEw}{-0.8_{-0.7}^{+0.6}}
+\newcommand{\LowExtCEmu}{147.6_{-18.3}^{+18.7}}
+\newcommand{\LowExtCEsigma}{0.6_{-0.1}^{+0.1}}
+\newcommand{\LowExtLVKH}{79.7_{-7.1}^{+7.7}}
+\newcommand{\LowExtLVKOmega}{0.4_{-0.3}^{+0.4}}
+\newcommand{\LowExtLVKw}{-1.1_{-0.6}^{+0.7}}
+\newcommand{\LowExtLVKmu}{143.3_{-19.9}^{+18.8}}
+\newcommand{\LowExtLVKsigma}{0.5_{-0.1}^{+0.1}}
 
 % High-z Diff Results
-\newcommand{\HighDiffMqH}{68.703_{-1.309}^{+1.311}}
-\newcommand{\HighDiffMqOmega}{0.360_{-0.190}^{+0.100}}
-\newcommand{\HighDiffMqw}{-0.985_{-0.637}^{+0.450}}
-\newcommand{\HighDiffLnH}{67.660_{-1.459}^{+1.485}}
-\newcommand{\HighDiffLnOmega}{0.470_{-0.175}^{+0.096}}
-\newcommand{\HighDiffLnw}{-1.079_{-0.621}^{+0.554}}
+\newcommand{\HighDiffMqH}{68.9_{-1.5}^{+1.4}}
+\newcommand{\HighDiffMqOmega}{0.3_{-0.2}^{+0.1}}
+\newcommand{\HighDiffMqw}{-0.9_{-0.7}^{+0.4}}
+\newcommand{\HighDiffLnH}{68.1_{-1.5}^{+1.6}}
+\newcommand{\HighDiffLnOmega}{0.4_{-0.2}^{+0.1}}
+\newcommand{\HighDiffLnw}{-1.0_{-0.7}^{+0.5}}
 
 % High-z Ext Results
-\newcommand{\HighExtMqH}{68.217_{-2.184}^{+2.481}}
-\newcommand{\HighExtMqOmega}{0.464_{-0.192}^{+0.117}}
-\newcommand{\HighExtMqw}{-1.091_{-0.623}^{+0.580}}
-\newcommand{\HighExtMqmu}{294.186_{-86.812}^{+71.036}}
-\newcommand{\HighExtMqsigma}{0.763_{-0.173}^{+0.228}}
-\newcommand{\HighExtLnH}{68.501_{-2.503}^{+2.635}}
-\newcommand{\HighExtLnOmega}{0.443_{-0.193}^{+0.129}}
-\newcommand{\HighExtLnw}{-0.987_{-0.654}^{+0.508}}
-\newcommand{\HighExtLnmu}{197.195_{-85.502}^{+92.819}}
-\newcommand{\HighExtLnsigma}{0.663_{-0.306}^{+0.356}}
+\newcommand{\HighExtMqH}{68.7_{-2.0}^{+2.3}}
+\newcommand{\HighExtMqOmega}{0.4_{-0.2}^{+0.1}}
+\newcommand{\HighExtMqw}{-1.1_{-0.7}^{+0.6}}
+\newcommand{\HighExtMqmu}{287.4_{-91.4}^{+74.1}}
+\newcommand{\HighExtMqsigma}{0.9_{-0.2}^{+0.3}}
+\newcommand{\HighExtLnH}{68.0_{-2.2}^{+2.2}}
+\newcommand{\HighExtLnOmega}{0.4_{-0.2}^{+0.1}}
+\newcommand{\HighExtLnw}{-0.9_{-0.7}^{+0.5}}
+\newcommand{\HighExtLnmu}{204.4_{-89.0}^{+98.3}}
+\newcommand{\HighExtLnsigma}{0.7_{-0.3}^{+0.4}}
