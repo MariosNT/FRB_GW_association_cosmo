@@ -1,0 +1,39 @@
+% Low-z Diff Results
+\newcommand{\LowDiffCEH}{70.4_{-2.5}^{+2.6}}
+\newcommand{\LowDiffCEOmega}{0.6_{-0.3}^{+0.3}}
+\newcommand{\LowDiffCEw}{-0.8_{-0.7}^{+0.6}}
+\newcommand{\LowDiffLVKH}{73.6_{-3.5}^{+3.7}}
+\newcommand{\LowDiffLVKOmega}{0.4_{-0.3}^{+0.4}}
+\newcommand{\LowDiffLVKw}{-1.2_{-0.6}^{+0.7}}
+
+% Low-z Ext Results
+\newcommand{\LowExtCEH}{71.1_{-4.4}^{+4.6}}
+\newcommand{\LowExtCEOmega}{0.6_{-0.4}^{+0.3}}
+\newcommand{\LowExtCEw}{-0.8_{-0.7}^{+0.6}}
+\newcommand{\LowExtCEmu}{147.6_{-18.3}^{+18.7}}
+\newcommand{\LowExtCEsigma}{0.6_{-0.1}^{+0.1}}
+\newcommand{\LowExtLVKH}{79.7_{-7.1}^{+7.7}}
+\newcommand{\LowExtLVKOmega}{0.4_{-0.3}^{+0.4}}
+\newcommand{\LowExtLVKw}{-1.1_{-0.6}^{+0.7}}
+\newcommand{\LowExtLVKmu}{143.3_{-19.9}^{+18.8}}
+\newcommand{\LowExtLVKsigma}{0.5_{-0.1}^{+0.1}}
+
+% High-z Diff Results
+\newcommand{\HighDiffMqH}{68.9_{-1.5}^{+1.4}}
+\newcommand{\HighDiffMqOmega}{0.3_{-0.2}^{+0.1}}
+\newcommand{\HighDiffMqw}{-0.9_{-0.7}^{+0.4}}
+\newcommand{\HighDiffLnH}{68.1_{-1.5}^{+1.6}}
+\newcommand{\HighDiffLnOmega}{0.4_{-0.2}^{+0.1}}
+\newcommand{\HighDiffLnw}{-1.0_{-0.7}^{+0.5}}
+
+% High-z Ext Results
+\newcommand{\HighExtMqH}{68.7_{-2.0}^{+2.3}}
+\newcommand{\HighExtMqOmega}{0.4_{-0.2}^{+0.1}}
+\newcommand{\HighExtMqw}{-1.1_{-0.7}^{+0.6}}
+\newcommand{\HighExtMqmu}{287.4_{-91.4}^{+74.1}}
+\newcommand{\HighExtMqsigma}{0.9_{-0.2}^{+0.3}}
+\newcommand{\HighExtLnH}{68.0_{-2.2}^{+2.2}}
+\newcommand{\HighExtLnOmega}{0.4_{-0.2}^{+0.1}}
+\newcommand{\HighExtLnw}{-0.9_{-0.7}^{+0.5}}
+\newcommand{\HighExtLnmu}{204.4_{-89.0}^{+98.3}}
+\newcommand{\HighExtLnsigma}{0.7_{-0.3}^{+0.4}}

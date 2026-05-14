@@ -4,6 +4,7 @@
 
 from config import *
 
+
 def int_limit(fun, init=1e6, error=1e-6, limit='upper', loop_num=10000, step=100, *args, **kwargs):
         
         # find integration limitation for exact function
@@ -21,9 +22,12 @@ def int_limit(fun, init=1e6, error=1e-6, limit='upper', loop_num=10000, step=100
             
         return x
 
-def normalise(lista):
+
+
+def normalise(lista, x_array=None):
     """
-    Function that normalises a list of data.
+    Function that normalises a list of data. For Continuous probability distribution (x_array != None), we take pdf = pdf / 
+    np.trapz(pdf, x_array). For Discrete probability distribution (x_array == None), we take pdf = pdf / np.sum(pdf).
     
     Parameters
     ----------
@@ -35,17 +39,33 @@ def normalise(lista):
     i.e. sum(array) = 1.
     """
     
-    lista = np.array(lista)
+    if x_array is not None:
+        lista = np.array(lista)
+        integral = np.trapz(lista, x_array)
     
-    return lista/np.sum(lista)
+        normalised = lista / integral
+    else:
+        lista = np.array(lista)
+        normalised = lista / np.sum(lista)
+    
+    return normalised
 
 
 
-def Gaussian(x, x0, s0):
+def gaussian_pdf(x, x0, s0):
     """
     Function that defines a normalised Gaussian with mean x0 and std s0.
     """
     return 1/(s0*np.sqrt(2*np.pi))*np.exp(-0.5*(x-x0)**2/s0**2)
+
+
+
+def func_lin(x, a0, a1):
+    return a0+a1*x    
+
+def func_curved(x, a0, a1, a2):
+    return a0 + a1*x + a2*np.log(x)
+    
 
 
 
