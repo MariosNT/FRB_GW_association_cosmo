@@ -161,3 +161,4 @@ cython_debug/
 .vscode/settings.json
 # *.out
 /Presentations
+/Notebooks/GWs_FRB_cosmo/figures
