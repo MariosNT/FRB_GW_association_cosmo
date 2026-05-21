@@ -8,8 +8,6 @@ In the folder `C_0_z_sigma_relations`, we collect useful data and the interpolat
 
 - `sigma_C0_beta3.ascii` is from the `FRB` package [[here](https://github.com/FRBs/FRB/tree/107e37332c4857b7b363b637de0f5ea7d4d0761d/frb/data/DM)] (connected to the original paper by [[Macquart et al.](https://arxiv.org/abs/2005.13161)])
 - `Zijian_TNG.xlsx` is from [[Zhang, Z. J. et al.](https://arxiv.org/abs/2011.14494)]. It is derived by fits with data from the IllustrisTNG simulation, summarised in their Table 1.
-- `C_0_z.csv` 
-- `C_0_z_v2.csv` 
 
 -------
 
