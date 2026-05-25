@@ -25,9 +25,3 @@ We use the `pygedm` package for the final results, since it is consistent with t
 - `ne2001_compare.ipynb`: Compares the four packages mentioned above. This is moved to the `Archive` folder.
 
 ## 
-
-
-
-**TO DO**: Combine `F_search` with `F_search_MK` and clear
-
-**TO DO**: Clean `DM_z_constraints` and `MK` version
