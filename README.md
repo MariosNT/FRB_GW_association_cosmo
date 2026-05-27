@@ -36,4 +36,18 @@ To run the notebooks and scripts in this repository, you will need a standard Py
 ---
 
 ## ✉️ Contact & Support
-Feel free to open an issue or email us if you have any questions regarding data reproduction or pipeline adaptation!
+
+Feel free to open an issue or email us if you have any questions regarding data reproduction or pipeline adaptation! 
+
+* **Jiaming Zhuge**
+  * Email: [jiaming.zhuge@unlv.edu](mailto:jiaming.zhuge@unlv.edu)
+
+* **Marios Kalomenopoulos**
+  * Email: [marios.kalomenopoulos@gmail.com](mailto:marios.kalomenopoulos@gmail.com)
+
+---
+
+## 🔗 Project Links
+
+* **Zenodo Archive:** [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20282512.svg)](https://doi.org/10.5281/zenodo.20282512)
+* **GitHub Repository:** [![GitHub](https://img.shields.io/badge/GitHub-Repository-blue?logo=github)](https://github.com/MariosNT/FRB_GW_association_cosmo)
