@@ -8,7 +8,7 @@ This repository contains the full core Python pipeline and reproducibility mater
 * **Paper B:** *Cosmological Constraints from GW-FRB Associations without Redshift Measurements for LIGO-Virgo and Cosmic Explorer* [[2604.03163](https://arxiv.org/abs/2604.03163)]
   In this project, we developed a general pipeline for joint GW-FRB association events. We compared the performance of different gravitational-wave detectors (LIGO-Virgo vs. Cosmic Explorer) and evaluated the impacts of different $DM_{\rm diff}$ probability density functions.
 
-This pipeline is open-source and we welcome for further cosmological studies. If this software contributes to your research, please support our work by citing the relevant paper(s) above properly.
+This pipeline is open-source and we welcome input for developments for further cosmological studies. If this software contributes to your research, please consider supporting our work by citing the relevant paper(s) above.
 
 ---
 
@@ -17,7 +17,7 @@ This pipeline is open-source and we welcome for further cosmological studies. If
 * `Notebooks/`: Contains the primary Jupyter Notebooks or Python scripts for reproducing the main results and figures.
   * `FRB_cosmo/`: Codes for constraining cosmological parameters (such as the Hubble constant $H_0$) using the 117 localized FRB samples (Paper A).
   * `GWs_FRB_cosmo/`: The general pipeline for analyzing joint GW-FRB association events under different detector configurations and $DM_{\rm diff}$ PDFs (Paper B).
-  * `Realistic_sources/`: Notebooks dedicated to generating and analyzing GW mock events and realistic source simulations.
+  * `Realistic_sources/`: Notebooks dedicated to analyzing realistic source simulations.
 * `Data/`: Contains the observational data and catalogs used in this study, including the 117 localized FRB sample catalog (`./Data/FRB_data/FRB_new.csv`).
 * `Python_scripts/`: Core modules, helper functions, and auxiliary scripts supporting the calculations in the Jupyter Notebooks.
 
@@ -29,7 +29,6 @@ To run the notebooks and scripts in this repository, you will need a standard Py
 * `numpy`, `scipy`, `pandas`, `matplotlib` (Core scientific computing and data manipulation)
 * `astropy` (Astronomical coordinates and cosmology utilities)
 * `emcee` (Markov Chain Monte Carlo sampling)
-* `bilby` (Bayesian inference for gravitational-wave data)
 * `corner` (Visualization of MCMC posterior samples)
 * `tqdm` (Progress bar tracking for long-running loops)
 
